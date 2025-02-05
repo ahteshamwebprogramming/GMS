@@ -1,0 +1,32 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.AmenetiesCategoryViewModel
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Category Name</th>                
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.AmenetiesCategories != null)
+                {
+                    foreach (var item in Model.AmenetiesCategories)
+                    {
+                        <tr>
+                            <td scope="row">@item.AmenetiesCategoryName</td>                            
+                            <td>
+                                <div class="actions_btns">
+                                    @{
+                                        <a href="#" class="trash" onclick="DeleteList(@item.Id)"><span>Delete</span></a>
+                                        <a href="#" onclick="AddPartialView(@item.Id)" class="pencil"><span>Edit</span></a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

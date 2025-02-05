@@ -1,0 +1,271 @@
+﻿@{
+    Layout = null;
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Index</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" > -->
+
+
+    <link rel="stylesheet" href="~/assets/css/main.css" />
+    <link rel="stylesheet" href="~/assets/css/responsive.css" />
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <!-- Owl Stylesheets -->
+    <link rel="stylesheet" href="~/assets/carousel/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/assets/carousel/owl.theme.default.min.css">
+
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="~/customcss/validation.css" rel="stylesheet" />
+    <style>
+        .select2.select2-container, .select2.select2-container .selection {
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="admin_wrapper">
+
+
+
+        @Html.Partial("_rooms/_leftNavigationRooms")
+
+        <!-- Modal -->
+
+        <div id="div_AddNewRoomPartial">
+            @* @Html.Partial("_roomLocking/_addNewRoom") *@
+        </div>
+        <div id="div_ViewRoomImagesPartial">
+            @* @Html.Partial("_roomLocking/_viewRoomImages") *@
+        </div>
+        <div id="div_ViewRoomAmenetiesPartial">
+            @* @Html.Partial("_roomLocking/_viewRoomAmeneties") *@
+        </div>
+
+        <div class="right_container">
+            <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+            <!-- filtered rooms Start-->
+            <div class="filtered_rooms_container">
+                <div class="therapiesList_table_list">
+                    <input type="button" value="Open Popup" style="display:none" id="btnModalLock" data-bs-toggle="modal" data-bs-target="#ModalLock" />
+                    <div id="div_AddPartial">
+                        @* @Html.Partial("_roomLocking/_add") *@
+                    </div>
+                    <div id="div_ListPartial">
+                        @* @Html.Partial("_roomLocking/_list") *@
+                    </div>
+                </div>
+            </div>
+            <!-- filtered rooms end-->
+            @Html.Partial("_bottomNavigation1")
+        </div>
+    </div>
+
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" type="script"></script>
+    <!-- javascript -->
+    <script src="~/assets/carousel/jquery.min.js"></script>
+    <script type="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js" type="script"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/index.global.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/customjs/common.js"></script>
+    <script src="~/assets/carousel/owl.carousel.js"></script>
+    <script src="~/customjs/validation.js"></script>
+    <script src="~/customjs/rooms/roomLocking.js"></script>
+    <script src="~/customjs/rooms/AddRoom.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            AddPartialView();
+            ListPartialView();
+        });
+
+
+        $(document).ready(function () {
+            var owl = $('.premium_rooms_slider');
+            owl.owlCarousel({
+                margin: 10,
+
+                responsive: {
+                    0: {
+                        items: 2,
+                        nav: true,
+                        loop: false
+                    },
+                    600: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+                    },
+                    768: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+
+                    },
+                    1024: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+                    },
+                    1266: {
+                        items: 6,
+                        nav: true,
+                        loop: false
+                    }
+                }/*,
+                                                                                                                                                                        onInitialized : function(){
+                                                                                                                                                                    if($('.owl-item').first().hasClass('active'))
+                                                                                                                                                                      $('.owl-prev').hide();
+                                                                                                                                                                    else
+                                                                                                                                                                      $('.owl-prev').show();
+                                                                                                                                                                  } */
+            })
+        })
+
+        var owl = $('.basic_rooms_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+        var owl = $('.short_reservation_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+        var owl = $('.empty_room_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+
+
+
+        /* Set the width of the side navigation to 250px */
+        function openNav() {
+            document.getElementById("left_container").style.width = "450px";
+        }
+
+        /* Set the width of the side navigation to 0 */
+        function closeNav() {
+            document.getElementById("left_container").style.width = "0";
+        }
+
+
+    </script>
+
+</body>
+</html>

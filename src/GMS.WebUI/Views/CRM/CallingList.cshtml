@@ -1,0 +1,324 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Calling List";
+}
+
+<div class="admin_wrapper">
+    @Html.Partial("_crm/_leftNavigationCRM")
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Room</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="general_form">
+                        <div class="mb-3">
+                            <label class="form-label">Room Number</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Room Type</label>
+                            <select class="form-control">
+                                <option>Room Type</option>
+                                <option>Room Type</option>
+                                <option>Room Type</option>
+                                <option>Room Type</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Room Size</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bed Type</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Remark</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload Photos</label>
+                            <input type="file" class="form-control">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="right_container">
+        <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+
+
+                <div class="top_heaer_form">
+                    <form class="general_form">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Booking Date</label>
+                                    <input type="date" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Rooms</label>
+                                    <select class="form-control">
+                                        <option>Room Type</option>
+                                        <option>Room Type</option>
+                                        <option>Room Type</option>
+                                        <option>Room Type</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Guest</label>
+                                    <select class="form-control">
+                                        <option>Guest 1</option>
+                                        <option>Guest 2</option>
+                                        <option>Guest 3</option>
+                                        <option>Guest 4</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-12"><button class="submit_btn">Submit</button></div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="title_area">
+                    <h2>Allocation Rooms</h2>
+
+                </div>
+                <div class="resposive_table">
+                    <table class="table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Room Status</th>
+                                <th scope="col">Room Number</th>
+                                <th scope="col">Room Type</th>
+                                <th scope="col">Room Size</th>
+                                <th scope="col">Bed Type</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Availability</th>
+                                <th scope="col" width="200">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Booked</th>
+                                <td>202</td>
+                                <td>PREMIUM ROOM</td>
+                                <td>20.17 square meter</td>
+                                <td>King Size</td>
+                                <td><span class="cleaned">Cleaned</span></td>
+                                <td>Available</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+
+        
+
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>

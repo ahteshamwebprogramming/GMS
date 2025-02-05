@@ -1,0 +1,56 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomsAvailabilityViewModel
+
+
+<div class="modal fade" id="GuestsDetailsPopup" tabindex="-1" aria-labelledby="exampleModalLock" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+
+                    Guests List
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="general_form" id="">
+                    <table class="table table-bordered">
+
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Date Of Arrival</th>
+                                <th>Date Of Department</th>
+                                <th>UHID</th>
+                                <th>Group Id</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (Model != null && Model.MembersDetails != null)
+                                {
+                                    foreach (var item in Model.MembersDetails)
+                                    {
+                                        <tr>
+                                            <td>@item.CustomerName</td>
+                                            <td>@item.DateOfArrival?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                                            <td>@item.DateOfDepartment?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                                            <td>@item.UniqueNo</td>
+                                            <td>@item.GroupId</td>
+                                            <td> <input type="button" class="btn btn-primary btn-sm" value="Print" onclick="window.open('/Guests/PrintMemberDetails/@item.Id','_blank')" /></td>
+                                        </tr>
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeModalGuestsDetails" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AddMoreGuestsInRooms('@Model?.RoomNo','@Model?.GroupId',@Model?.MembersDetails?.Count)">Add Guests</button>
+            </div>
+        </div>
+    </div>
+</div>

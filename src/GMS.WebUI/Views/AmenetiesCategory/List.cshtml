@@ -1,0 +1,259 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, GMSCore
+@model GMS.Infrastructure.ViewModels.Masters.AmenetiesCategoryViewModel
+@{
+    Layout = null;
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Index</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" > -->
+
+
+    <link rel="stylesheet" href="~/assets/css/main.css" />
+    <link rel="stylesheet" href="~/assets/css/responsive.css" />
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <!-- Owl Stylesheets -->
+    <link rel="stylesheet" href="~/assets/carousel/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/assets/carousel/owl.theme.default.min.css">
+
+    <link href="~/assets/customcomponents/datetimepicker/build/jquery.datetimepicker.min.css" rel="stylesheet" />
+    <link href="~/assets/CustomComponents/CountryCode/css/intlTelInput.css" rel="stylesheet" />
+    <link href="~/customcss/common.css" rel="stylesheet" />
+    <link href="~/customcss/validation.css" rel="stylesheet" />
+
+</head>
+<body>
+
+
+    <div class="admin_wrapper">
+        @Html.Partial("_masters/_leftNavigationMasters")
+
+        <!-- Modal -->
+
+        <input type="button" id="btnOpenAddAmenetiesCategoryPopup" style="display:none" data-bs-toggle="modal" data-bs-target="#addAmenetiesCategoryPopup" />
+        <div id="div_AddPartial">
+            @* @Html.Partial("_roomTypeList/_add") *@
+        </div>
+
+        <!-- Modal -->
+        
+
+
+        <div class="right_container">
+            <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+            <!-- filtered rooms Start-->
+            <div class="filtered_rooms_container">
+                <div class="therapiesList_table_list">
+                    <div class="title_area">
+                        <h2>Ameneties Category</h2>
+                        <div class="btn_add">
+                            <a href="#" class="addNew_btn" onclick="AddPartialView(0)">Add New</a>
+                        </div>
+                    </div>
+
+                    <div id="div_ListPartial">
+                        @* @Html.Partial("_roomTypeList/_list") *@
+                    </div>
+
+                </div>
+            </div>
+            <!-- filtered rooms end-->
+
+            
+
+        </div>
+        @Html.Partial("_bottomNavigation1")
+    </div>
+
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" type="script"></script>
+    <!-- javascript -->
+    <script src="assets/carousel/jquery.min.js"></script>
+    <script type="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js" type="script"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
+    <script type="text/javascript" src="~/assets/CustomComponents/DateTimePicker/jquery.datetimepicker.js"></script>
+    <script type="text/javascript" src="~/assets/CustomComponents/DateTimePicker/build/jquery.datetimepicker.full.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="assets/carousel/owl.carousel.js"></script>
+    <script src="~/customjs/common.js"></script>
+    <script src="~/customjs/masters/AmenetiesCategory.js"></script>
+    <script src="~/customjs/validation.js"></script>
+    <script>
+        $(document).ready(function () {
+            var owl = $('.premium_rooms_slider');
+            owl.owlCarousel({
+                margin: 10,
+
+                responsive: {
+                    0: {
+                        items: 2,
+                        nav: true,
+                        loop: false
+                    },
+                    600: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+                    },
+                    768: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+
+                    },
+                    1024: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+                    },
+                    1266: {
+                        items: 6,
+                        nav: true,
+                        loop: false
+                    }
+                }/*,
+                                                                                                                                                                                                                                                                                                                                                                                                onInitialized : function(){
+                                                                                                                                                                                                                                                                                                                                                                                            if($('.owl-item').first().hasClass('active'))
+                                                                                                                                                                                                                                                                                                                                                                                              $('.owl-prev').hide();
+                                                                                                                                                                                                                                                                                                                                                                                            else
+                                                                                                                                                                                                                                                                                                                                                                                              $('.owl-prev').show();
+                                                                                                                                                                                                                                                                                                                                                                                          } */
+            })
+
+
+            //initDates();
+        })
+
+        var owl = $('.basic_rooms_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+        var owl = $('.short_reservation_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+        var owl = $('.empty_room_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+
+
+
+        /* Set the width of the side navigation to 250px */
+        function openNav() {
+            document.getElementById("left_container").style.width = "450px";
+        }
+
+        /* Set the width of the side navigation to 0 */
+        function closeNav() {
+            document.getElementById("left_container").style.width = "0";
+        }
+
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.AmenetiesCategoryViewModel
+<div class="modal fade" id="addAmenetiesCategoryPopup" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Room Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="general_form" id="AddAmenetiesCategory">
+                    <input type="hidden" name="Id" value="@Model?.AmenetiesCategory?.Id" dbCol />
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Category Name</label>
+                        <input type="text" class="form-control requiredInput" name="AmenetiesCategoryName" dbCol value="@Model?.AmenetiesCategory?.AmenetiesCategoryName">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AddAmenetiesCategory()">Add Category</button>
+            </div>
+        </div>
+    </div>
+</div>

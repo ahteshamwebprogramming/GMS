@@ -1,0 +1,452 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, GMSCore
+@* @model GMS.Infrastructure.ViewModels.Masters.MasterScheduleViewModel *@
+@{
+    Layout = null;
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Index</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" > -->
+
+
+    <link rel="stylesheet" href="~/assets/css/main.css" />
+    <link rel="stylesheet" href="~/main.css" />
+    <link rel="stylesheet" href="~/assets/css/responsive.css" />
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <!-- Owl Stylesheets -->
+    <link rel="stylesheet" href="~/assets/carousel/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/assets/carousel/owl.theme.default.min.css">
+
+    <link href="~/assets/calender/calendar.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+
+</head>
+<body>
+
+
+    <div class="admin_wrapper">
+        <div class="left_container" id="left_container">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <div class="top_menu">
+                <ul>
+                    <li>
+                        <a href="guest.html">
+                            <figure><i class="bi bi-house-fill"></i></figure>
+                            <h4>Guest List</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <figure><i class="bi bi-person-fill-add"></i></figure>
+                            <h4>Add User</h4>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Add New Room</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="general_form">
+                            <div class="mb-3">
+                                <label class="form-label">Room Number</label>
+                                <input type="text" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Room Type</label>
+                                <select class="form-control">
+                                    <option>Room Type</option>
+                                    <option>Room Type</option>
+                                    <option>Room Type</option>
+                                    <option>Room Type</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Room Size</label>
+                                <input type="text" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Bed Type</label>
+                                <input type="text" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Remark</label>
+                                <textarea class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Upload Photos</label>
+                                <input type="file" class="form-control">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right_container">
+            <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+            <!-- filtered rooms Start-->
+            <div class="filtered_rooms_container">
+                <div class="therapiesList_table_list">
+                    <div class="title_area d-flex_item ">
+                        <h2>NAAD001011</h2>
+                        <h3>Mr. Anil Shankar Vitankar</h3>
+                        <h3>Not booking yet</h3>
+                    </div>
+                    <div class="promotional">Promotional Package (2 NIGHTS)</div>
+                    <div class="cal_box">
+                        
+
+                        @* <div id="dp"></div> *@
+                        <div id="calendar" style="margin-top:30px;">
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- filtered rooms end-->
+            @Html.Partial("_bottomNavigation1")
+
+        </div>
+    </div>
+
+
+
+    @*Create Event*@
+    <div class="modal" id="crtevents" tabindex="-1" role="dialog" aria-labelledby="addfuelsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg"  role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" contentEditable="true">Add Event</h2>
+                    <button type="button" id="close" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row topBadges">
+                       
+                    </div>
+                    <div class="formWrapper pt-3">
+                        <form class="form-horizontal" asp-action="CreateEvent" asp-controller="Calendar"  method="post" enctype="multipart/form-data">
+                            <div class="row">
+                                <div class="col-12" id="eventTitle">
+                                    <div class="form-group">
+                                        <label>Task Name</label>
+                                        <input type="text" class="form-control" id="txtTitle"  placeholder="Task Name" />
+                                        <span id="valTitle" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                @* <div class="col-sm-6 col-lg-3">
+                                    <div class="form-group position-relative dateCalWrapper">
+                                        <input type="text" class="form-control" id="startdate"  placeholder="Event start date" />
+                                        <i class="fa fa-calendar position-absolute" name="daterange"></i>
+                                      
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-lg-3">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" name="event_end_date" id="enddate"  placeholder="Event end date" />
+                                    </div>
+                                </div> *@
+                                <div class="col-sm-6 col-lg-3">
+                                    <label>Start Time</label>
+                                    <div class="form-group position-relative dateCalWrapper">
+                                        <input type="time" class="form-control time" id="begintime" name="" placeholder="Begin Time" />                                        
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-lg-3">
+                                    <label>End Time</label>
+                                    <div class="form-group">
+                                        <input type="time" class="form-control time" id="endtime" name="" placeholder="End Time" />
+                                    </div>
+                                </div>
+                                @* <div class="col-sm-12 col-lg-6">
+                                    <div class="form-group d-flex justify-content-between beTimeWrap">
+                                        <input type="time" class="form-control time" id="begintime" name="" placeholder="Begin Time" />
+                                
+                                        <span class="mx-3">-</span>
+                                        <input type="time" class="form-control time" id="endtime" name="" placeholder="End Time" />
+                                    </div>
+                                </div> *@
+                            </div>
+
+                            @* <div class="row mb-2">
+                                <div class="col-md-8">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="AllDay" onclick="myFunction()" value="option1">
+                                        <label class="form-check-label" for="AllDay">All Day</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="thisrepeat" onclick="repeatevent()" value="option2">
+                                        <label class="form-check-label" for="thisrepeat">This Event Repeat</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-control" id="eventreccdropdown" style="display:none" onchange="repeateventdrpdown(this.value)">
+                                        <option value="0" id="notrepeat" selected>Does not repeat</option>
+                                        <option value="1" id="daily">Daily</option>
+                                        <option value="2" id="weekly">Weekly</option>
+                                        <option value="3" id="monthly">monthly</option>
+                                        <option value="4" id="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                            </div> *@
+
+                            @* <div id="weekdays" style="display:none;">
+                                <label><input type="checkbox" value="0" name="programming"> sun</label>
+                                <label><input type="checkbox" value="1" name="programming"> mon</label>
+                                <label><input type="checkbox" value="2" name="programming"> Tues</label>
+                                <label><input type="checkbox" value="3" name="programming"> Wed</label>
+                                <label><input type="checkbox" value="4" name="programming"> Thru</label>
+                                <label><input type="checkbox" value="5" name="programming"> Fri</label>
+                                <label><input type="checkbox" value="6" name="programming"> Sat</label>
+                            </div> *@
+
+                            @* <div class="row my-2">
+                                <div class="col-md-6">
+                                    <div class="form-inline">
+                                        <div class="form-group" id="dailyview" style="display:none; align-items:center;">
+                                            <div class="form-group d-flex text-center">
+                                                <label for="daynumber">Repeat Every</label>
+                                                <input type="text" class="form-control mx-2" value="1" id="daynumber" style="width:90px;" readonly />
+                                                <label for="daynumber">day(s)</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group" id="weekview" style="display:none; align-items:center;">
+                                            <div class="form-group d-flex text-center">
+                                                <label for="weeknumber">Repeat Every</label>
+                                                <input type="text" class="form-control mx-2" value="1" min="0" id="weeknumber" style="width:90px;" readonly />
+                                                <label for="weeknumber">Week(s)</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group" id="monthview" style="display:none; align-items:center;">
+                                            <div class="form-group d-flex text-center">
+                                                <label for="monthnumber">Repeat Every</label>
+                                                <input type="text" class="form-control mx-2" value="1" min="0" id="monthnumber" style="width:90px;" readonly />
+                                                <label for="monthnumber">Month(s)</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group" id="yearview" style="display:none; align-items:center;">
+                                            <div class="form-group d-flex text-center">
+                                                <label for="yearnumber">Repeat Every</label>
+                                                <input type="text" class="form-control mx-2" value="1" min="0" id="yearnumber" style="width:90px;" readonly />
+                                                <label for="yearnumber">Year(s)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> *@
+
+                           @*  <div class="form-group" id="endson" style="display:none; align-items:center;">
+                                <div class="form-group d-flex text-center">
+                                    <input type="checkbox" id="endcheck">
+                                    <label for="endon" class="mx-2" style="margin-top:11px;">Ends on</label>
+                                    <input type="date" class="form-control mx-2" id="reccenddate" style="width:200px;" />
+                                </div>
+                            </div> *@
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" id="addGuest" placeholder="Add guests" />
+                                    </div>
+                                </div>
+                                @* <div class="col-12 mb-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="modifyEvent" value="option1">
+                                        <label class="form-check-label" for="modifyEvent">Modify event</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="inviteOthers" value="option2">
+                                        <label class="form-check-label" for="inviteOthers">Invite others</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="guestList" value="option3">
+                                        <label class="form-check-label" for="guestList">See guest list</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mb-3">
+                                    <div class="orgsName d-flex justify-content-between">
+                                        <strong><b>Test Name</b><span>(organizer)</span></strong>
+                                        <div id="guestUser">
+                                        </div>
+                                    </div>
+                                </div> *@
+
+                               @*  <div class="col-12">
+                                    <div class="form-group">
+                                        <input type="text"  class="form-control" id="txtlocation" placeholder="Add location" />
+                                    </div>
+                                </div> *@
+                            </div>
+                          @*   <div class="form-row align-items-center col-md-12" id="dvReminder">
+                                <div class="reminderselection d-flex" id="divReminder_1">
+                                    <div class="form-group">
+                                        <input type="email" class="form-control" id="reminderemail_1" placeholder="Email" />
+                                    </div>
+                                    <div class="form-group mx-3">
+                                        <input type="number" value="1" min="1" max="59" class="form-control px-2 mr-6" id="remindernumber_1" style="width:50px;" />
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="form-control" style="width:150px;" id="reminderduration_1" onselect="selectremindersduration(this.value)">
+                                            <option>Days</option>
+                                            <option selected>Hours</option>
+                                            <option>Minutes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div> *@
+                            @* <div class="addReminder form-group col-sm-12 col-lg-5">
+                                <button type="button" class="addReminder btn btn-link" id="btnaddnotification">+ Add notification</button>
+                            </div> *@
+                            <div class="form-row align-items-center">
+                                @*<div class="form-group col-sm-6 col-lg-7">
+                                <input type="text" class="form-control" id="addGuest" placeholder="Show on calendars" />
+                                </div>*@
+                               @*  <div class="form-group col-sm-3 col-lg-2">
+                                    <select class="form-control" id="" onchange="selectStatus(this.value)">
+                                        <option value="0" id="selectbusy" selected>Busy</option>
+                                        <option value="1" id="selectfree">Free</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-sm-3 col-lg-3">
+                                    <select class="form-control" id="" onchange="selectAccessibility(this.value)">
+                                        <option value="0" id="selectpublic" selected>Public</option>
+                                        <option value="1" id="selectprivate">Private</option>
+                                    </select>
+                                </div> *@
+                            </div>
+                           @*  <div class="row">
+                                <div class="col-12" id="description">
+                                    <div class="form-group">
+                                        <textarea type="text" class="form-control" rows="6" id="txtDescription" placeholder="Add description"></textarea>
+                                        <span id="valDescription" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 uploadWrapper">
+                                    <form id="uploadform" method="post" enctype="multipart/form-data">
+                                        <label for="upload">
+                                            <input type="file" class="filepond"  multiple data-allow-reorder="true" />
+                                        </label>
+                                    </form>
+                                </div>
+                            </div> *@
+                            <div class="row footer-wrapper">
+                                <div class="col-12 text-right">
+                                    <button type="button" class="btn btn-primary" id="btnadd" onclick="CreateEvent()">Save</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                    <input type="hidden" id="hidemailreminders"  />
+                                    <input type="hidden" id="hidUploadFileValue" />
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" type="script"></script>
+    <!-- javascript -->
+    <script src="~/assets/carousel/jquery.min.js"></script>
+    <script type="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js" type="script"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+
+    @* calender *@
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/index.global.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js'></script>
+    <script src="~/assets/calender/calendar.js"></script>
+    @* <script src="~/assets/app/daypilot-all.min.js"></script> *@
+    
+    <script type="text/javascript">
+
+        // const dp = new DayPilot.Calendar("dp", {
+        //     startDate: DayPilot.Date.today(),
+        //     viewType: "Week",
+        //     onTimeRangeSelected: async args => {
+        //         const modal = await DayPilot.Modal.prompt("New event name:", "Event");
+        //         if (modal.canceled) return;
+        //         dp.events.add({
+        //             start: args.start,
+        //             end: args.end,
+        //             id: DayPilot.guid(),
+        //             text: "Event"
+        //         });
+        //         dp.clearSelection();
+        //         dp.message("Created");
+        //     }
+        // });
+        // dp.init();
+
+        // const app = {
+        //     init() {
+        //         this.addEventHandlers();
+        //         this.loadEventData();
+        //     },
+        //     addEventHandlers() {
+        //         document.querySelector("#previous").addEventListener("click", (ev) => {
+        //             ev.preventDefault();
+        //             dp.startDate = dp.startDate.addDays(-7);
+        //             dp.update();
+        //         });
+        //         document.querySelector("#next").addEventListener("click", (ev) => {
+        //             ev.preventDefault();
+        //             dp.startDate = dp.startDate.addDays(7);
+        //             dp.update();
+        //         });
+        //     },
+        //     loadEventData() {
+        //         const events = [
+        //             {
+        //                 start: DayPilot.Date.today().firstDayOfWeek().addDays(1).addHours(2),
+        //                 end: DayPilot.Date.today().firstDayOfWeek().addDays(1).addHours(2),
+        //                 id: DayPilot.guid(),
+        //                 text: "Therepy"
+        //             }
+        //         ];
+        //         dp.update({ events });
+        //     }
+        // };
+        // app.init();
+
+    </script>
+    @* <script src="~/assets/app/app.js"></script> *@
+    
+</body>
+</html>

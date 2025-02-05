@@ -1,0 +1,79 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomsAvailabilityViewModel
+<style>
+    .bookeRoom_details3 {
+        background: #c34d32 !important;
+        color: #fff;
+    }
+</style>
+<div class="resposive_table roomAvailability_table">
+    <table class="table table-bordered ">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Room No</th>
+                <th scope="col">Room Type</th>
+
+                @{
+                    if (Model != null && Model.RoomAvailabilities != null)
+                    {
+                        var dates = Model.RoomAvailabilities.Select(x => x.DateValue).Distinct();
+                        foreach (var item in dates)
+                        {
+                            <th scope="col">@item?.ToString("dd MMM yyyy")</th>
+                        }
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.RoomAvailabilities != null)
+                {
+                    var rnumbers = Model.RoomAvailabilities.Select(x => x.RNumber).Distinct();
+                    var dates = Model.RoomAvailabilities.Select(x => x.DateValue).Distinct();
+                    foreach (var item in rnumbers)
+                    {
+                        var record = Model.RoomAvailabilities.Where(x => x.RNumber == item).FirstOrDefault();
+                        <tr>
+                            <th scope="row">@record?.RNumber</th>
+                            <td>@record?.RType</td>
+                            @{
+                                foreach (var date in dates)
+                                {
+                                    var recordAsPerDate = Model.RoomAvailabilities.Where(x => x.RNumber == item && x.DateValue == date).FirstOrDefault();
+                                    if (@recordAsPerDate?.AvailabilityColumn == "Available")
+                                    {
+                                        <td class="bookeRoom_details"><span><a href="javascript:void(0)" onclick="AddGuestInRoomsEmpty(@record?.RNumber,'')">Add Guest</a></span></td>
+                                    }
+                                    else if (@recordAsPerDate?.AvailabilityColumn == "Locked" || @recordAsPerDate?.AvailabilityColumn == "Hold")
+                                    {
+                                        <td class="bookeRoom_details3"><span>@recordAsPerDate?.AvailabilityColumn</span></td>
+                                    }
+                                    else
+                                    {
+                                        <td class="bookeRoom_details2"><span><a href="javascript:void(0)" onclick="ViewGuestsInRoom('@record?.RNumber','@date?.ToString("yyyy-MM-dd")')">@recordAsPerDate?.AvailabilityColumn</a></span></td>
+                                    }
+
+                                }
+                            }
+
+                        </tr>
+                    }
+                }
+            }
+
+            @*  <tr>
+            <th scope="row">201</th>
+            <td>NAAD SUIT (With Private Balcony)</td>
+            <td class="bookeRoom_details2"><span>Chand Khan - 876564545</span></td>
+            <td class="bookeRoom_details"><span><a href="#">Add Guest</a></span></td>
+            <td class="bookeRoom_details2"><span>Chand Khan - 876564545</span></td>
+            <td class="bookeRoom_details2"><span>Chand Khan - 876564545</span></td>
+            <td class="bookeRoom_details"><span><a href="#">Add Guest</a></span></td>
+            <td class="bookeRoom_details2"><span>Chand Khan - 876564545</span></td>
+            <td class="bookeRoom_details"><span><a href="#">Add Guest</a></span></td>
+            <td class="bookeRoom_details2"><span>Chand Khan - 876564545</span></td>
+            </tr> *@
+
+        </tbody>
+    </table>
+</div>

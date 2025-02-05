@@ -1,0 +1,92 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomLockingViewModel
+
+<div class="title_area">
+    <h2>Allocation Rooms</h2>
+    <div class="btn_add">
+        <a href="#" class="addNew_btn" onclick="AddNewRoomPartialView()">Add Room</a>
+    </div>
+</div>
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Room No</th>
+                <th scope="col">Room Category</th>
+                <th scope="col">Room Size</th>
+                <th scope="col">Bed Type</th>
+                <th scope="col">Images/Ameneties</th>
+                <th scope="col">Status</th>
+                <th scope="col" width="200">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.RoomsWithStatuses != null)
+                {
+                    foreach (var item in Model.RoomsWithStatuses)
+                    {
+                        <tr>
+                            <th scope="row">@item.Rnumber</th>
+                            <td>@item.Rtype</td>
+                            <td>@item.Rsize</td>
+                            <td>@item.BedSize</td>
+                            <td>
+                                View
+                                <a href="javascript:void(0)" onclick="ViewRoomImagesPartialView(@item.Id)" class="trash"><span>Images</span></a> |
+                                <a href="javascript:void(0)" onclick="ViewRoomAmenetiesPartialView('@item.Rnumber')" class="trash"><span>Ameneties</span></a>
+                            </td>
+                            <td>
+                                @{
+                                    if (item.RoomStatus == "Available")
+                                    {
+                                        <div class="actions_btns">
+                                            <a href="javascript:void(0)" class="pencil"><span>@item.RoomStatus</span></a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="cleaned">@item.RoomStatus</span>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <div class="actions_btns">
+                                    @{
+                                        if (item.RoomStatus == "Available")
+                                        {
+                                            <a href="javascript:void(0)" onclick="LockRoom(@item.Id,'@item.Rnumber')" class="trash"><span>Lock</span></a>
+                                            <a href="javascript:void(0)" onclick="HoldRoom(@item.Id,'@item.Rnumber')" class="trash"><span>Hold</span></a>
+                                        }
+                                        else if (item.RoomStatus == "Locked")
+                                        {
+                                            <a href="javascript:void(0)" onclick="UnlockRoom(@item.Id,'@item.Rnumber')" class="pencil"><span>Unlock</span></a>
+                                        }
+                                        else if (item.RoomStatus == "Hold")
+                                        {
+                                            <a href="javascript:void(0)" onclick="UnholdRoom(@item.Id)" class="pencil"><span>Unhold</span></a>
+                                        }
+                                        <a href="javascript:void(0)" onclick="EditRoom(@item.Id)" class="pencil"><span>Edit</span></a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+            <tr>
+                <th scope="row">202</th>
+                <td>PREMIUM ROOM</td>
+                <td>20.17 square meter</td>
+                <td>King Size</td>
+                <td><span class="cleaned">Cleaned</span></td>
+                <td>
+                    <div class="actions_btns">
+                        <a href="#" class="trash"><span>Delete</span></a>
+                        <a href="#" class="pencil"><span>Edit</span></a>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

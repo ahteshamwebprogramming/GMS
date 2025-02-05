@@ -1,0 +1,42 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.ResourceMasterViewModel
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Resource</th>
+                <th scope="col">Department</th>                
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.ResourceMasterWithChildren != null)
+                {
+                    foreach (var item in Model.ResourceMasterWithChildren)
+                    {
+                        <tr>
+                            <td scope="row">@item.ResourceName</td>
+                            <td>@item.RoleName</td>                            
+                            <td>
+                                <div class="actions_btns">
+                                    @{
+                                        if (item.IsActive == true)
+                                        {
+                                            <a href="#" class="pencil" onclick="ManageStatus(@item.Id,0)"><span>Active</span></a>
+                                        }
+                                        else
+                                        {
+                                            <a href="#" class="trash" onclick="ManageStatus(@item.Id,1)"><span>Disabled</span></a>
+                                        }
+                                    }
+                                    <a href="#" class="trash" onclick="DeleteList(@item.Id)"><span>Delete</span></a>
+                                    <a href="#" onclick="AddResourceMasterPartialView(@item.Id)" class="pencil"><span>Edit</span></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

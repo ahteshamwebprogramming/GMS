@@ -1,0 +1,177 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Booking List";
+}
+
+
+
+
+<div class="admin_wrapper">
+
+    @Html.Partial("_crm/_leftNavigationCRM")
+
+    <div class="right_container">
+        <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <div class="btns_blokc">
+                        <a href="#" class="copy">Copy</a>
+                        <a href="#" class="CSV">CSV</a>
+                        <a href="#" class="excel">Excel</a>
+                        <a href="#" class="PDF">PDF</a>
+                        <a href="#" class="print">Print</a>
+                    </div>
+                    <div class="btn_add btn_add2">
+                        <input type=" text" placeholder="Search..." name="">
+                        <select class="form-control">
+                            <option value="3">All</option>
+                            <option value="1">Current List</option>
+                            <option value="2">Previous List</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="resposive_table">
+                    <table class="table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Red No</th>
+                                <th scope="col">Guest Name</th>
+                                <th scope="col">Mobile</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Source</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Package</th>
+                                <th scope="col">Night</th>
+                                <th scope="col">PAX</th>
+                                <th scope="col">NO of room</th>
+                                <th> Stay Date</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">NWPL1552</th>
+                                <td>Manisha Kari </td>
+                                <td>+91112212220 </td>
+                                <td>manisha@gmail.com</td>
+                                <td>Naad Wellness</td>
+                                <td>Interested</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>3 NIGHTS</td>
+                                <td>1</td>
+                                <td>1</td>
+                                <td>09-30-2019 10-03-2019</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NWPL1552</th>
+                                <td>Manisha Kari </td>
+                                <td>+91112212220 </td>
+                                <td>manisha@gmail.com</td>
+                                <td>Naad Wellness</td>
+                                <td>Interested</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>3 NIGHTS</td>
+                                <td>1</td>
+                                <td>1</td>
+                                <td>09-30-2019 10-03-2019</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NWPL1552</th>
+                                <td>Manisha Kari </td>
+                                <td>+91112212220 </td>
+                                <td>manisha@gmail.com</td>
+                                <td>Naad Wellness</td>
+                                <td>Interested</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>3 NIGHTS</td>
+                                <td>1</td>
+                                <td>1</td>
+                                <td>09-30-2019 10-03-2019</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NWPL1552</th>
+                                <td>Manisha Kari </td>
+                                <td>+91112212220 </td>
+                                <td>manisha@gmail.com</td>
+                                <td>Naad Wellness</td>
+                                <td>Interested</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>3 NIGHTS</td>
+                                <td>1</td>
+                                <td>1</td>
+                                <td>09-30-2019 10-03-2019</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NWPL1552</th>
+                                <td>Manisha Kari </td>
+                                <td>+91112212220 </td>
+                                <td>manisha@gmail.com</td>
+                                <td>Naad Wellness</td>
+                                <td>Interested</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>3 NIGHTS</td>
+                                <td>1</td>
+                                <td>1</td>
+                                <td>09-30-2019 10-03-2019</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NWPL1552</th>
+                                <td>Manisha Kari </td>
+                                <td>+91112212220 </td>
+                                <td>manisha@gmail.com</td>
+                                <td>Naad Wellness</td>
+                                <td>Interested</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>3 NIGHTS</td>
+                                <td>1</td>
+                                <td>1</td>
+                                <td>09-30-2019 10-03-2019</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+        
+
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+

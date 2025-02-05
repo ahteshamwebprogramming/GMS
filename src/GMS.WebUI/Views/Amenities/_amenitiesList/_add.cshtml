@@ -1,0 +1,46 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.AmenitiesViewModel
+<div class="modal fade" id="addAmenitiesPopup" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Room Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="general_form" id="AddAmenities">
+                    <input type="hidden" name="Id" value="@Model?.Amenities?.Id" dbCol />
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Category Name</label>
+                        <select type="text" class="form-control requiredInput" name="AmenityCategoryId" dbCol>
+                            <option value="0">Select Category</option>
+                            @{
+                                if (Model != null && Model.AmenetiesCategories != null)
+                                {
+                                    foreach (var item in Model.AmenetiesCategories)
+                                    {
+                                        if (item.Id == Model?.Amenities?.AmenityCategoryId)
+                                        {
+                                            <option value="@item.Id" selected>@item.AmenetiesCategoryName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@item.Id">@item.AmenetiesCategoryName</option>
+                                        }
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Amenities</label>
+                        <input type="text" class="form-control requiredInput" name="AmenityName" dbCol value="@Model?.Amenities?.AmenityName">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AddAmenities()">Add Category</button>
+            </div>
+        </div>
+    </div>
+</div>

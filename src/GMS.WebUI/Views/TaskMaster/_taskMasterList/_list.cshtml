@@ -1,0 +1,50 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.TaskMasterViewModel
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Task Name</th>
+                <th scope="col">Department</th>
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.TaskMasterWithChildren != null)
+                {
+                    foreach (var item in Model.TaskMasterWithChildren)
+                    {
+                        <tr>
+                            <td scope="row">@item.TaskName</td>
+                            <td>@item.RoleName</td>
+                            <td>
+                                <div class="actions_btns">
+                                    @{
+                                        if (item.Readonly == true)
+                                        {
+                                            <span style="font-size:11px;color:red">These attributes cannot be modified</span>
+                                        }
+                                        else
+                                        {
+                                            if (item.IsActive == true)
+                                            {
+                                                <a href="#" class="pencil" onclick="ManageStatus(@item.Id,0)"><span>Active</span></a>
+                                            }
+                                            else
+                                            {
+                                                <a href="#" class="trash" onclick="ManageStatus(@item.Id,1)"><span>Disabled</span></a>
+                                            }
+                                            <a href="#" class="trash" onclick="DeleteList(@item.Id)"><span>Delete</span></a>
+                                            <a href="#" onclick="AddTaskMasterPartialView(@item.Id)" class="pencil"><span>Edit</span></a>
+                                        }
+                                    }
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

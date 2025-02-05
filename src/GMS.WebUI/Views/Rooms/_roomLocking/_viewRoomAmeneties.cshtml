@@ -1,0 +1,28 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomLockingViewModel
+<input type="button" id="btnModalViewRoomAmeneties" style="display:none" data-bs-toggle="modal" data-bs-target="#ModalViewRoomAmeneties" />
+
+<div class="modal fade" id="ModalViewRoomAmeneties" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Ameneties</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <ul>
+                    @{
+                        if (Model != null && Model.RoomAmenitiesAssignedWithChild != null)
+                        {
+                            foreach (var item in Model.RoomAmenitiesAssignedWithChild)
+                            {
+                                <li>@item.AmenityName</li>
+                            }
+                        }
+                    }
+                </ul>
+            </div>
+            
+        </div>
+    </div>
+</div>

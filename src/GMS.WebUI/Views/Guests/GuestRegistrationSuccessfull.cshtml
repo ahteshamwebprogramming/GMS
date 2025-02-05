@@ -1,0 +1,273 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, GMSCore
+@model List<GMS.Infrastructure.Models.Guests.MembersDetailsDTO>
+
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Index</title>
+    <meta content="ie=edge" http-equiv="x-ua-compatible">
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport"><!-- Bootstrap CSS -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" > -->
+    <link href="~/assets/css/main.css" rel="stylesheet">
+    <link href="~/assets/css/responsive.css" rel="stylesheet">
+    <link href="~/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css" rel="stylesheet" type="text/css"><!-- Owl Stylesheets -->
+    <link href="~/assets/carousel/owl.carousel.min.css" rel="stylesheet">
+    <link href="~/assets/carousel/owl.theme.default.min.css" rel="stylesheet">
+    <style type="text/css">
+        .registrationSuccess {
+            text-align: center;
+            padding: 30px 10px;
+            border: #ccc solid 1px;
+            border-radius: 22px;
+        }
+
+            .registrationSuccess h2 {
+                font-size: 22px;
+                line-height: 33px;
+            }
+
+            .registrationSuccess span {
+                border: #ccc solid 1px;
+                padding: 10px 30px;
+                margin-top: 5px;
+                border-radius: 22px;
+                background: #ececff70
+            }
+
+            .registrationSuccess p {
+                margin: 12px 0;
+                font-weight: 600
+            }
+
+            .registrationSuccess .btnsBlocks a {
+                padding: 7px 22px;
+                margin-top: 1px;
+                border-radius: 12px;
+                background: #6EBCB7;
+                color: #fff;
+            }
+
+    </style>
+</head>
+<body>
+
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 m-auto mt-5">
+                <div class="registrationSuccess">
+                    <h2>Your registration is successfull</h2>
+                    <span>Welcome to Naad Wellness</span>
+                    <p>
+                        Member details have been saved successfully. <br> For more actions review the table below
+                    </p>
+                    @*<div class="btnsBlocks">
+                    <a href="#" class="bookingRoom">Booking Room</a>
+                    <a href="#" class="printBtn">Print</a>
+                    </div> *@
+                    <div class="btnsBlocks col-md-10 offset-1">
+                        <table class="table tabletable-bordered" style="font-size:14px;">
+                            <tbody>
+                                @{
+                                    if (Model != null)
+                                    {
+                                        foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td>@item.CustomerName</td>
+                                                <td>Refrence Number : @item.UniqueNo</td>
+                                                <td style="padding:0px;">
+                                                    <a href="#" class="bookingRoom">Booking Room</a>
+                                                    <a href="/Guests/PrintMemberDetails/@item.Id" target="_blank" class="printBtn">Print</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <input type="button" class="btn btn-primary btn-sm" onclick="javascript:window.location.href='/Guests/GuestsList'" value="Go Back" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" type="script">
+    </script> <!-- javascript -->
+
+    <script src="assets/carousel/jquery.min.js">
+    </script>
+    <script type="script">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="assets/carousel/owl.carousel.js">
+    </script>
+    <script>
+        $(document).ready(function () {
+            var owl = $('.premium_rooms_slider');
+            owl.owlCarousel({
+                margin: 10,
+
+                responsive: {
+                    0: {
+                        items: 2,
+                        nav: true,
+                        loop: false
+                    },
+                    600: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+                    },
+                    768: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+
+                    },
+                    1024: {
+                        items: 4,
+                        nav: true,
+                        loop: false
+                    },
+                    1266: {
+                        items: 6,
+                        nav: true,
+                        loop: false
+                    }
+                }/*,
+                                                                                                                 onInitialized : function(){
+                                                                                                             if($('.owl-item').first().hasClass('active'))
+                                                                                                               $('.owl-prev').hide();
+                                                                                                             else
+                                                                                                               $('.owl-prev').show();
+                                                                                                           } */
+            })
+        })
+
+        var owl = $('.basic_rooms_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+        var owl = $('.short_reservation_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+        var owl = $('.empty_room_slider');
+        owl.owlCarousel({
+            margin: 10,
+
+            responsive: {
+                0: {
+                    items: 2,
+                    nav: true,
+                    loop: false
+                },
+                600: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                768: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+
+                },
+                1024: {
+                    items: 4,
+                    nav: true,
+                    loop: false
+                },
+                1266: {
+                    items: 6,
+                    nav: true,
+                    loop: false
+                }
+            }
+        })
+
+
+
+        /* Set the width of the side navigation to 250px */
+        function openNav() {
+            document.getElementById("left_container").style.width = "450px";
+        }
+
+        /* Set the width of the side navigation to 0 */
+        function closeNav() {
+            document.getElementById("left_container").style.width = "0";
+        }
+
+
+    </script>
+</body>
+</html>

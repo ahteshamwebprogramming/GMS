@@ -1,0 +1,51 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.MasterScheduleViewModel
+<div class="modal fade" id="addMasterSchedulePopup" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Schedule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="general_form" id="AddSchedule">
+                    <input type="hidden" name="Id" value="@Model?.MasterSchedule?.Id" dbCol />
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Task</label>
+                        @* <input type="text" class="form-control requiredInput" name="Schedule" dbCol value="@Model?.MasterSchedule?.TaskName"> *@
+                        <select class="form-control requiredInput" name="TaskId" dbCol>
+                            <option value="0">Select Task</option>
+                            @{
+                                if (Model != null && Model.TaskList != null)
+                                {
+                                    foreach (var item in Model.TaskList)
+                                    {
+                                        <option value="@item.Id">@item.TaskName</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="mb-3 form-group col-md-4">
+                            <label class="form-label required">Duration</label>
+                            <input type="text" class="form-control requiredInput timeonly" dateformat="HH:mm" name="Duration" dbCol autocomplete="off" readonly value="@Model?.MasterSchedule?.Duration.ToString("HH:mm")">
+                        </div>
+                        <div class="mb-3 form-group col-md-4">
+                            <label class="form-label required">Start Time</label>
+                            <input type="text" class="form-control requiredInput timeonly" dateformat="HH:mm" name="StartTime" dbCol autocomplete="off" readonly value="@Model?.MasterSchedule?.StartTime.ToString("HH:mm")">
+                        </div>
+                        <div class="mb-3 form-group col-md-4">
+                            <label class="form-label required">End Time</label>
+                            <input type="text" class="form-control requiredInput timeonly" dateformat="HH:mm" name="EndTime" dbCol autocomplete="off" readonly disabled value="@Model?.MasterSchedule?.EndTime.ToString("HH:mm")">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AddSchedule()">Add Schedule</button>
+            </div>
+        </div>
+    </div>
+</div>

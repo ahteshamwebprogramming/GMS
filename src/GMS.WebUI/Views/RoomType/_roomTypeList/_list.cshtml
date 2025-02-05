@@ -1,0 +1,34 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.RoomTypeViewModel
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Room Type</th>
+                <th scope="col">Room Rank</th>
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.RoomTypes != null)
+                {
+                    foreach (var item in Model.RoomTypes)
+                    {
+                        <tr>
+                            <td scope="row">@item.Rtype</td>
+                            <td scope="row">@item.RoomRank</td>
+                            <td>
+                                <div class="actions_btns">
+                                    @{
+                                        <a href="#" class="trash" onclick="DeleteList(@item.Id)"><span>Delete</span></a>
+                                        <a href="#" onclick="AddPartialView(@item.Id)" class="pencil"><span>Edit</span></a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,96 @@
+@media (max-width:1300px)   {
+.modal-addGuestPopup {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+}
+  @media (max-width:1024px)   {
+    .menu_opener i{font-size: 33px;}
+    .menu_opener{display: block;}
+    .closebtn{display:  block;}
+.left_container {
+    height: calc(100vh - 0px);
+    flex-basis: calc(30% - 0px);
+    max-width: calc(30% - 0px);
+}
+.right_container {
+    width: 100%;
+}
+.bottom_menu_right ul li span {
+    background: #FFFFFF;
+    width: 50px;
+    line-height: 50px;
+    font-size: 20px;
+    height: 50px;
+    text-align: center;
+    border-radius: 100px;
+}
+.bottom_menu_right ul li {
+    padding: 20px 8px;
+ }
+ .filtered_rooms_container .rooms_block {
+    padding: 20px 0px 10px 0px;
+}
+ /* The side navigation menu */
+.left_container {
+  height: 100%; /* 100% Full-height */
+  width: 0; /* 0 width - change this with JavaScript */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Stay on top */
+  top: 0; /* Stay at the top */
+  left: 0;
+  z-index: 100;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding: 0; /* Place content 60px from the top */
+  transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+          flex-basis: calc(50% - 0px);
+          max-width: calc(50% - 0px);
+}
+.left_container .top_menu ul{padding: 20px;}
+.left_container .room_details_box{margin: 20px;}
+.left_container .bottom_menu{padding: 20px;}
+
+
+/* Position and style the close button (top right corner) */
+.left_container .closebtn {
+ position: absolute;
+        top: -9px;
+        right: 17px;
+        font-size: 36px;
+        margin-left: 50px;
+        color: #ff1a2d;
+  margin-left: 50px;
+}
+.bottom_menu_right {
+    position: fixed;
+    bottom: 0px;
+}
+}
+
+
+@media (max-width: 600px) {
+   .left_container {
+  height: 100%; /* 100% Full-height */
+  width: 0; /* 0 width - change this with JavaScript */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Stay on top */
+  top: 0; /* Stay at the top */
+  left: 0;
+  z-index: 100;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding: 0; /* Place content 60px from the top */
+  transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+          flex-basis: calc(80% - 0px);
+          max-width: calc(80% - 0px);
+}
+.right_container .top_rooms ul {
+    display: block;}
+    .right_container .top_rooms{overflow: hidden;}
+    .right_container .top_rooms ul li {
+ 
+    width: 45%;
+    margin: 7px 8px;
+    float: left;
+}
+.filtered_rooms_container{margin-bottom: 170px;}
+}

@@ -1,0 +1,176 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Enquiry List";
+}
+
+
+
+
+
+<div class="admin_wrapper">
+    @Html.Partial("_reports/_leftNavigationReports")
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Show Room Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="general_form">
+                        <div class="mb-3">
+                            <label class="form-label">From</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">To</label>
+                            <input type="date" class="form-control">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="right_container">
+        <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>FeedbackReport</h2>
+                    <div class="btn_add">
+                        <a href="#" class="addNew_btn">Export Excel</a>
+                    </div>
+                </div>
+                <div class="resposive_table">
+                    <table class="table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">id</th>
+                                <th scope="col">ClientID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">FeedBackDate</th>
+                                <th scope="col">Q1_1</th>
+                                <th scope="col">Q1_2</th>
+                                <th scope="col">Q1_3</th>
+                                <th scope="col">Q1_4</th>
+                                <th scope="col">Q1_5</th>
+                                <th scope="col">Q2</th>
+                                <th scope="col">Q3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>NAAD003310</td>
+                                <td>Ms. sunita Karnani</td>
+                                <td>10-02-2018 01:31:36</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>Had a great experience,</td>
+                                <td>NO</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2</th>
+                                <td>NAAD003310</td>
+                                <td>Ms. sunita Karnani</td>
+                                <td>10-02-2018 01:31:36</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>Had a great experience,</td>
+                                <td>NO</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3</th>
+                                <td>NAAD003310</td>
+                                <td>Ms. sunita Karnani</td>
+                                <td>10-02-2018 01:31:36</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>Had a great experience,</td>
+                                <td>NO</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">4</th>
+                                <td>NAAD003310</td>
+                                <td>Ms. sunita Karnani</td>
+                                <td>10-02-2018 01:31:36</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>Had a great experience,</td>
+                                <td>NO</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">5</th>
+                                <td>NAAD003310</td>
+                                <td>Ms. sunita Karnani</td>
+                                <td>10-02-2018 01:31:36</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>Had a great experience,</td>
+                                <td>NO</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">6</th>
+                                <td>NAAD003310</td>
+                                <td>Ms. sunita Karnani</td>
+                                <td>10-02-2018 01:31:36</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>Had a great experience,</td>
+                                <td>NO</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">7</th>
+                                <td>NAAD003310</td>
+                                <td>Ms. sunita Karnani</td>
+                                <td>10-02-2018 01:31:36</td>
+                                <td>4</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>Had a great experience,</td>
+                                <td>NO</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+
+       
+
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+
+

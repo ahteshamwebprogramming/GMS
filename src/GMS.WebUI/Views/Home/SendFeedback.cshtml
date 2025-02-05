@@ -1,0 +1,212 @@
+﻿@{
+    ViewData["Title"] = "Send Feedback";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="admin_wrapper">
+    @Html.Partial("_feedback/_leftNavigationFeedback")
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Show Room Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="general_form">
+                        <div class="mb-3">
+                            <label class="form-label">From</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">To</label>
+                            <input type="date" class="form-control">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="right_container">
+        <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Send Feed back</h2>
+                    <div class="btn_add">
+                        <a href="#" class="addNew_btn">Export Excel</a>
+                    </div>
+                </div>
+                <div class="resposive_table">
+                    <table class="table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Guest ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Mobile Number</th>
+                                <th scope="col">Gender</th>
+                                <th scope="col">Age</th>
+                                <th scope="col">DOJ</th>
+                                <th scope="col">Service(s)</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Add Feedback</th>
+                                <th scope="col">Send Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">NAAD005101</th>
+                                <td>Ms. Sakshi Agarwal</td>
+                                <td>+917000116394</td>
+                                <td>Male</td>
+                                <td>33</td>
+                                <td>19/08/2024</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>Approved</td>
+                                <td><span class="cleaned">Add Feedback</span></td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="pencil"><span>Send Feedback</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NAAD005101</th>
+                                <td>Ms. Sakshi Agarwal</td>
+                                <td>+917000116394</td>
+                                <td>Male</td>
+                                <td>33</td>
+                                <td>19/08/2024</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>Approved</td>
+                                <td><span class="cleaned">Add Feedback</span></td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="pencil"><span>Send Feedback</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NAAD005101</th>
+                                <td>Ms. Sakshi Agarwal</td>
+                                <td>+917000116394</td>
+                                <td>Male</td>
+                                <td>33</td>
+                                <td>19/08/2024</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>Approved</td>
+                                <td><span class="cleaned">Add Feedback</span></td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="pencil"><span>Send Feedback</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NAAD005101</th>
+                                <td>Ms. Sakshi Agarwal</td>
+                                <td>+917000116394</td>
+                                <td>Male</td>
+                                <td>33</td>
+                                <td>19/08/2024</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>Approved</td>
+                                <td><span class="cleaned">Add Feedback</span></td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="pencil"><span>Send Feedback</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NAAD005101</th>
+                                <td>Ms. Sakshi Agarwal</td>
+                                <td>+917000116394</td>
+                                <td>Male</td>
+                                <td>33</td>
+                                <td>19/08/2024</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>Approved</td>
+                                <td><span class="cleaned">Add Feedback</span></td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="pencil"><span>Send Feedback</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NAAD005101</th>
+                                <td>Ms. Sakshi Agarwal</td>
+                                <td>+917000116394</td>
+                                <td>Male</td>
+                                <td>33</td>
+                                <td>19/08/2024</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>Approved</td>
+                                <td><span class="cleaned">Add Feedback</span></td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="pencil"><span>Send Feedback</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NAAD005101</th>
+                                <td>Ms. Sakshi Agarwal</td>
+                                <td>+917000116394</td>
+                                <td>Male</td>
+                                <td>33</td>
+                                <td>19/08/2024</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>Approved</td>
+                                <td><span class="cleaned">Add Feedback</span></td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="pencil"><span>Send Feedback</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">NAAD005101</th>
+                                <td>Ms. Sakshi Agarwal</td>
+                                <td>+917000116394</td>
+                                <td>Male</td>
+                                <td>33</td>
+                                <td>19/08/2024</td>
+                                <td>THE NAAD EXPERIENCE</td>
+                                <td>Approved</td>
+                                <td><span class="cleaned">Add Feedback</span></td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="pencil"><span>Send Feedback</span></a>
+
+                                    </div>
+                                </td>
+                            </tr>
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+

@@ -1,0 +1,36 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.MasterScheduleViewModel
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Start Time</th>
+                <th scope="col">End Time</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Task Name</th>
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.MasterScheduleWithChildren != null)
+                {
+                    foreach (var item in Model.MasterScheduleWithChildren)
+                    {
+                        <tr>
+                            <td scope="row">@item.StartTime.ToString("HH:mm")</td>
+                            <td>@item.EndTime.ToString("HH:mm")</td>
+                            <td>@item.Duration.ToString("HH:mm")</td>
+                            <td>@item.TaskName</td>
+                            <td>
+                                <div class="actions_btns">
+                                    <a href="#" class="trash" onclick="DeleteList(@item.Id)"><span>Delete</span></a>
+                                    <a href="#" onclick="AddGuestsPartialView(@item.Id)" class="pencil"><span>Edit</span></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

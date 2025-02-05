@@ -1,0 +1,320 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, GMSCore
+ @model GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild
+@{
+    Layout = null;
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Index</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" > -->
+
+
+    <link rel="stylesheet" href="~/assets/css/main.css" />
+    <link rel="stylesheet" href="~/main.css" />
+    <link rel="stylesheet" href="~/assets/css/responsive.css" />
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <!-- Owl Stylesheets -->
+    <link rel="stylesheet" href="~/assets/carousel/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/assets/carousel/owl.theme.default.min.css">
+
+    <link href="~/assets/calender/calendar.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+    <style>
+        .fc-event-title {
+            white-space: nowrap; /* Allow the text to wrap */
+            overflow: hidden; /* Hide overflowing content */
+            text-overflow: ellipsis; /* Add ellipsis for overflowed text (optional) */
+            display: block !important; /* Ensure it behaves like a block element */
+            max-height: 3em; /* Limit height to avoid excessive wrapping */
+            word-wrap: break-word; /* Break long words */
+        }
+    </style>
+</head>
+<body>
+
+    <input style="display:none" type="button" id="btnOpenAddMasterSchedilePopup" data-bs-toggle="modal" data-bs-target="#addMasterSchedulePopup" value="Button Modal Test" />
+
+    <div class="admin_wrapper">
+        <div class="left_container" id="left_container">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <div class="top_menu">
+                <ul>
+                    <li>
+                        <a href="guest.html">
+                            <figure><i class="bi bi-house-fill"></i></figure>
+                            <h4>Guest List</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <figure><i class="bi bi-person-fill-add"></i></figure>
+                            <h4>Add User</h4>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Add New Room</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="general_form">
+                            <div class="mb-3">
+                                <label class="form-label">Room Number</label>
+                                <input type="text" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Room Type</label>
+                                <select class="form-control">
+                                    <option>Room Type</option>
+                                    <option>Room Type</option>
+                                    <option>Room Type</option>
+                                    <option>Room Type</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Room Size</label>
+                                <input type="text" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Bed Type</label>
+                                <input type="text" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Remark</label>
+                                <textarea class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Upload Photos</label>
+                                <input type="file" class="form-control">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right_container">
+            <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+            <!-- filtered rooms Start-->
+            <div class="filtered_rooms_container">
+                <div class="therapiesList_table_list">
+                    <div class="title_area d-flex_item ">
+                        <h2> @Model.UniqueNo </h2>
+                        <h3>@Model.CustomerName</h3>
+                        <h3>@Model?.DateOfArrival?.ToString("dd/MMM/yyyy")-@Model?.DateOfDepartment?.ToString("dd/MMM/yyyy")</h3>
+                    </div>
+                    <div class="promotional">@Model?.RoomTypeName</div>
+                    <div class="cal_box">
+                        @* <div id="dp"></div> *@
+                        <div id="calendar" style="margin-top:30px;">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- filtered rooms end-->
+            @Html.Partial("_bottomNavigation1")
+
+        </div>
+    </div>
+
+    @*Create Event*@
+
+
+
+    <div class="modal fade" id="crtevents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered  modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Schedule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" asp-action="CreateEvent" asp-controller="Calendar"  method="post" enctype="multipart/form-data" id="AddSchedule">
+
+                        <div class="row">
+                            <div class="col-sm-6 col-lg-4">
+                                <label>Start Date</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="date" class="form-control time" id="StartDate" name="StartDate" placeholder="Begin Time" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <label>Start Time</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="time" class="form-control time" id="begintime" name="StartTime" placeholder="Begin Time" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <label>Duration</label>
+                                <input id="durationPicker" type="text" placeholder="Select duration" class="form-control" name="Duration">
+                                <input type="hidden" id="selectedDuration" />
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <label>End Date</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="text" class="form-control time" id="EndDate" name="EndDate" placeholder="" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4">
+                                <label>End Time</label>
+                                <div class="form-group">
+                                    <input type="time" class="form-control time" id="endtime" name="EndTime" placeholder="End Time" readonly />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" id="eventTitle">
+
+                            <div class="col-lg-4">
+                                <label>Task Name</label>
+                                <select class="form-control" name="TaskId" placeholder="Task Name" onchange="GetEmployeeByTaskId(this)">
+                                    <option value="0">Select Task</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-4">
+                                <label>Employee Name</label>
+                                <select class="form-control" name="EmployeeId">
+                                    <option value="0">Select Employee</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label>Resource</label>
+                                <select class="form-control" name="ResourceId">
+                                    <option value="0">Select Resource</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <input type="hidden" value="" name="ScheduleId" />
+                        @* <div class="row footer-wrapper" style="margin-top:10px;">
+                        <div class="col-12 text-right">
+                        <button type="button" class="btn btn-primary" id="btnadd" onclick="CreateEvent()">Save</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                        <input type="hidden" id="hidemailreminders" />
+                        <input type="hidden" id="hidUploadFileValue" />
+                        </div>
+                        </div> *@
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btnadd" onclick="CreateEvent()">Add Schedule</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <input type="hidden" id="GuestSchedule_GuestId" value="@Model?.Id" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" type="script"></script>
+    <!-- javascript -->
+    @* <script src="~/assets/carousel/jquery.min.js"></script> *@
+    <script type="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js" type="script"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    @* calender *@
+
+
+
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/index.global.min.js'></script>
+    <script src='//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js'></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="~/assets/calender/calendar.js"></script>
+    <script src="~/customjs/guests/guestschedule.js"></script>
+    @* <script src="~/assets/app/daypilot-all.min.js"></script> *@
+
+    <script type="text/javascript">
+
+        // const dp = new DayPilot.Calendar("dp", {
+        //     startDate: DayPilot.Date.today(),
+        //     viewType: "Week",
+        //     onTimeRangeSelected: async args => {
+        //         const modal = await DayPilot.Modal.prompt("New event name:", "Event");
+        //         if (modal.canceled) return;
+        //         dp.events.add({
+        //             start: args.start,
+        //             end: args.end,
+        //             id: DayPilot.guid(),
+        //             text: "Event"
+        //         });
+        //         dp.clearSelection();
+        //         dp.message("Created");
+        //     }
+        // });
+        // dp.init();
+
+        // const app = {
+        //     init() {
+        //         this.addEventHandlers();
+        //         this.loadEventData();
+        //     },
+        //     addEventHandlers() {
+        //         document.querySelector("#previous").addEventListener("click", (ev) => {
+        //             ev.preventDefault();
+        //             dp.startDate = dp.startDate.addDays(-7);
+        //             dp.update();
+        //         });
+        //         document.querySelector("#next").addEventListener("click", (ev) => {
+        //             ev.preventDefault();
+        //             dp.startDate = dp.startDate.addDays(7);
+        //             dp.update();
+        //         });
+        //     },
+        //     loadEventData() {
+        //         const events = [
+        //             {
+        //                 start: DayPilot.Date.today().firstDayOfWeek().addDays(1).addHours(2),
+        //                 end: DayPilot.Date.today().firstDayOfWeek().addDays(1).addHours(2),
+        //                 id: DayPilot.guid(),
+        //                 text: "Therepy"
+        //             }
+        //         ];
+        //         dp.update({ events });
+        //     }
+        // };
+        // app.init();
+
+    </script>
+    @* <script src="~/assets/app/app.js"></script> *@
+
+</body>
+</html>

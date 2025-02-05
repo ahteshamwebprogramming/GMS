@@ -1,0 +1,238 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Resources";
+}
+
+
+
+
+<div class="admin_wrapper">
+    @Html.Partial("_services/_leftNavigationServices")
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Therepy</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="general_form">
+                        <div class="mb-3">
+                            <label class="form-label">Therepies</label>
+                            <select class="form-control">
+                                <option>Therepy1</option>
+                                <option>Therepy1</option>
+                                <option>Therepy1</option>
+                                <option>Therepy1</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-control">
+                                <option>Role1</option>
+                                <option>Role1</option>
+                                <option>Role1</option>
+                                <option>Role1</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duration (HH:MM)</label>
+                            <input type="time" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="right_container">
+        <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Therapies List</h2>
+                    <div class="btn_add">
+                        <a href="#" class="addNew_btn" data-bs-toggle="modal" data-bs-target="#exampleModal">Add New</a>
+                    </div>
+                </div>
+                <div class="resposive_table">
+                    <table class="table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Therapy Name</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Durations (HH:MM)</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Body Scrub</th>
+                                <td>Therapist</td>
+                                <td>01:00</td>
+                                <td>
+                                    <div class="actions_btns">
+                                        <a href="#" class="trash"><span>Delete</span></a>
+                                        <a href="#" class="pencil"><span>Edit</span></a>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+
+        
+
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+
+

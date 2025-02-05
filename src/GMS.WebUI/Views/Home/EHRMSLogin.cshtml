@@ -1,0 +1,38 @@
+﻿@model List<GMS.Infrastructure.Models.EHRMSLogin.EHRMSLoginDTO>
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+
+<table class="table table-bordered table-striped">
+
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>FName</th>
+            <th>Mname</th>
+            <th>IsActive</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.LoginId</td>
+                        <td>@item.WorkerCode</td>
+                        <td>@item.UserPassword</td>
+                        <td>@item.IsActive</td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>

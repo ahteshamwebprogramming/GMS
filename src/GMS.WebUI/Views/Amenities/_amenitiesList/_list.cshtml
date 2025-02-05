@@ -1,0 +1,34 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.AmenitiesViewModel
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Category</th>                
+                <th scope="col">Name</th>                
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.Amenitiess != null)
+                {
+                    foreach (var item in Model.Amenitiess)
+                    {
+                        <tr>
+                            <td scope="row">@item.AmenityCategory</td>                            
+                            <td scope="row">@item.AmenityName</td>                            
+                            <td>
+                                <div class="actions_btns">
+                                    @{
+                                        <a href="#" class="trash" onclick="DeleteList(@item.Id)"><span>Delete</span></a>
+                                        <a href="#" onclick="AddPartialView(@item.Id)" class="pencil"><span>Edit</span></a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>
