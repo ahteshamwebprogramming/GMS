@@ -15,6 +15,7 @@ public class TblCheckLists
     public int? ChkOut { get; set; }
     public bool IsMandatory { get; set; }
     public string? ChecklistType { get; set; }
+    public string? Description { get; set; }
 
-    public int? RoomRank { get; set; }
+    public bool? IsActive { get; set; }
 }

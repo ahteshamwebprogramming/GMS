@@ -42,6 +42,7 @@ public class UnitOfWork : IUnitOfWork
         AmenetiesCategory = new AmenetiesCategoryRepository(_dapperDBContext);
         Amenities = new AmenitiesRepository(_dapperDBContext);
         RoomAmeneties = new RoomAmenetiesRepository(_dapperDBContext);
+        TblCheckLists = new TblCheckListsRepository(_dapperDBContext);
     }
 
 
@@ -72,5 +73,6 @@ public class UnitOfWork : IUnitOfWork
     public IAmenetiesCategoryRepository AmenetiesCategory { get; private set; }
     public IAmenitiesRepository Amenities { get; private set; }
     public IRoomAmenetiesRepository RoomAmeneties { get; private set; }
+    public ITblCheckListsRepository TblCheckLists { get; private set; }
 
 }

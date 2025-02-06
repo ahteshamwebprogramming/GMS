@@ -11,7 +11,7 @@
             <div class="modal-body">
                 <form class="general_form" id="AddCheckList">
                     <input type="hidden" name="ID" value="@Model?.TblCheckLists?.ID" dbCol />
-                    <input type="hidden" name="ChecklistType" value="CheckIn" dbCol />
+                    <input type="hidden" name="ChecklistType" value="CheckOut" dbCol />
                     <div class="mb-3 form-group">
                         <label class="form-label required">Check List</label>
                         <input type="text" class="form-control requiredInput" name="Chklist" dbCol value="@Model?.TblCheckLists?.Chklist">
@@ -27,7 +27,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="AddCheckList('CheckIn')">Add Check List</button>
+                <button type="button" class="btn btn-primary" onclick="AddCheckList('CheckOut')">Add Check List</button>
             </div>
         </div>
     </div>

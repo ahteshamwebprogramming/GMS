@@ -31,5 +31,6 @@ public interface IUnitOfWork
     public IAmenetiesCategoryRepository AmenetiesCategory { get; }
     public IAmenitiesRepository Amenities { get; }
     public IRoomAmenetiesRepository RoomAmeneties { get; }
+    public ITblCheckListsRepository TblCheckLists { get; }
 
 }

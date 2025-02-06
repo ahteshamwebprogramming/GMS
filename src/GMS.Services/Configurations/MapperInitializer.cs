@@ -40,5 +40,6 @@ public class MapperInitializer : Profile
         CreateMap<AmenetiesCategory, AmenetiesCategoryDTO>().ReverseMap();
         CreateMap<Amenities, AmenitiesDTO>().ReverseMap();
         CreateMap<RoomAmeneties, RoomAmenetiesDTO>().ReverseMap();
+        CreateMap<TblCheckLists, TblCheckListsDTO>().ReverseMap();
     }
 }

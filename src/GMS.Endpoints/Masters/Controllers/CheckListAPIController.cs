@@ -25,13 +25,13 @@ public class CheckListAPIController : ControllerBase
 
 
 
-    public async Task<IActionResult> CheckInList()
+    public async Task<IActionResult> CheckInList(CheckListViewModel inputDTO)
     {
         try
         {
-
-            string query = @"Select * from TblCheckLists";
-            var res = await _unitOfWork.RoomType.GetTableData<tblCity>(query);
+            string sQuery = @"Select * from TblCheckLists where isactive=1 and CheckListType=@CheckListType";
+            var sParam = new { @CheckListType = inputDTO.CheckListType };
+            var res = await _unitOfWork.RoomType.GetTableData<TblCheckListsDTO>(sQuery, sParam);
             return Ok(res);
         }
         catch (Exception ex)
@@ -41,32 +41,32 @@ public class CheckListAPIController : ControllerBase
         }
     }
 
-    public async Task<IActionResult> RoomTypeById(int Id)
+    public async Task<IActionResult> CheckListById(int Id)
     {
         try
         {
-            string query = "Select * from RoomType where Id=@Id";
+            string query = "Select * from TblCheckLists where Id=@Id";
             var param = new { @Id = Id };
-            var res = await _unitOfWork.RoomType.GetEntityData<RoomTypeDTO>(query, param);
+            var res = await _unitOfWork.RoomType.GetEntityData<TblCheckListsDTO>(query, param);
             return Ok(res);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error in retriving Attendance {nameof(RoomTypeById)}");
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(CheckListById)}");
             throw;
         }
     }
-    public async Task<IActionResult> DeleteRoomType(int Id)
+    public async Task<IActionResult> Delete(int Id)
     {
         try
         {
-            string query = "Select * from RoomType where Id=@Id";
+            string query = "Select * from TblCheckLists where Id=@Id";
             var param = new { @Id = Id };
-            RoomType? dto = await _unitOfWork.RoomType.GetEntityData<RoomType>(query, param);
+            TblCheckLists? dto = await _unitOfWork.TblCheckLists.GetEntityData<TblCheckLists>(query, param);
             if (dto != null)
             {
-                dto.Status = 0;
-                var updated = await _unitOfWork.RoomType.UpdateAsync(dto);
+                dto.IsActive = false;
+                var updated = await _unitOfWork.TblCheckLists.UpdateAsync(dto);
                 if (updated)
                 {
                     return Ok(dto);
@@ -76,26 +76,26 @@ public class CheckListAPIController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error in retriving Attendance {nameof(DeleteRoomType)}");
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(Delete)}");
             throw;
         }
     }
 
-    public async Task<IActionResult> Add(RoomTypeDTO dto)
+    public async Task<IActionResult> Add(TblCheckListsDTO dto)
     {
         try
         {
-            string eQuery = "Select * from RoomType where Status=@Status and RType=@RType";
-            var eParam = new { @Status = 1, @RType = dto.Rtype };
-            var exists = await _unitOfWork.RoomType.IsExists(eQuery, eParam);
+            string eQuery = "Select * from TblCheckLists where Chklist=@Chklist and IsActive=1 and ChecklistType=@ChecklistType";
+            var eParam = new { @Chklist = dto.Chklist, @ChecklistType = dto.ChecklistType };
+            var exists = await _unitOfWork.TblCheckLists.IsExists(eQuery, eParam);
             if (exists)
             {
-                return BadRequest("This Room Type already exists");
+                return BadRequest("This Attribute already exists");
             }
             else
             {
-                dto.Id = await _unitOfWork.RoomType.AddAsync(_mapper.Map<RoomType>(dto));
-                if (dto.Id > 0)
+                dto.ID = await _unitOfWork.TblCheckLists.AddAsync(_mapper.Map<TblCheckLists>(dto));
+                if (dto.ID > 0)
                 {
                     return Ok(dto);
                 }
@@ -112,32 +112,34 @@ public class CheckListAPIController : ControllerBase
         }
     }
 
-    public async Task<IActionResult> Update(RoomTypeDTO dto)
+    public async Task<IActionResult> Update(TblCheckListsDTO dto)
     {
         try
         {
-            string eQuery = "Select * from RoomType where Status=@Status and RType=@RType and Id!=@Id";
-            var eParam = new { @Status = 1, @Id = dto.Id, @RType = dto.Rtype };
+            string eQuery = "Select * from TblCheckLists where Chklist=@Chklist and IsActive=1 and ChecklistType=@ChecklistType and ID!=@ID";
+            var eParam = new { @Chklist = dto.Chklist, @ChecklistType = dto.ChecklistType, @ID = dto.ID };
 
-            var exists = await _unitOfWork.RoomType.IsExists(eQuery, eParam);
+            var exists = await _unitOfWork.TblCheckLists.IsExists(eQuery, eParam);
             if (exists)
             {
-                return BadRequest("This range already exists");
+                return BadRequest("This attribute already exists");
             }
             else
             {
-                string query = "Select * from RoomType where Id=@Id";
-                var param = new { @Id = dto.Id };
-                RoomType? roomType = await _unitOfWork.RoomType.GetEntityData<RoomType>(query, param);
-                if (roomType != null)
+                string query = "Select * from TblCheckLists where Id=@Id";
+                var param = new { @Id = dto.ID };
+                TblCheckLists? checkLists = await _unitOfWork.TblCheckLists.GetEntityData<TblCheckLists>(query, param);
+                if (checkLists != null)
                 {
-                    roomType.Rtype = dto.Rtype;
-                    roomType.RoomRank = dto.RoomRank;
+                    checkLists.Chklist = dto.Chklist;
+                    checkLists.IsMandatory = dto.IsMandatory;
+                    checkLists.ChecklistType = dto.ChecklistType;
+                    checkLists.Description = dto.Description;
 
-                    var updated = await _unitOfWork.RoomType.UpdateAsync(roomType);
+                    var updated = await _unitOfWork.TblCheckLists.UpdateAsync(checkLists);
                     if (updated)
                     {
-                        return Ok(roomType);
+                        return Ok(checkLists);
                     }
                 }
                 return BadRequest("Unable to update right now");

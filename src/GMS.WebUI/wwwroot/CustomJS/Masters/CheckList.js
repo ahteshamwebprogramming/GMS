@@ -27,24 +27,25 @@ function ListPartialView(CheckListType) {
 
 
 
-function AddPartialView(Id = 0) {
+function AddPartialView(ChecklistType, Id = 0) {
 
     let inputDTO = {};
-    inputDTO.Id = Id;
+    inputDTO.ID = Id;
+    inputDTO.ChecklistType = ChecklistType;
 
     BlockUI();
 
     $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
-        url: '/RoomType/AddPartialView',
+        url: '/CheckList/AddPartialView',
         data: JSON.stringify(inputDTO),
         cache: false,
         dataType: "html",
         success: function (data, textStatus, jqXHR) {
             UnblockUI();
             $('#div_AddPartial').html(data);
-            $("#btnOpenAddRoomTypePopup").click();
+            $("#btnOpenCheckInListPopup").click();
         },
         error: function (result) {
             UnblockUI();
@@ -60,13 +61,13 @@ function isValidForm(formId) {
 
     return res;
 }
-function AddRoomType() {
+function AddCheckList(type) {
 
-    if (!isValidForm("AddRoomType")) {
+    if (!isValidForm("AddCheckList")) {
         return;
     }
 
-    let AddForm = $("#AddRoomType").find("[dbCol]");
+    let AddForm = $("#AddCheckList").find("[dbCol]");
 
     let dataVM = new FormData();
 
@@ -126,7 +127,7 @@ function AddRoomType() {
 
     BlockUI();
     $.ajax({
-        url: '/RoomType/Save',
+        url: '/CheckList/Save',
         data: dataVM,
         //dataType: "json",
         async: false,
@@ -134,11 +135,11 @@ function AddRoomType() {
         processData: false,
         contentType: false,
         success: function (response) {
-            $("#addRoomTypePopup").find(".btn-close").click();
+            $("#addCheckInListPopup").find(".btn-close").click();
             if (response != null) {
                 Swal.fire({ title: '', text: "Added Successfully!", icon: 'success', confirmButtonText: 'OK' }).then((result) => {
                     if (result.isConfirmed) {
-                        ListPartialView();
+                        ListPartialView(type);
                     }
                 });
             }
@@ -158,7 +159,7 @@ function AddRoomType() {
 
 
 
-function DeleteList(Id) {
+function DeleteList(type,Id) {
     Swal.fire({ title: 'Are you sure?', text: "This will get deleted permanently!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!', customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' }, buttonsStyling: false }).then(function (result) {
         if (result.value) {
             BlockUI();
@@ -167,12 +168,12 @@ function DeleteList(Id) {
             };
             $.ajax({
                 type: "POST",
-                url: "/RoomType/Delete",
+                url: "/CheckList/Delete",
                 contentType: 'application/json',
                 data: JSON.stringify(inputDTO),
                 success: function (data) {
                     $successalert("", "Deleted Successful!");
-                    ListPartialView();
+                    ListPartialView(type);
                     UnblockUI();
                 },
                 error: function (error) {
