@@ -31,4 +31,8 @@ public class RoomAllocation
     public DateTime? ModifiedDate { get; set; }
 
     public int? Shared { get; set; }
+    public DateTime? CheckInDate { get; set; }
+    public DateTime? CheckOutDate { get; set; }
+    public string? Reason { get; set; }
+
 }

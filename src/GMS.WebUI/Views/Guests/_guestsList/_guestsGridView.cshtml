@@ -48,13 +48,24 @@
                             </ul>
                         </a>
                         @{
-                            if (item.InHouse)
+                            if (item.CheckInStatus == 1)
                             {
-                                <a href="javascript:void(0)" onclick="OpenCheckInListModal(@item.Id,'@item.UniqueNo','@item.CustomerName')" class="checkin_btn">Check Out</a>
+                                <a href="javascript:void(0)" class="checkin_btn">Add Room</a>
+                            }
+                            else if (item.CheckInStatus == 2)
+                            {
+                                <a href="javascript:void(0)" onclick="OpenCheckInListModal(@item.Id,'@item.UniqueNo','@item.CustomerName')" class="checkin_btn">Check In</a>
+                            }
+                            else if (item.CheckInStatus == 3)
+                            {
+                                <a href="javascript:void(0)" onclick="OpenCheckOutListModalPartialView(@item.Id,'@item.UniqueNo','@item.CustomerName')" class="checkin_btn">Check Out</a>
+                            }
+                            else if (item.CheckInStatus == 4)
+                            {
+                                <a href="javascript:void(0)" class="checkin_btn">Review</a>
                             }
                             else
                             {
-                                <a href="javascript:void(0)" onclick="OpenCheckInListModal(@item.Id,'@item.UniqueNo','@item.CustomerName')" class="checkin_btn">Checkin</a>
                             }
                         }
                     </div>

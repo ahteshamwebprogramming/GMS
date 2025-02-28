@@ -30,6 +30,38 @@
     });
 }
 
+function AddNewRoomPartialView1(Id = 0) {
+    let inputDTO = {}
+    inputDTO.Id = Id;
+    BlockUI();
+    $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: '/Rooms/AddNewRoomPartialView',
+        data: JSON.stringify(inputDTO),
+        cache: false,
+        dataType: "html",
+        success: function (data, textStatus, jqXHR) {
+            UnblockUI();
+            $('#div_AddNewRoomPartial').html(data);
+            $("#btnModalAddNewRoom").click();
+            $('.numeric').forceNumeric();
+
+            $('#amenitiesDropdown').select2({
+                dropdownParent: $('#ModalAddNewRoom'),
+                placeholder: "Select Amenities",
+                allowClear: true,
+                width: "100%",
+                minimumResultsForSearch: 0
+            });
+        },
+        error: function (result) {
+            UnblockUI();
+            $erroralert("Transaction Failed!", result.responseText);
+        }
+    });
+}
+
 function AddRoom() {
 
     if (!isValidateForm("FormAddNewRoom")) {
@@ -168,6 +200,33 @@ function ViewRoomImagesPartialView(Id) {
         error: function (result) {
             UnblockUI();
             $erroralert("Transaction Failed!", result.responseText);
+        }
+    });
+}
+
+
+function DeleteRoom(Id) {
+    Swal.fire({ title: 'Are you sure?', text: "This will get deleted permanently!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!', customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' }, buttonsStyling: false }).then(function (result) {
+        if (result.value) {
+            BlockUI();
+            var inputDTO = {
+                "Id": Id
+            };
+            $.ajax({
+                type: "POST",
+                url: "/Rooms/DeleteRoom",
+                contentType: 'application/json',
+                data: JSON.stringify(inputDTO),
+                success: function (data) {
+                    $successalert("", "Deleted Successful!");
+                    ListPartialView();
+                    UnblockUI();
+                },
+                error: function (error) {
+                    $erroralert("Transaction Failed!", error.responseText + '!');
+                    UnblockUI();
+                }
+            });
         }
     });
 }

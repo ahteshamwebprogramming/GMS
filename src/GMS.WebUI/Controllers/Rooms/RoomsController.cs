@@ -136,6 +136,8 @@ public class RoomsController : Controller
         }
         return PartialView("_roomLocking/_addNewRoom", dto);
     }
+
+    
     public async Task<IActionResult> ViewRoomAmenetiesPartialView([FromBody] RoomsDTO inputDTO)
     {
         RoomLockingViewModel? dto = new RoomLockingViewModel();
@@ -398,5 +400,14 @@ public class RoomsController : Controller
         {
             return StatusCode(StatusCodes.Status500InternalServerError, ex);
         }
+    }
+    public async Task<IActionResult> DeleteRoom([FromBody] RoomsDTO inputDTO)
+    {
+        if (inputDTO.Id > 0)
+        {
+            var res = await _roomLockingAPIController.DeleteRoom(inputDTO.Id);
+            return res;
+        }
+        return BadRequest("Unable to delete right now");
     }
 }

@@ -197,6 +197,26 @@ public class RoomLockingAPIController : ControllerBase
             throw;
         }
     }
+    public async Task<IActionResult> DeleteRoom(int Id)
+    {
+        try
+        {
+            string query = @"Select * from Rooms where ID=@Id";
+            var param = new { @Id = Id };
+            var res = await _unitOfWork.Rooms.GetEntityData<GMS.Core.Entities.Rooms>(query, param);
+            if (res != null)
+            {
+                res.Status = 0;
+                await _unitOfWork.Rooms.UpdateAsync(res);
+            }
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRooms)}");
+            throw;
+        }
+    }
     public async Task<IActionResult> UnHold(RoomLockDAO? inputDTO)
     {
         try

@@ -482,6 +482,38 @@ function OpenCheckInListModal(Id, Code, Name) {
     $("#CheckListModal").find("[name='lblCheckInModelGuestCode']").text(Code);
     $("#CheckListModal").find("[name='lblCheckInModelGuestName']").text(Name);
 }
+//function OpenCheckOutListModal(Id, Code, Name) {
+//    $("#btnCheckOutListModal").click();
+//    $("#CheckOutListModal").find("[name='CheckInModelGuestId']").val(Id);
+//    $("#CheckOutListModal").find("[name='lblCheckInModelGuestCode']").text(Code);
+//    $("#CheckOutListModal").find("[name='lblCheckInModelGuestName']").text(Name);
+//}
+
+function OpenCheckOutListModalPartialView(Id, Code, Name) {
+
+    let inputDTO = {};
+    inputDTO.Id = Id;
+
+    BlockUI();
+
+    $.ajax({
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        url: '/Guests/GuestCheckOutPartialView',
+        data: JSON.stringify(inputDTO),
+        cache: false,
+        dataType: "html",
+        success: function (data, textStatus, jqXHR) {
+            UnblockUI();
+            $('#div_GuestsCheckOutPartialView').html(data);
+            $("#btnCheckOutListModal").click();
+        },
+        error: function (result) {
+            UnblockUI();
+            $erroralert("Transaction Failed!", result.responseText);
+        }
+    });
+}
 
 function SubmitChecklist() {
     let inputDTO = {};
@@ -505,8 +537,43 @@ function SubmitChecklist() {
         success: function (data) {
             /*$successalert("", "Transaction Successful!");*/
             UnblockUI();
-            alert("Checked in");
+            //alert("Checked in");
+            $successalert("", "Checked In Successfully!");
             $("#CheckListModal").find(".btn-close").click();
+
+            GuestsListPartialView();
+        },
+        error: function (error) {
+            /* $erroralert("Transaction Failed!", error.responseText + '!');*/
+            UnblockUI();
+        }
+    });
+}
+
+function SubmitCheckOutList() {
+    let inputDTO = {};
+    if ($('#GrvdCheckOut tbody tr td input').is(':checked')) {
+        var ids = [];
+        $('#GrvdCheckOut tbody tr td input[type="checkbox"]:checked').each(function () {
+            ids.push(this.id.split('_')[1]);
+        });
+        inputDTO["checklist"] = ids.toString(',');
+        inputDTO["ID"] = $("#CheckOutListModal").find("[name='CheckInModelGuestId']").val();
+        inputDTO["opt"] = 0;
+    }
+    else
+        alert('Please check atleast one');
+
+    $.ajax({
+        type: "POST",
+        url: "/Guests/CheckOutGuest",
+        contentType: 'application/json',
+        data: JSON.stringify(inputDTO),
+        success: function (data) {
+            UnblockUI();
+            $successalert("", "Checked Out Successfully!");
+            $("#CheckOutListModal").find(".btn-close").click();
+            GuestsListPartialView();
         },
         error: function (error) {
             /* $erroralert("Transaction Failed!", error.responseText + '!');*/

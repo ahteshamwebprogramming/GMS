@@ -158,4 +158,5 @@ public class MemberDetailsWithChild
     public string? GroupId { get; set; }
     public bool PaxCompleted { get; set; }
     public bool InHouse { get; set; }
+    public int? CheckInStatus { get; set; }
 }

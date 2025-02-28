@@ -23,7 +23,7 @@ function initOnRoomAdd() {
                 ctrl.append('<option value="0">Select Room</option>');
                 if (data != null) {
                     for (var i = 0; i < data.length; i++) {
-                        ctrl.append('<option value="' + data[i].roomNo + '">Room No - ' + data[i].roomNo + (data[i].shared == true ? " Shared With(" + sharedWith + ")" : "") + '</option>');
+                        ctrl.append('<option value="' + data[i].roomNo + '">Room No - ' + data[i].roomNo + (data[i].shared == true ? " Shared With(" + data[i].sharedWith + ")" : "") + '</option>');
                     }
                 }
             },
@@ -75,6 +75,8 @@ function AllocateRoom() {
         contentType: 'application/json',
         data: JSON.stringify(inputDTO),
         success: function (data) {
+            $("#exampleModal").find(".btn-close").click();
+            $successalert("Room Changed Successfully");
             UnblockUI();
         },
         error: function (error) {

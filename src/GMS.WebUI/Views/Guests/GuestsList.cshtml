@@ -47,7 +47,7 @@
 
         @Html.Partial("_guests/_leftNavigationGuests")
 
-        
+
         <!-- Modal -->
         <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog1 modal-dialog-centered">
@@ -124,6 +124,13 @@
                 </div>
             </div>
         </div>
+
+
+
+        <div id="div_GuestsCheckOutPartialView">
+            @Html.Partial("_guestsList/_guestsCheckOut")
+        </div>
+
 
 
 
@@ -204,11 +211,12 @@
 
     <script src="~/assets/CustomComponents/CountryCode/js/intlTelInput.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/customjs/common.js"></script>
     <script src="~/customjs/guestsfinallist/guestslist.js"></script>
     <script src="~/customjs/guests/addroom.js"></script>
     <script src="~/customjs/validation.js"></script>
+    <script src="~/customjs/guests/GuestsSearch.js"></script>
     <script>
         $(document).ready(function () {
             var owl = $('.premium_rooms_slider');
@@ -243,12 +251,12 @@
                         loop: false
                     }
                 }/*,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        onInitialized : function(){
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    if($('.owl-item').first().hasClass('active'))
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      $('.owl-prev').hide();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    else
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      $('.owl-prev').show();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  } */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                onInitialized : function(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            if($('.owl-item').first().hasClass('active'))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              $('.owl-prev').hide();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            else
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              $('.owl-prev').show();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          } */
             })
         })
 

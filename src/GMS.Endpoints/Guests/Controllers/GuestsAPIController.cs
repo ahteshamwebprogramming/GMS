@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace GMS.Endpoints.Guests;
 
@@ -359,7 +360,36 @@ public class GuestsAPIController : ControllerBase
                 searchFilter += $" ) ";
                 if (Action == "Data")
                 {
-                    selectData = $" (select count(*) from [dbo].[GuestsChkList] where GuestID=md.Id) InHouse,md.PaxCompleted,md.GroupId,md.DOB, md.Id\r\n,UniqueNo\r\n,CustomerName\r\n,MobileNo\r\n,s.Service\r\n,mc.Category\r\n,md.Photo\r\n,IsApproved\r\n,md.CreationDate\r\n,md.Status\r\n,g.Gender GenderName\r\n,(select count(1) from [dbo].[GuestsChkList] gcl where gcl.GuestID=md.Id) IsChecked\r\n,md.Age\r\n,md.Nationality ,DateOfArrival ,DateOfDepartment,rt.RType\r\n,(SELECT STUFF((SELECT ', ' + convert(nvarchar(20),'Room No '+ra.RNumber) \r\n               FROM RoomAllocation ra \r\n               WHERE ra.GuestID = md.Id \r\n                 AND ra.FD = md.DateOfArrival \r\n                 AND ra.TD = md.DateOfDepartment \r\n                 AND ra.IsActive = 1 \r\n               FOR XML PATH('')), 1, 2, '')) AS RoomNumber   ";
+                    //selectData = $" (select count(*) from [dbo].[GuestsChkList] where GuestID=md.Id) InHouse,(Case when ra.RNumber is null then 1 when ra.CheckInDate is null then 2 when CheckOutDate is null then 3 else 4 end) CheckInStatus,md.PaxCompleted,md.GroupId,md.DOB, md.Id\r\n,UniqueNo\r\n,CustomerName\r\n,MobileNo\r\n,s.Service\r\n,mc.Category\r\n,md.Photo\r\n,IsApproved\r\n,md.CreationDate\r\n,md.Status\r\n,g.Gender GenderName\r\n,(select count(1) from [dbo].[GuestsChkList] gcl where gcl.GuestID=md.Id) IsChecked\r\n,md.Age\r\n,md.Nationality ,DateOfArrival ,DateOfDepartment,rt.RType\r\n,(SELECT STUFF((SELECT ', ' + convert(nvarchar(20),'Room No '+ra.RNumber) \r\n               FROM RoomAllocation ra \r\n               WHERE ra.GuestID = md.Id \r\n                 AND ra.FD = md.DateOfArrival \r\n                 AND ra.TD = md.DateOfDepartment \r\n                 AND ra.IsActive = 1 \r\n               FOR XML PATH('')), 1, 2, '')) AS RoomNumber   ";
+                    selectData = $@" (select count(*) from [dbo].[GuestsChkList] where GuestID=md.Id) InHouse
+                                    ,(Case when ra.RNumber is null then 1 when ra.CheckInDate is null then 2 when CheckOutDate is null then 3 else 4 end) CheckInStatus
+                                    ,md.PaxCompleted
+                                    ,md.GroupId
+                                    ,md.DOB
+                                    ,md.Id
+                                    ,UniqueNo
+                                    ,CustomerName
+                                    ,MobileNo
+                                    ,s.Service
+                                    ,mc.Category
+                                    ,md.Photo
+                                    ,IsApproved
+                                    ,md.CreationDate
+                                    ,md.Status
+                                    ,g.Gender GenderName
+                                    ,(select count(1) from [dbo].[GuestsChkList] gcl where gcl.GuestID=md.Id) IsChecked
+                                    ,md.Age
+                                    ,md.Nationality 
+                                    ,DateOfArrival 
+                                    ,DateOfDepartment
+                                    ,rt.RType
+                                    ,(SELECT STUFF((SELECT ', ' + convert(nvarchar(20),'Room No '+ra.RNumber) 
+                                        FROM RoomAllocation ra 
+                                        WHERE ra.GuestID = md.Id 
+                                        --AND ra.FD = md.DateOfArrival 
+                                        --AND ra.TD = md.DateOfDepartment 
+                                        AND ra.IsActive = 1 
+                                        FOR XML PATH('')), 1, 2, '')) AS RoomNumber   ";
                     orderBy += $" order by md.Id ";
                     if (inputDTO != null && inputDTO.PageNumber != null && inputDTO.PageSize != null)
                     {
@@ -371,7 +401,7 @@ public class GuestsAPIController : ControllerBase
                     selectData = $"count(1)";
                 }
 
-                query = $"Select {selectData} FROM MembersDetails md\r\nleft Join RoomType rt on md.RoomType=rt.ID\r\nleft Join GenderMaster g on md.Gender=g.Id\r\nleft join MstCategory mc on mc.ID=md.ServiceId\r\nleft join Services s on s.ID=md.CatID ";
+                query = $"Select {selectData} FROM MembersDetails md\r\nleft Join RoomType rt on md.RoomType=rt.ID\r\nleft Join GenderMaster g on md.Gender=g.Id\r\nleft join MstCategory mc on mc.ID=md.ServiceId\r\nleft join Services s on s.ID=md.CatID Left Join RoomAllocation ra on md.Id=ra.GuestID";
 
                 if (inputDTO?.GuestsListType == "Current")
                 {
@@ -721,7 +751,19 @@ public class GuestsAPIController : ControllerBase
             var existsRes = await _unitOfWork.RoomAllocation.IsExists(existsQuery, existsParameters);
             if (existsRes)
             {
-                return BadRequest("Room already allocated");
+                var roomAllocationExisting = await _unitOfWork.RoomAllocation.GetEntityData<RoomAllocation>(existsQuery, existsParameters);
+                if (roomAllocationExisting != null)
+                {
+                    roomAllocationExisting.Rnumber = inputDTO.Rnumber;
+                    roomAllocationExisting.Shared = inputDTO.Shared;
+                    roomAllocationExisting.ModifiedDate = System.DateTime.Now;
+                    var updated = await _unitOfWork.RoomAllocation.UpdateAsync(roomAllocationExisting);
+                    if (updated)
+                    {
+                        return Ok("Room Updated Successfully");
+                    }
+                }
+                return BadRequest("Room already allocated. Unable to change room right now");
             }
             MembersDetails membersDetails = await _unitOfWork.MembersDetails.FindByIdAsync(inputDTO.GuestId ?? default(int));
             inputDTO.Rtype = membersDetails.RoomType;
@@ -753,6 +795,124 @@ public class GuestsAPIController : ControllerBase
             var res1 = await _unitOfWork.GMSFinalGuest.ExecuteStoredProcedureAsync<Object>(spName, spParameters);
 
             return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            throw;
+        }
+    }
+    public async Task<IActionResult> GuestCheckInNew(MedicalSoultion_GuestCheckList inputDTO)
+    {
+        try
+        {
+            string eQuery = "Select * from roomallocation where GuestID=@GuestID";
+            var eParam = new { @GuestID = inputDTO.ID };
+
+            var eCheckInExists = await _unitOfWork.GenOperations.IsExists(eQuery, eParam);
+            if (eCheckInExists)
+            {
+                var guestsCheckinDetails = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>(eQuery, eParam);
+                if (guestsCheckinDetails != null)
+                {
+                    if (guestsCheckinDetails.CheckInDate != null)
+                    {
+                        return BadRequest("Guest already checked in");
+                    }
+                    else
+                    {
+                        guestsCheckinDetails.CheckInDate = DateTime.Now;
+                        var checkInDateUpdated = await _unitOfWork.RoomAllocation.UpdateAsync(guestsCheckinDetails);
+                        if (checkInDateUpdated)
+                        {
+                            string spName = "CheckInGuest";
+                            var spParameters = new { @opt = inputDTO.opt, @checkList = inputDTO.checklist, @GuestId = inputDTO.ID };
+                            var res = await _unitOfWork.GMSFinalGuest.ExecuteStoredProcedureAsync<Object>(spName, spParameters);
+
+                            spName = "PopulateGuestSchedule_Latest";
+                            var spSchParam = new { @GuestId = inputDTO.ID };
+                            var res1 = await _unitOfWork.GMSFinalGuest.ExecuteStoredProcedureAsync<Object>(spName, spSchParam);
+
+                            return Ok("Checked In Successfully");
+                        }
+                        else
+                        {
+                            return BadRequest("Unable to check in right now");
+                        }
+                    }
+                }
+                else
+                {
+                    return BadRequest("Please assign a room to this guest first");
+                }
+            }
+            else
+            {
+                return BadRequest("Please assign a room to this guest first");
+            }
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            throw;
+        }
+    }
+
+    public async Task<IActionResult> GuestCheckOut(MedicalSoultion_GuestCheckList inputDTO)
+    {
+        try
+        {
+            string eQuery = "Select * from roomallocation where GuestID=@GuestID";
+            var eParam = new { @GuestID = inputDTO.ID };
+
+            var eCheckInExists = await _unitOfWork.GenOperations.IsExists(eQuery, eParam);
+            if (eCheckInExists)
+            {
+                var guestsCheckinDetails = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>(eQuery, eParam);
+                if (guestsCheckinDetails != null)
+                {
+                    if (guestsCheckinDetails.CheckInDate == null)
+                    {
+                        return BadRequest("Guest is not checked in");
+                    }
+                    else if (guestsCheckinDetails.CheckOutDate == null)
+                    {
+                        guestsCheckinDetails.CheckOutDate = DateTime.Now;
+                        guestsCheckinDetails.Td = DateTime.Now.ToString("yyyy-MM-dd hh:mm");
+                        var checkOutDateUpdated = await _unitOfWork.RoomAllocation.UpdateAsync(guestsCheckinDetails);
+                        if (checkOutDateUpdated)
+                        {
+                            string spName = "CheckInGuest";
+                            var spParameters = new { @opt = 1, @checkList = inputDTO.checklist, @GuestId = inputDTO.ID };
+                            var res = await _unitOfWork.GMSFinalGuest.ExecuteStoredProcedureAsync<Object>(spName, spParameters);
+
+                            //spName = "PopulateGuestSchedule_Latest";
+                            //var spSchParam = new { @GuestId = inputDTO.ID };
+                            //var res1 = await _unitOfWork.GMSFinalGuest.ExecuteStoredProcedureAsync<Object>(spName, spSchParam);
+
+                            return Ok("Checked Out Successfully");
+                        }
+                        else
+                        {
+                            return BadRequest("Unable to check out right now");
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest("Guest is already checked out");
+                    }
+                }
+                else
+                {
+                    return BadRequest("Please assign a room to this guest first");
+                }
+            }
+            else
+            {
+                return BadRequest("Please assign a room to this guest first");
+            }
+
         }
         catch (Exception ex)
         {
@@ -814,9 +974,45 @@ public class GuestsAPIController : ControllerBase
                                 Left Join MembersDetails md on ra.GuestID=md.Id
                                 where RNumber=@RoomNumber
                                 and IsActive=1 and cast(@DateValue as date) between cast(ra.FD as date) and cast(ra.TD as date)";
-            var sParam = new { @RoomNumber= RoomNumber , @DateValue };
+            var sParam = new { @RoomNumber = RoomNumber, @DateValue };
             var res = await _unitOfWork.ResourceMaster.GetTableData<MembersDetailsDTO>(sQuery, sParam);
             return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            throw;
+        }
+    }
+    public async Task<IActionResult> GetGuestCheckList(string CheckListType)
+    {
+        try
+        {
+            string sQuery = "Select * from TblCheckLists where IsActive=1 and ChecklistType=@ChecklistType";
+            var sParam = new { @ChecklistType = CheckListType };
+            var res = await _unitOfWork.GenOperations.GetTableData<TblCheckListsDTO>(sQuery, sParam);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            throw;
+        }
+    }
+    public async Task<IActionResult> GetGuestDetailsByPhoneNumber(MembersDetailsDTO inputDTO)
+    {
+        try
+        {
+            if (inputDTO != null && !String.IsNullOrEmpty(inputDTO.PhNo))
+            {
+                string sQuery = @"Select CustomerName,gm.Gender GenderName , md.* from MembersDetails md
+                                Left Join GenderMaster gm on md.Gender=gm.Id
+                                where MobileNo like '%'+@Phno+'%'";
+                var sParam = new { @Phno = inputDTO.PhNo };
+                var res = await _unitOfWork.MembersDetails.GetTableData<MemberDetailsWithChild>(sQuery, sParam);
+                return Ok(res);
+            }
+            return BadRequest();
         }
         catch (Exception ex)
         {

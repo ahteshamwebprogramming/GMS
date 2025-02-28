@@ -7,6 +7,7 @@ using GMS.Infrastructure.Models.Guests;
 using GMS.Infrastructure.Models.Masters;
 using GMS.Infrastructure.Models.Rooms;
 using GMS.Infrastructure.ViewModels.Guests;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -106,6 +107,25 @@ public class GuestsController : Controller
         }
 
         return PartialView("_guestsList/_guestsGridView", viewModel);
+    }
+
+    public async Task<IActionResult> GuestCheckOutPartialView([FromBody] MembersDetailsDTO inputDTO)
+    {
+        GuestsCheckListViewModel viewModel = new GuestsCheckListViewModel();
+
+        var guestRes = await _guestsAPIController.GetGuestByIdWithChild(inputDTO.Id);
+        if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        {
+            viewModel.MemberDetails = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        }
+
+        var resCheckListOut = await _guestsAPIController.GetGuestCheckList("CheckOut");
+        if (resCheckListOut != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resCheckListOut).StatusCode == 200)
+        {
+            viewModel.CheckListOut = (List<TblCheckListsDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)resCheckListOut).Value;
+        }
+
+        return PartialView("_guestsList/_guestsCheckOut", viewModel);
     }
 
 
@@ -522,7 +542,7 @@ public class GuestsController : Controller
                         }
                     }
                 }
-                
+
 
 
                 return res;
@@ -650,7 +670,12 @@ public class GuestsController : Controller
 
     public async Task<IActionResult> CheckInGuest([FromBody] MedicalSoultion_GuestCheckList inputDTO)
     {
-        var res = await _guestsAPIController.GuestCheckIn(inputDTO);
+        var res = await _guestsAPIController.GuestCheckInNew(inputDTO);
+        return res;
+    }
+    public async Task<IActionResult> CheckOutGuest([FromBody] MedicalSoultion_GuestCheckList inputDTO)
+    {
+        var res = await _guestsAPIController.GuestCheckOut(inputDTO);
         return res;
     }
 
@@ -720,5 +745,84 @@ public class GuestsController : Controller
     {
         var res = await _guestsAPIController.GetResourcesByTaskId(inputDTO.Id);
         return res;
+    }
+    public async Task<IActionResult> SearchGuestDetailsByPhoneNumber([FromBody] MembersDetailsDTO inputDTO)
+    {
+        List<MemberDetailsWithChild>? memberDetails = new List<MemberDetailsWithChild>();
+        var res = await _guestsAPIController.GetGuestDetailsByPhoneNumber(inputDTO);
+        if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+        {
+            memberDetails = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+        }
+        return PartialView("_guestsList/_guestsSearch", memberDetails);
+    }
+    public async Task<IActionResult> GuestDetailsByIdForGuestFormDetails([FromBody] MembersDetailsDTO inputDTO)
+    {
+        GuestsListViewModel viewModel = new GuestsListViewModel();
+
+        if (inputDTO != null && inputDTO.Id > 0)
+        {
+            var guestRes = await _guestsAPIController.GetGuestById(inputDTO.Id);
+            if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+            {
+                viewModel.MemberDetail = (MembersDetailsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+            }
+        }
+        var genderRes = await _genderAPIController.GenderList();
+        if (genderRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)genderRes).StatusCode == 200)
+        {
+            viewModel.Genders = (List<GenderMasterDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)genderRes).Value;
+        }
+        var countryRes = await _countryAPIController.CountryList();
+        if (countryRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)countryRes).StatusCode == 200)
+        {
+            viewModel.Countries = (List<TblCountriesDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)countryRes).Value;
+        }
+        var stateRes = await _countryAPIController.StateList();
+        if (stateRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)stateRes).StatusCode == 200)
+        {
+            viewModel.States = (List<TblStateDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)stateRes).Value;
+        }
+        var cityRes = await _countryAPIController.CityList();
+        if (cityRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)cityRes).StatusCode == 200)
+        {
+            viewModel.Cities = (List<tblCityDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)cityRes).Value;
+        }
+        var servicesRes = await _servicesAPIController.ServicesList();
+        if (servicesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).StatusCode == 200)
+        {
+            viewModel.Services = (List<ServicesDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).Value;
+        }
+        var roomTypes = await _roomTypeAPIController.List();
+        if (roomTypes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomTypes).StatusCode == 200)
+        {
+            viewModel.RoomTypes = (List<RoomTypeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomTypes).Value;
+        }
+        var carTypes = await _carTypeAPIController.CarTypeList();
+        if (carTypes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)carTypes).StatusCode == 200)
+        {
+            viewModel.CarTypes = (List<CarTypeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)carTypes).Value;
+        }
+        var brandAwarenesses = await _brandAwarenessAPIController.BrandAwarenessList();
+        if (brandAwarenesses != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)brandAwarenesses).StatusCode == 200)
+        {
+            viewModel.BrandAwarenesses = (List<BrandAwarenessDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)brandAwarenesses).Value;
+        }
+        var leadeSources = await _leadSourceAPIController.LeadSourceList();
+        if (leadeSources != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)leadeSources).StatusCode == 200)
+        {
+            viewModel.LeadSources = (List<LeadSourceDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)leadeSources).Value;
+        }
+        var channelCodes = await _channelCodeAPIController.ChannelCodeList();
+        if (channelCodes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)channelCodes).StatusCode == 200)
+        {
+            viewModel.ChannelCodes = (List<ChannelCodeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)channelCodes).Value;
+        }
+        var guarenteeCodes = await _guaranteeCodeAPIController.GuaranteeCodeList();
+        if (guarenteeCodes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guarenteeCodes).StatusCode == 200)
+        {
+            viewModel.GuaranteeCodes = (List<GuaranteeCodeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)guarenteeCodes).Value;
+        }
+        return PartialView("_guestsList/_guestsFormDetails", viewModel);
     }
 }
