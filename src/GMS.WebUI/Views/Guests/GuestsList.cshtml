@@ -2,222 +2,279 @@
 @addTagHelper *, GMSCore
 @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
 @{
-    Layout = null;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Guest Manager";
 }
 
-<!doctype html>
-<html lang="en">
-<head>
-    <title>Index</title>
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap CSS -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" > -->
-
-    <link rel="stylesheet" href="~/assets/css/main.css" />
-    <link rel="stylesheet" href="~/assets/css/responsive.css" />
-    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-    <!-- Owl Stylesheets -->
-    <link rel="stylesheet" href="~/assets/carousel/owl.carousel.min.css">
-    <link rel="stylesheet" href="~/assets/carousel/owl.theme.default.min.css">
-    <link href="~/assets/customcomponents/datetimepicker/build/jquery.datetimepicker.min.css" rel="stylesheet" />
-    <link href="~/assets/CustomComponents/CountryCode/css/intlTelInput.css" rel="stylesheet" />
-    <link href="~/customcss/common.css" rel="stylesheet" />
-    <link href="~/customcss/validation.css" rel="stylesheet" />
-
-    <style>
-        .guest_info_attention {
-            border: #c54014 solid 2px !important;
-            background: #c54014 !important;
-        }
-
-        .user_icon_attention {
-            border: #ffffff solid 2px !important;
-            background: #ad3f1a !important;
-        }
-    </style>
-
-</head>
-<body>
-
-    <div class="admin_wrapper">
-
-        @Html.Partial("_guests/_leftNavigationGuests")
+<link href="~/customcss/common.css" rel="stylesheet" />
 
 
-        <!-- Modal -->
-        <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog1 modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Upload Documents</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form class="general_form">
-                            <div class="mb-3">
-                                <label class="form-label">Uplaod Addhaar Card</label>
-                                <input type="file" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Uplaod Medical Report</label>
-                                <input type="file" class="form-control">
-                            </div>
+<style>
+    .guest_info_attention {
+        /* border: #c54014 solid 2px !important; */
+        background: #f07167 !important;
+    }
 
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Upload</button>
-                    </div>
-                </div>
-            </div>
+    .user_icon_attention {
+        /*  border: #ffffff solid 2px !important; */
+        /*   background: #ad3f1a !important; */
+    }
+
+    /* Search Container */
+    .search-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .search-input {
+        width: 0;
+        opacity: 0;
+        padding: 10px;
+        border: none;
+        outline: none;
+        border-radius: 20px;
+        transition: width 0.4s ease, opacity 0.3s ease;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-container.active .search-input {
+        width: 200px; /* Adjust width as needed */
+        opacity: 1;
+        padding-left: 15px;
+    }
+
+    .search-icon {
+        border: none;
+        background: none;
+        margin-left: 10px;
+        margin-right: 10px;
+        font-size: 20px;
+    }
+
+    .search-input:focus {
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .raiods_btn_filters .form-check-input {
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<div class="admin_wrapper">
+
+    @Html.Partial("_crm/_leftNavigationCRM")
+
+    <!-- Modal -->
+    @* <div class="modal fade" id="CheckListModal" tabindex="-1" aria-labelledby="CheckListModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog1 modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title" id="CheckListModalLabel">Guest Check-in Checklist</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <!-- Modal -->
-        <!-- Modal -->
-        <input type="button" id="btnCheckListModal" style="display:none" data-bs-toggle="modal" data-bs-target="#CheckListModal" />
-        <div class="modal fade" id="CheckListModal" tabindex="-1" aria-labelledby="CheckListModal" aria-hidden="true">
-            <div class="modal-dialog modal-dialog1 modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="CheckListModalLabel">Gust Check-in Checklist</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="col-sm-12 row mb-3 form-group txt-mag-inn">
-                            <input type="hidden" name="CheckInModelGuestId" value="0" />
-                            <div class="col-sm-3 text-center padding-txt">
-                                <label for="PH.NO>">Guest ID</label>
-                            </div>
-                            <div class="col-sm-3 text-center padding-txt">
-                                <label for="PH.NO>" name="lblCheckInModelGuestCode">Naad00011</label>
-                            </div>
-                            <div class="col-sm-3 text-center padding-txt">
-                                <label for="PH.NO>">Name</label>
-                            </div>
-                            <div class="col-sm-3 text-center padding-txt">
-                                <label for="PH.NO" name="lblCheckInModelGuestName">Asif Ali</label>
-                            </div>
-                        </div>
-                        <table class="table table-bordered" id="Grvd">
-                            <thead>
-                                <tr style="background-color: #b5a38b;">
-                                    <th>
-                                        <div class="checkbox">
-                                            <input type="checkbox" value="">
-                                        </div>
-                                    </th>
-                                    <th>Description</th>
-
-                                </tr>
-                            </thead>
-                            <tbody><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_1" value=""></div></td><td>Room Key Issued</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_2" value=""></div></td><td> Internet WIFI credentials</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_3" value=""></div></td><td>Dress Issued / Arranged</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_4" value=""></div></td><td>Room Ready</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_5" value=""></div></td><td>Treatment Schedule Shared</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_6" value=""></div></td><td>Doctor Scheduled Shared</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_7" value=""></div></td><td>Food Schedule Shared</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_8" value=""></div></td><td>Luggage tagged</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_9" value=""></div></td><td>Documents &amp; TnC signed by Customer</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_10" value=""></div></td><td>ID veriffied</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_1005" value=""></div></td><td>Room is not Ready yet</td></tr></tbody>
-                        </table>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="SubmitChecklist()">Check-in</button>
-                    </div>
-                </div>
-            </div>
+        <div class="modal-body">
+        <div class="col-sm-12 row mb-3 form-group txt-mag-inn">
+        <input type="hidden" name="CheckInModelGuestId" value="0" />
+        <div class="col-sm-3 text-center padding-txt">
+        <label for="PH.NO>">UHID</label>
         </div>
-
-
-
-        <div id="div_GuestsCheckOutPartialView">
-            @Html.Partial("_guestsList/_guestsCheckOut")
+        <div class="col-sm-3 text-center padding-txt">
+        <label for="PH.NO>" name="lblCheckInModelGuestCode">RYRE47298742</label>
         </div>
-
-
-
-
-
-        <div id="div_AddRoomPartial">
-            @* @Html.Partial("_guestsList/_addRoom") *@
+        <div class="col-sm-3 text-center padding-txt">
+        <label for="PH.NO>">Name</label>
         </div>
-
-
-
-        <input type="button" style="display:none" id="btnModelAddGuests" data-bs-toggle="modal" data-bs-target="#addGuestPopup" />
-        <!-- Add Guests Model -->
-        <div id="div_AddGuestsListPartial">
-            @Html.Partial("_guestsList/_addGuests")
+        <div class="col-sm-3 text-center padding-txt">
+        <label for="PH.NO" name="lblCheckInModelGuestName">Asif Ali</label>
         </div>
-
-
-
-        <!-- Modal -->
-        <div class="right_container">
-            <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
-
-            <!-- filtered rooms Start-->
-            <div class="filtered_rooms_container">
-                <div class="therapiesList_table_list">
-                    <div class="title_area">
-                        <div class="raiods_btn_filters">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" onclick="setActive('All')" value="option1">
-                                <label class="form-check-label" for="inlineRadio1">All</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" checked type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="setActive('Current')" value="option2">
-                                <label class="form-check-label" for="inlineRadio2">Current</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="setActive('Upcoming')" value="option2">
-                                <label class="form-check-label" for="inlineRadio2">Upcoming</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" onclick="setActive('Previous')" value="option3">
-                                <label class="form-check-label" for="inlineRadio3">Previous</label>
-                            </div>
-                            <input type="hidden" id="GuestsListType" />
-                        </div>
-                        <div class="btn_add btn_add2">
-                            <input type="search" oncancel="GuestsListPartialView()" onchange="GuestsListPartialView()" placeholder="Search..." class="txt" name="GuestsSearchKeyword" id="GuestsSearchKeyword">
-                        </div>
-                    </div>
-
-                    <div id="div_ViewGuestsListPartial">
-                        @* @Html.Partial("_guestsList/_guestsGridView", Model) *@
-                    </div>
-
-                </div>
-            </div>
-            <!-- filtered rooms end-->
-            @Html.Partial("_bottomNavigation1")
-
         </div>
+        <table class="table table-bordered" id="Grvd">
+        <thead>
+        <tr style="background-color: #b5a38b;">
+        <th>
+        <div class="checkbox">
+        <input type="checkbox" value="">
+        </div>
+        </th>
+        <th>Description</th>
+
+        </tr>
+        </thead>
+        <tbody><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_1" value=""></div></td><td>Room Key Issued</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_2" value=""></div></td><td> Internet WIFI credentials</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_3" value=""></div></td><td>Dress Issued / Arranged</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_4" value=""></div></td><td>Room Ready</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_5" value=""></div></td><td>Treatment Schedule Shared</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_6" value=""></div></td><td>Doctor Scheduled Shared</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_7" value=""></div></td><td>Food Schedule Shared</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_8" value=""></div></td><td>Luggage tagged</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_9" value=""></div></td><td>Documents &amp; TnC signed by Customer</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_10" value=""></div></td><td>ID veriffied</td></tr><tr><td><div class="checkbox"><input type="checkbox" checked="checked" id="ChkID_1005" value=""></div></td><td>Room is not Ready yet</td></tr></tbody>
+        </table>
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="SubmitChecklist()">Check-in</button>
+        </div>
+        </div>
+        </div>
+        </div> *@
+
+    <div id="div_GuestsCheckInPartialView">
+        @Html.Partial("_guestsList/_guestsCheckIn")
+    </div>
+
+    <div id="div_GuestsCheckOutPartialView">
+        @Html.Partial("_guestsList/_guestsCheckOut")
     </div>
 
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" type="script"></script>
-    <!-- javascript -->
-    <script src="assets/carousel/jquery.min.js"></script>
-    <script type="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js" type="script"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
-    <script src="assets/carousel/owl.carousel.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
 
-    <script type="text/javascript" src="~/assets/CustomComponents/DateTimePicker/jquery.datetimepicker.js"></script>
-    <script type="text/javascript" src="~/assets/CustomComponents/DateTimePicker/build/jquery.datetimepicker.full.js"></script>
+    <div id="div_AddRoomPartial">
+        @* @Html.Partial("_guestsList/_addRoom") *@
+    </div>
 
-    <script src="~/assets/CustomComponents/CountryCode/js/intlTelInput.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="~/customjs/common.js"></script>
+
+
+    <input type="button" style="display:none" id="btnModelAddGuests" data-bs-toggle="modal" data-bs-target="#addGuestPopup" />
+    <!-- Add Guests Model -->
+    <div id="div_AddGuestsListPartial">
+        @Html.Partial("_guestsList/_addGuests")
+    </div>
+    <!-- Add Guests Model -->
+    <div id="div_BillingPartial">
+        @Html.Partial("_guestsList/_billing")
+    </div>
+    <div id="div_SettlementPartial">
+        @Html.Partial("_guestsList/_settlement")
+    </div>
+    <div id="div_AddServicesPartial">
+        @Html.Partial("_guestsList/_addServices")
+    </div>
+
+    <div id="div_ChangeReservationDetailsPartial">
+        @Html.Partial("_guestsList/_changeReservationDetails")
+    </div>
+
+    <!-- Modal -->
+    <div class="right_container">
+
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <div class="raiods_btn_filters">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" onclick="setActive('All')" value="option1">
+                            <label class="form-check-label" for="inlineRadio1">All</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" checked type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="setActive('Current')" value="option2">
+                            <label class="form-check-label" for="inlineRadio2">Current</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="setActive('Upcoming')" value="option2">
+                            <label class="form-check-label" for="inlineRadio2">Upcoming</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" onclick="setActive('Previous')" value="option3">
+                            <label class="form-check-label" for="inlineRadio3">Previous</label>
+                        </div>
+                        <input type="hidden" id="GuestsListType" />
+                    </div>
+                    <div class="btn_add btn_add2">
+                        @* <input type="search" oncancel="GuestsListPartialView()" onchange="GuestsListPartialView()" placeholder="Search..." class="txt" name="GuestsSearchKeyword" id="GuestsSearchKeyword"> *@
+                        <div class="search-container">
+                            <input type="search" oncancel="GuestsListPartialView()" onchange="GuestsListPartialView()" class="search-input" placeholder="Search..." name="GuestsSearchKeyword" id="GuestsSearchKeyword">
+                            <button class="search-icon"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="div_ViewGuestsListPartial">
+                    @* @Html.Partial("_guestsList/_guestsGridView", Model) *@
+                </div>
+
+
+                <!-- Modal -->
+                <input type="button" style="display:none" value="Open Feedback" id="btnAddFeedbackPopup" data-bs-toggle="modal" data-bs-target="#modalFeedbackPopup" />
+                <div class="modal fade" id="modalFeedbackPopup" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog1 modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Client Feedback</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="GuestId_FeedbackForm" />
+                                <div class="row">
+                                    <div class="justify-content-center justify-content-sm-around" style="text-align:center">
+                                        <input type="button" class="btn btn-primary" value="Feedback Now" onclick="OpenReviewAndFeedbackStream()" style="background-color: #61a39f !important;" />
+                                        <input type="button" class="btn btn-primary" value="Send Email" style="background-color: #5fadc8 !important;" />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog1 modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Upload Documents</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form class="general_form">
+                                    <div class="mb-3">
+                                        <label class="form-label">Uplaod Addhaar Card</label>
+                                        <input type="file" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Uplaod Medical Report</label>
+                                        <input type="file" class="form-control">
+                                    </div>
+
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Upload</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal -->
+
+
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+        @Html.Partial("_bottomNavigation1")
+
+    </div>
+</div>
+
+
+@section Scripts {
     <script src="~/customjs/guestsfinallist/guestslist.js"></script>
     <script src="~/customjs/guests/addroom.js"></script>
-    <script src="~/customjs/validation.js"></script>
     <script src="~/customjs/guests/GuestsSearch.js"></script>
+    <script src="~/customjs/guests/Billing.js"></script>
+    <script src="~/customjs/guests/AddServices.js"></script>
+    <script src="~/customjs/guests/Settlement.js"></script>
+    <script src="~/customjs/guests/RatePlans.js"></script>
+    <script src="~/customjs/guests/ChangeReservationDetails.js"></script>
+
     <script>
+        let dateOfDepartment;
+        let dateOfArrival;
+
+        const searchContainer = document.querySelector(".search-container");
+        const searchIcon = document.querySelector(".search-icon");
+
+        searchIcon.addEventListener("click", () => {
+            searchContainer.classList.toggle("active");
+        });
         $(document).ready(function () {
             var owl = $('.premium_rooms_slider');
             owl.owlCarousel({
@@ -251,12 +308,12 @@
                         loop: false
                     }
                 }/*,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                onInitialized : function(){
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            if($('.owl-item').first().hasClass('active'))
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              $('.owl-prev').hide();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            else
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              $('.owl-prev').show();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          } */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        onInitialized : function(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    if($('.owl-item').first().hasClass('active'))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      $('.owl-prev').hide();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    else
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      $('.owl-prev').show();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  } */
             })
         })
 
@@ -362,18 +419,7 @@
 
 
 
-        /* Set the width of the side navigation to 250px */
-        function openNav() {
-            document.getElementById("left_container").style.width = "450px";
-        }
-
-        /* Set the width of the side navigation to 0 */
-        function closeNav() {
-            document.getElementById("left_container").style.width = "0";
-        }
-
 
     </script>
 
-</body>
-</html>
+}

@@ -509,7 +509,8 @@ function CreateEvent() {
         let inputDTO = {};
 
         inputDTO.TaskId = $("#AddSchedule").find("[name='TaskId']").val();
-        inputDTO.EmployeeId = $("#AddSchedule").find("[name='EmployeeId']").val();
+        inputDTO.EmployeeId1 = $("#AddSchedule").find("[name='EmployeeId1']").val();
+        inputDTO.EmployeeId2 = $("#AddSchedule").find("[name='EmployeeId2']").val();
         inputDTO.ResourceId = $("#AddSchedule").find("[name='ResourceId']").val();
 
         // Format StartDateTime (Start Date + Start Time)
@@ -528,6 +529,7 @@ function CreateEvent() {
         inputDTO.Id = $("#AddSchedule").find("[name='ScheduleId']").val();
         inputDTO.Id = inputDTO.Id == "" ? 0 : inputDTO.Id;
         inputDTO.GuestId = $("#GuestSchedule_GuestId").val(); // If you have a guest ID field
+        inputDTO.SessionId = $("#AddSchedule").find("[name='NoOfDays']").val();
         $.ajax({
             type: 'POST',
             url: '/Guests/CreateGuestScheduleByCalendar',
@@ -606,15 +608,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     initFlatPickerDuration();
                     initCreateEventModal();
-
+                    SetDates(null, null, 'AddEvent');
                 }
             }
         },
 
-        select: function () {
+        select: function (info) {
             $('#crtevents').modal('toggle');
             initFlatPickerDuration();
             initCreateEventModal();
+            SetDates(info.startStr, null, 'DateClick');
         },
         //events: eventsCustom,
         events: function (fetchInfo, successCallback, failureCallback, start, end) {
@@ -728,11 +731,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                     let guestSchedule = data.guestSchedule;
-                    $taskId.attr("employeeid", guestSchedule.employeeId)
+                    $taskId.attr("employeeid1", guestSchedule.employeeId1)
+                    $taskId.attr("employeeid2", guestSchedule.employeeId2)
                     $taskId.attr("resourceid", guestSchedule.resourceId)
                     $("#AddSchedule").find("[name='TaskId']").val(guestSchedule.taskId);
 
-                    $taskId.change();
+                    //$taskId.change();
 
                     eventid = guestSchedule.id;
                     let guestId = guestSchedule.guestId;
@@ -745,10 +749,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     endDate = moment(endDateT, "YYYY-MM-DD").format("DD-MMM-YYYY");
                     endTime = endTimeT;
 
-
-
                     duration = moment(guestSchedule.duration, "HH:mm").format("HH:mm");
-                    $("#AddSchedule").find("[name='Duration']").val(duration);
+                    $taskId.attr("duration", duration)
+                    //durationPicker.setDate(duration, false);
+                    //$("#AddSchedule").find("[name='Duration']").val(duration);
 
                     $("#AddSchedule").find("[name='TaskName']").val(taskName);
                     $("#AddSchedule").find("[name='StartDate']").val(startDate);
@@ -767,6 +771,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     $("#AddSchedule").find("[name='ScheduleId']").val(eventid);
 
 
+                    $taskId.change();
                     //des = data.description;
                     //startdate = event.event._instance.range.start.toLocaleDateString();
                     //startdate = event.event._instance.range.start.toISOString().split("T")[0].split(".")[0];
@@ -839,7 +844,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         },
 
-
+        //dateClick: function (info) {
+        //    alert(info.dateStr);
+        //},
 
     });
     calendar.render();

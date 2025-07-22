@@ -33,7 +33,8 @@ function initDates() {
     $("#AddTask").find("[name='Duration']").datetimepicker({
         datepicker: false,
         format: 'H:i',
-        step: 10 // Optional: Define minute intervals
+        step: 5, // Optional: Define minute intervals
+        minTime: '00:05'
     });
     //$("#AddGuestForm").find("[name='MemberDetail.FlightArrivalDateAndDateTime']").datetimepicker({
     //    format: 'd-m-Y H:i',
@@ -225,6 +226,7 @@ function AddTaskMasterPartialView(Id = 0) {
             $('#div_TaskMasterAddPartial').html(data);
             $("#btnOpenAddTaskMasterPopup").click();
             initDates();
+            GetCategories();
             //getOnLoadAddGuests();
         },
         error: function (result) {
@@ -244,7 +246,7 @@ function InitialiseMobileFields() {
         utilsScript: "CustomComponents/CountryCode/js/utils.js",
         //separateDialCode: true
     });
-    
+
 }
 
 
@@ -421,4 +423,42 @@ function ManageStatus(Id, ActiveStatus) {
             });
         }
     });
+}
+
+function GetCategories() {
+    let department = $("#AddTask").find("[name='Department']").val();
+    let categoryvalue = $("#AddTask").find("[name='CategoryId']").attr("categoryvalue");
+    BlockUI();
+    var inputDTO = {
+        "DepartmentId": department
+    };
+    $.ajax({
+        type: "POST",
+        url: "/CategoryMaster/GetCategoriesByDepartment",
+        contentType: 'application/json',
+        data: JSON.stringify(inputDTO),
+        success: function (data) {
+            UnblockUI();
+            $CategoryId = $("#AddTask").find("[name='CategoryId']");
+            $CategoryId.empty();
+            $CategoryId.append('<option value="0">Select Category</option>');
+            if (data != null) {
+                for (var i = 0; i < data.length; i++) {
+                    if (categoryvalue == data[i].id) {
+                        $CategoryId.append('<option selected value="' + data[i].id + '">' + data[i].category + '</option>');
+                    }
+                    else {
+                        $CategoryId.append('<option value="' + data[i].id + '">' + data[i].category + '</option>');
+                    }
+
+                }
+            }
+
+        },
+        error: function (error) {
+            $erroralert("Transaction Failed!", error.responseText + '!');
+            UnblockUI();
+        }
+    });
+
 }

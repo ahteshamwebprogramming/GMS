@@ -1,0 +1,674 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+
+
+<div class="row">
+    <div class="col-md-7">
+        <!-- Stay Information -->
+        <div class="formBlock" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+            <div class="col-sm-12 formTitle"><b>STAY INFORMATION</b></div>
+            <div class="row">
+                <div class="col-md-12">
+                    <span style="font-size:12px;" name="RoomsAvailabilityInformation"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">Rate Plan</label>
+                    @{
+                        if (Model?.MemberDetail?.PAXSno > 1)
+                        {
+                            <select asp-for="MemberDetail.CatId" class="contact_name form-control requiredInput" onchange="GetServices_New(@(Model?.MemberDetail?.ServiceId??"0"))" readonly disabled dbCol>
+                                <option value="0"></option>
+                                @{
+                                    if (Model != null && Model.Services != null)
+                                    {
+                                        foreach (var item in Model.Services)
+                                        {
+                                            <option value="@item.Id" minNight="@item.MinimumNight" maxNight="@item.MaximumNight" price="@item.Price">@item.Service</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <select asp-for="MemberDetail.CatId" class="contact_name form-control requiredInput" onchange="GetServices_New(@(Model?.MemberDetail?.ServiceId??"0"))" dbCol>
+                                <option value="0">--Primary Services *--</option>
+                                @{
+                                    if (Model != null && Model.Services != null)
+                                    {
+                                        foreach (var item in Model.Services)
+                                        {
+                                            <option value="@item.Id" minNight="@item.MinimumNight" maxNight="@item.MaximumNight" price="@item.Price">@item.Service</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        }
+                    }
+                    <input type="hidden" id="hfddlpservices" value="0">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">No Of Nights</label>
+                    <select asp-for="MemberDetail.ServiceId" class="contact_name form-control requiredInput" dbCol>
+                        <option value="0">--Select No Of Nights *--</option>
+                    </select>
+                    <input type="hidden" id="hfddlservices" value="@Model?.MemberDetail?.ServiceId">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 d-none">
+                    <label>Additional Nights</label>
+                    <input asp-for="MemberDetail.AdditionalNights" type="number" value="@(Model?.MemberDetail?.AdditionalNights)" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label class="required">Arrival Date</label>
+                    <input asp-for="MemberDetail.DateOfArrival" value="@Model?.MemberDetail?.DateOfArrival?.ToString("dd-MM-yyyy HH:mm")" type="text" class="contact_name form-control datetimeonly requiredInput" dateformat="YYYY-MM-DD HH:mm" autocomplete="off" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label class="required">Departure Date</label>
+
+                    <input asp-for="MemberDetail.DateOfDepartment" value="@Model?.MemberDetail?.DateOfDepartment?.ToString("dd-MM-yyyy")" type="text" class="contact_name form-control dateonly requiredInput" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" readonly dbCol style="margin-right: 0px;width: 60%;display: inline-block;border-bottom-right-radius: 0px;border-top-right-radius: 0px;">
+                    <input id="departure-time" name="TimeOfDepartment" value="@Model?.MemberDetail?.DateOfDepartment?.ToString("HH:mm")" type="text" class="form-control timepicker requiredInput" style="margin-left: -5px; border-left: 0px;width: 40%; display: inline-block; border-bottom-left-radius: 0px; border-top-left-radius: 0px;">
+                </div>
+
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label class="required">Type of Rooms</label>
+                    <select asp-for="MemberDetail.RoomType" class="contact_name form-control requiredInput" dbCol>
+                        <option value="0">-- Type of Room *--</option>
+                        @{
+                            if (Model != null && Model.RoomTypes != null)
+                            {
+                                foreach (var item in Model.RoomTypes)
+                                {
+                                    <option value="@item.Id">@item.Rtype</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <input type="hidden" id="hfRoomType" value="0">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label class="required">Pax</label>
+                    <input asp-for="MemberDetail.Pax" type="number" class="contact_name form-control requiredInput" placeholder="Pax" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label class="required">No Of Rooms</label>
+                    <input asp-for="MemberDetail.NoOfRooms" type="number" class="contact_name form-control requiredInput" placeholder="No of Rooms" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label class="required">Transport Services</label>
+                    <select asp-for="MemberDetail.PickUpDrop" class="contact_name form-control requiredInput" dbCol>
+                        <option value="0">--Pick Up Drop--</option>
+                        <option value="1">Yes</option>
+                        <option value="2">No</option>
+
+                    </select>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4" id="divddlPickUp" style="display: none">
+                    <label>Pick Up Location</label>
+                    <select asp-for="MemberDetail.PickUpType" class="contact_name form-control" dbCol>
+                        <option value="0">Pick-Up</option>
+                        <option value="1">Airport Transfer</option>
+                        <option value="2">Others</option>
+
+                    </select>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 " id="divddlCarType" style="display: none">
+                    <label>Car Type</label>
+                    <select asp-for="MemberDetail.CarType" class="contact_name form-control" dbCol>
+                        <option value="0">--Select Car Type--</option>
+                        @{
+                            if (Model != null && Model.CarTypes != null)
+                            {
+                                foreach (var item in Model.CarTypes)
+                                {
+                                    <option value="@item.Id">@item.Type</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <input type="hidden" id="hfddlCarType" value="0">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 " id="divtxtPickUpLocation" style="display: none">
+                    <label>Pick Up Destination</label>
+                    <input asp-for="MemberDetail.PickUpLoaction" type="text" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 " id="divFlightArrivalDateAndTime" style="display: none">
+                    <label>Flight Arrival DateTime</label>
+                    <input asp-for="MemberDetail.FlightArrivalDateAndDateTime" autocomplete="off" type="text" class="contact_name form-control datetimeonly" dateformat="DD-MM-YYYY HH:mm" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 " id="divFlightDepartureDateAndTime" style="display: none">
+                    <label>Flight Departure DateTime</label>
+                    <input asp-for="MemberDetail.FlightDepartureDateAndDateTime" autocomplete="off" type="text" class="contact_name form-control datetimeonly" dateformat="DD-MM-YYYY HH:mm" placeholder="" dbCol>
+                </div>
+
+            </div>
+        </div>
+        <!-- Personal Information -->
+        <div class="formBlock">
+            <div class="col-sm-12 formTitle"><b>PERSONAL INFORMATION</b></div>
+            <div class="row">
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">First Name</label>
+                    <input type="text" class="contact_name form-control requiredInput" placeholder="" asp-for="MemberDetail.Fname" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Middle Name</label>
+                    <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.Mname" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="">Last Name</label>
+                    <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.Lname" dbCol>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-sm-4 col-xs-4 d-none">
+                    <label class="">Date of Birth</label>
+                    <input type="text" class="contact_name form-control dateonly" dateformat="DD-MM-YYYY" autocomplete="off" placeholder="" asp-for="MemberDetail.Dob" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 d-none">
+                    <label class="">Age</label>
+                    <input type="text" class="contact_name form-control" placeholder="" autocomplete="off" onblur="return fixedlength(this, event, 3);" onkeypress="return fixedlength(this, event, 3);" onkeyup="return fixedlength(this, event, 3);" asp-for="MemberDetail.Age" dbCol>
+                </div>
+                <div class="checkbox form-group col-sm-4 col-xs-4 d-none">
+                    <label class="">Gender</label>
+                    <select class="contact_name form-control" asp-for="MemberDetail.Gender" dbCol>
+                        <option value="0"></option>
+                        @{
+                            if (Model != null && Model.Genders != null)
+                            {
+                                foreach (var item in Model.Genders)
+                                {
+                                    <option value="@item.Id">@item.Gender</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 d-none">
+                    <label>Marital Status</label>
+                    <select class="contact_name form-control" asp-for="MemberDetail.MarStatus" dbCol>
+                        <option value="0"></option>
+                        <option value="S">Single </option>
+                        <option value="M">Married</option>
+                        <option value="Se">Separated </option>
+                        <option value="D">Divorce</option>
+                        <option value="O">Others</option>
+                        <option value="O">Not Mentioned</option>
+
+                    </select>
+                </div>
+
+                <div class="form-group col-sm-4 col-xs-4 d-none">
+                    <label>Blood Group</label>
+                    <select class="contact_name form-control" asp-for="MemberDetail.BloodGroup" dbCol>
+                        <option value="0" selected="selected"></option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="Not Known">Not Known</option>
+                    </select>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 d-none">
+                    <label>Occupation</label>
+                    <input type="text" asp-for="MemberDetail.Occupation" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">Mobile Number</label>
+                    <input type="text" class="contact_name form-control requiredInput" placeholder="" asp-for="MemberDetail.MobileNo" style="padding-left:45px !important" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Home Phone Number</label>
+                    <input type="text" class="contact_name form-control" placeholder="" onblur="return fixedlength(this, event, 15);" onkeypress="return fixedlength(this, event, 15);" onkeyup="return fixedlength(this, event, 15);" asp-for="MemberDetail.EmergencyNo" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Email</label>
+                    <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.Email" dbCol>
+                </div>
+                <div class="form-group col-sm-12 col-md-12 d-none">
+                    <label>Any Specific Health Issues</label>
+                    <textarea class="form-control" rows="7" asp-for="MemberDetail.HealthIssues" dbCol></textarea>
+                </div>
+            </div>
+
+
+        </div>
+        <!-- ------- -->
+        <!-- Contact Information -->
+        <div class="formBlock">
+
+            <div class="col-sm-12 formTitle"><b>CONTACT INFORMATION</b></div>
+            <div class="row">
+                <div class="form-group col-sm-4 col-xs-4 txt-margn">
+                    <label class="required">Address</label>
+                    <textarea rows="2" cols="20" asp-for="MemberDetail.Address1" class="contact_name form-control requiredInput" placeholder="" dbCol></textarea>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">Country</label>
+                    <select asp-for="MemberDetail.CountryId" class="contact_name form-control requiredInput" dbCol onchange="fetchState(this.value,@(Model?.MemberDetail?.StateId??0))">
+                        <option selected="selected" value="0"></option>
+                        @{
+                            if (Model != null && Model.Countries != null)
+                            {
+                                foreach (var item in Model.Countries)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <input type="hidden" id="hfCountry" value="0">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">State</label>
+                    <select asp-for="MemberDetail.StateId" class="contact_name form-control requiredInput" placeholder="" dbCol onchange="fetchCity(this.value,@(Model?.MemberDetail?.CityId??0))">
+                    </select>
+                    <input type="hidden" id="hfState" value="0">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">City</label>
+                    <select class="contact_name form-control requiredInput" asp-for="MemberDetail.CityId" dbCol>
+                        <option selected="selected" value="0"></option>
+                        @{
+                            if (Model != null && Model.Cities != null)
+                            {
+                                foreach (var item in Model.Cities)
+                                {
+                                    <option value="@item.Id">@item.name</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <input type="hidden" id="hfCity" value="0">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">Pin Code</label>
+                    <input asp-for="MemberDetail.Pincode" type="text" class="contact_name form-control requiredInput" placeholder="" dbCol>
+                </div>
+
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label class="required">Nationality</label>
+                    <input type="hidden" id="hfNationality" value="0">
+                    <select asp-for="MemberDetail.NationalityId" class="contact_name form-control requiredInput" dbCol>
+                        <option value="0">--Nationality *--</option>
+                        <option selected="selected" value="0"></option>
+                        @{
+                            if (Model != null && Model.Countries != null)
+                            {
+                                foreach (var item in Model.Countries)
+                                {
+                                    <option value="@item.Id">@item.Nationality</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="clearfix">
+                <div class="form-group col-sm-4 col-xs-4" style="display: none">
+                    <select asp-for="MemberDetail.AboutUs" class="contact_name form-control">
+                        <option value="0">--How did you hear about us?-- </option>
+                        <option value="1">Google search </option>
+                        <option value="2">Recommended by a doctor</option>
+                        <option value="3">Friend </option>
+                        <option value="4">Newsletter</option>
+                        <option value="5">Event</option>
+                        <option value="6">Family</option>
+                        <option value="7">Magazine/newspaper advertisments</option>
+                        <option value="8">Others</option>
+
+                    </select>
+                </div>
+            </div>
+
+
+        </div>
+        <!-- ------- -->
+        <!-- Documents -->
+        <div class="formBlock">
+
+            <div class="col-sm-12 formTitle"><b>DOCUMENTS</b></div>
+            <div class="row">
+
+
+
+                <div class="form-group col-sm-12 col-xs-12">
+                    <label>ID No. (Personal Identity Document No)</label>
+                    <input asp-for="MemberDetail.Idproof" type="text" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-12 col-xs-12" style="display: none; margin-bottom: 22px;" id="divUploadIdProofDetails">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label class="required">Upload File</label>
+                            <input type="file" ID="attachmentIdProof_New" class="contact_name form-control requiredInputCstmFile" multiple="">
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Issue Date</label>
+                            <input type="text" class="contact_name form-control dateonly IssueDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.IdProofIssueDate" value="@Model?.MemberDetail?.IdProofIssueDate?.ToString("dd-MM-yyyy")" dbCol>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" class="contact_name form-control dateonly ExpiryDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.IdProofExpiryDate" value="@Model?.MemberDetail?.IdProofExpiryDate?.ToString("dd-MM-yyyy")" dbCol>
+                        </div>
+                        <div class="col-md-12">
+                            @{
+                                if (Model != null)
+                                {
+                                    if (Model.GuestAttachments != null)
+                                    {
+                                        foreach (var item in Model.GuestAttachments)
+                                        {
+                                            if (item.AttachmentType == "GuestIdProof")
+                                            {
+                                                <tags class="tagify tagify-email-list" tabindex="-1" name="attachmentTag_@item.Id">
+                                                    <tag title="@item.AttachmentName" contenteditable="false" spellcheck="false" tabindex="-1" class="tagify__tag tagify--noAnim" value="@item.AttachmentName ">
+                                                        <x title="" class="tagify__tag__removeBtn" role="button" aria-label="remove tag" style="display:inherit" onclick="deleteUploadedFile(@item.Id)"></x>
+                                                        <div onclick="downloadAttachment('@item.eId','@item.AttachmentName')">
+                                                            <span class="tagify__tag-text">@item.AttachmentName</span>
+                                                        </div>
+                                                    </tag>
+                                                    <span contenteditable="" tabindex="0" data-placeholder="​" aria-placeholder="" class="tagify__input" role="textbox" aria-autocomplete="both" aria-multiline="false">
+                                                    </span>
+                                                </tags>
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group col-sm-12 col-xs-12">
+                    <label>Passport No</label>
+                    <input asp-for="MemberDetail.PassportNo" type="text" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-12 col-xs-12" style="display: none; margin-bottom: 22px;" id="divUploadPassportDetails">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label class="required">Upload File</label>
+                            <input type="file" ID="attachmentPassport_New" class="contact_name form-control requiredInputCstmFile" multiple="">
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Issue Date</label>
+                            <input type="text" class="contact_name form-control dateonly IssueDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.PassportIssueDate" value="@Model?.MemberDetail?.PassportIssueDate?.ToString("dd-MM-yyyy")" dbCol>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" class="contact_name form-control dateonly ExpiryDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.PassportExpiryDate" value="@Model?.MemberDetail?.PassportExpiryDate?.ToString("dd-MM-yyyy")" dbCol>
+                        </div>
+                        <div class="col-md-12">
+                            @{
+                                if (Model != null)
+                                {
+                                    if (Model.GuestAttachments != null)
+                                    {
+                                        foreach (var item in Model.GuestAttachments)
+                                        {
+                                            if (item.AttachmentType == "GuestPassport")
+                                            {
+                                                <tags class="tagify tagify-email-list" tabindex="-1" name="attachmentTag_@item.Id">
+                                                    <tag title="@item.AttachmentName" contenteditable="false" spellcheck="false" tabindex="-1" class="tagify__tag tagify--noAnim" value="@item.AttachmentName ">
+                                                        <x title="" class="tagify__tag__removeBtn" role="button" aria-label="remove tag" style="display:inherit" onclick="deleteUploadedFile(@item.Id)"></x>
+                                                        <div onclick="downloadAttachment('@item.eId','@item.AttachmentName')">
+                                                            <span class="tagify__tag-text">@item.AttachmentName</span>
+                                                        </div>
+                                                    </tag>
+                                                    <span contenteditable="" tabindex="0" data-placeholder="​" aria-placeholder="" class="tagify__input" role="textbox" aria-autocomplete="both" aria-multiline="false">
+                                                    </span>
+                                                </tags>
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12 col-xs-12">
+                    <label>Visa Details</label>
+                    <input asp-for="MemberDetail.VisaDetails" type="text" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-12 col-xs-12" style="display: none; margin-bottom: 22px;" id="divUploadVisaDetails">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label class="required">Upload File</label>
+                            <input type="file" ID="attachmentVisaDetails_New" class="contact_name form-control requiredInputCstmFile" multiple="">
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Issue Date</label>
+                            <input type="text" class="contact_name form-control dateonly IssueDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.VisaIssueDate" value="@Model?.MemberDetail?.VisaIssueDate?.ToString("dd-MM-yyyy")" dbCol>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" class="contact_name form-control dateonly ExpiryDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.VisaExpiryDate" value="@Model?.MemberDetail?.VisaExpiryDate?.ToString("dd-MM-yyyy")" dbCol>
+                        </div>
+                        <div class="col-md-12">
+                            @{
+                                if (Model != null)
+                                {
+                                    if (Model.GuestAttachments != null)
+                                    {
+                                        foreach (var item in Model.GuestAttachments)
+                                        {
+                                            if (item.AttachmentType == "GuestVisa")
+                                            {
+                                                <tags class="tagify tagify-email-list" tabindex="-1" name="attachmentTag_@item.Id">
+                                                    <tag title="@item.AttachmentName" contenteditable="false" spellcheck="false" tabindex="-1" class="tagify__tag tagify--noAnim" value="@item.AttachmentName ">
+                                                        <x title="" class="tagify__tag__removeBtn" role="button" aria-label="remove tag" style="display:inherit" onclick="deleteUploadedFile(@item.Id)"></x>
+                                                        <div onclick="downloadAttachment('@item.eId','@item.AttachmentName')">
+                                                            <span class="tagify__tag-text">@item.AttachmentName</span>
+                                                        </div>
+                                                    </tag>
+                                                    <span contenteditable="" tabindex="0" data-placeholder="​" aria-placeholder="" class="tagify__input" role="textbox" aria-autocomplete="both" aria-multiline="false">
+                                                    </span>
+                                                </tags>
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- ------- -->
+
+        <div class="formBlock" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+            <div class="col-sm-12 formTitle"><b>MARKETING INFORMATION</b></div>
+            <div class="row">
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label>Brand Awareness</label>
+                    <select asp-for="MemberDetail.AboutUs" class="contact_name form-control" dbCol>
+                        <option value="0">--Brand Awareness--</option>
+                        @{
+                            if (Model != null && Model.BrandAwarenesses != null)
+                            {
+                                foreach (var item in Model.BrandAwarenesses)
+                                {
+                                    <option value="@item.Id">@item.Awareness</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <input type="hidden" value="0" id="hfddlBrandAwareness">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label>Lead Source</label>
+                    <select asp-for="MemberDetail.LeadSource" class="contact_name form-control" dbCol>
+                        <option value="0">--Lead Source--</option>
+                        @{
+                            if (Model != null && Model.LeadSources != null)
+                            {
+                                foreach (var item in Model.LeadSources)
+                                {
+                                    <option value="@item.Id">@item.LeadSource</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <input type="hidden" value="0" id="hfddlLeadSource">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4 ">
+                    <label class="required">Channel Code</label>
+                    <select asp-for="MemberDetail.ChannelCode" class="contact_name form-control  requiredInput" dbCol>
+                        <option value="0">--Channel Code *--</option>
+                        @{
+                            if (Model != null && Model.ChannelCodes != null)
+                            {
+                                foreach (var item in Model.ChannelCodes)
+                                {
+                                    <option value="@item.Id">@item.Code</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <input type="hidden" value="0" id="hfddlChannelCode">
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Preferred contact method</label>
+                    <select asp-for="MemberDetail.ReferContact" class="contact_name form-control" dbCol>
+                        <option value="0">--Preferred contact method-- </option>
+                        <option value="E">Email </option>
+                        <option value="H">Phone</option>
+                        <option value="M">Post phone</option>
+
+                    </select>
+                </div>
+                <div class="form-group col-sm-8 col-xs-12">
+                    <label>Subscribe your email to NAAD monthly Newsletter blog</label>
+                    <select class="contact_name form-control" asp-for="MemberDetail.IsMonthlynewsletter" dbCol>
+                        <option value="0">--Subscribe your email to NAAD monthly Newsletter blog--</option>
+                        <option value="N">No</option>
+                        <option value="Y">Yes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-5">
+
+
+        <div class="formBlock d-none">
+
+            <div class="col-sm-12 formTitle"><b>IN CASE OF EMERGENCY</b></div>
+            <div class="row">
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Emergency Contact Name</label>
+                    <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.RelativeName" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Relationship to Guest</label>
+                    <input type="text" asp-for="MemberDetail.Relations" class="contact_name form-control" placeholder="" dbCol>
+
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Mobile phone no</label>
+                    <input asp-for="MemberDetail.RelativeNumber" type="text" class="contact_name form-control" placeholder="" onblur="return fixedlength(this, event, 12);" onkeypress="return fixedlength(this, event, 12);" onkeyup="return fixedlength(this, event, 12);" dbCol>
+
+                </div>
+                <div class="clearfix"></div>
+                <div class="form-group col-sm-12 col-xs-12">
+                    <label>Remarks</label>
+                    <textarea asp-for="MemberDetail.Remarks" rows="3" cols="20" class="contact_name form-control" placeholder=" " dbCol></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="formBlock d-none">
+
+            <div class="col-sm-12 formTitle"><b>MEDICAL INSURANCE</b></div>
+            <div class="row">
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Name of the Policy Holder</label>
+                    <input asp-for="MemberDetail.PolicyHolder" type="text" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Insurance Company Name</label>
+                    <input asp-for="MemberDetail.InsuranceCompany" type="text" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Policy No </label>
+                    <input asp-for="MemberDetail.PolicyNo" type="text" class="contact_name form-control" placeholder="" dbCol>
+                </div>
+                <div class="form-group col-sm-4 col-xs-4">
+                    <label>Whether it covered in India</label>
+                    <select asp-for="MemberDetail.CoveredIndia" class="contact_name form-control" dbCol>
+                        <option value="0">--Whether it covered in India--</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marketing Information -->
+        <!-- Payment Information -->
+        <div class="formBlock d-none" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+
+            <div class="col-sm-12 formTitle"><b>PAYMENT INFORMATION</b></div>
+            <div class="form-group col-sm-4 col-xs-4 ">
+                <label class="">Guarantee Code</label>
+                <select asp-for="MemberDetail.GuarenteeCode" class="contact_name form-control" dbCol>
+                    <option value="0">--Guarantee Code *--</option>
+                    @{
+                        if (Model != null && Model.GuaranteeCodes != null)
+                        {
+                            foreach (var item in Model.GuaranteeCodes)
+                            {
+                                <option value="@item.Id">@item.Code</option>
+                            }
+                        }
+                    }
+                </select>
+                <input type="hidden" value="0" id="hfddlGuarenteeCode">
+            </div>
+            <div class="form-group col-sm-4 col-xs-4" id="divddlPaymentStatus" style="display: none">
+                <label class="">Payment Status</label>
+                <select asp-for="MemberDetail.PaymentStatus" class="contact_name form-control" dbCol>
+                    <option value="0">--Payment Status--</option>
+                    <option value="1">Cash</option>
+                    <option value="2">Later</option>
+                    <option value="3">Paid</option>
+                    <option value="4">Pending</option>
+                </select>
+                <input type="hidden" value="@Model?.MemberDetail?.PaymentStatus" id="hfddlPaymentStatus">
+            </div>
+            <div class="form-group col-sm-4 col-xs-4" id="divcalHoldTillDate" style="display: none">
+                <label>Hold Till Date</label>
+                <input asp-for="MemberDetail.HoldTillDate" type="text" placeholder="" class="contact_name form-control dateonly" value="@Model?.MemberDetail?.HoldTillDate?.ToString("dd-MM-yyyy")" dateformat="YYYY-MM-DD" dbCol autocomplete="off">
+            </div>
+            <div class="form-group col-sm-4 col-xs-4" id="divcalPaymentDate" style="display: none">
+                <label>Payment Date</label>
+                <input type="text" asp-for="MemberDetail.PaymentDate" value="@Model?.MemberDetail?.PaymentDate?.ToString("dd-MM-yyyy")" autocomplete="off" placeholder="" class="contact_name form-control dateonly" dateformat="YYYY-MM-DD" dbCol>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+
+        <!-- Empty Box -->
+
+        <div class="formBlock" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+            <div class="col-sm-12 formTitle"><b>Charges</b></div>
+
+            <div class="col-md-12" id="div_RatePlanPartial">
+                @* @Html.Partial("_guestsList/_ratePlan", Model) *@
+            </div>
+
+            <div class="clearfix"></div>
+        </div>
+        <!-- ------- -->
+        <!-- box dd -->
+        <!-- ------- -->
+    </div>
+</div>
+
+<input type="hidden" asp-for="MemberDetail.RegistrationNumber" dbCol />

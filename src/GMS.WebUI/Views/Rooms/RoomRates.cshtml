@@ -1,0 +1,237 @@
+﻿@model List<GMS.Infrastructure.ViewModels.Rooms.RoomRateViewModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Booking List";
+}
+@{
+    var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Today;
+    var days = 10;
+}
+
+
+<link href="~/customcss/channelmanager/main.css" rel="stylesheet" />
+
+<style>
+
+    .ratesUpdatedtd1 td {
+        background: #a6b6c6;
+        color: black;
+    }
+
+    .preloader {
+        background-color: transparent;
+    }
+
+    .blockUI.blockMsg.blockPage {
+        position: sticky !important;
+    }
+
+    .section-header {
+        background: #7b584f !important;
+    }
+</style>
+
+<div class="admin_wrapper">
+    @Html.Partial("_services/_leftNavigationServices")
+    <!-- Modal -->
+
+    <div class="right_container">
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Manage Room Rates <span>Manage rates upto 365 days </span></h2>
+                </div>
+                <div id="ratesTableContainer">
+                    @await Html.PartialAsync("_roomRates/_ratesTable", Model)
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+@section Scripts {
+    <script>
+
+
+            document.querySelectorAll('.toggle input[type="checkbox"]').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const dateIndex = this.id.replace('toggle-date-', '');
+                    document.querySelectorAll(`input[data-date-index="${dateIndex}"]`).forEach(input => {
+                        input.disabled = !this.checked;
+                    });
+                });
+            });
+
+
+            function validateRate(priceId, minRateId, maxRateId) {
+                const priceInput = document.getElementById(priceId);
+                const minRateInput = document.getElementById(minRateId);
+                const maxRateInput = document.getElementById(maxRateId);
+
+
+                const price = parseInt(priceInput.value.replace(/,/g, '')) || 0;
+                const minRate = parseInt(minRateInput.value.replace(/,/g, '')) || 0;
+                const maxRate = parseInt(maxRateInput.value.replace(/,/g, '')) || 999999;
+
+
+                if (minRate <= 0) {
+                    showValidationError(minRateInput, "Min Rate must be greater than 0");
+                    return false;
+                }
+
+                if (maxRate <= minRate) {
+                    showValidationError(maxRateInput, "Max Rate must be greater than Min Rate");
+                    return false;
+                }
+
+                if (price < minRate || price > maxRate) {
+                    showValidationError(priceInput, `Price must be between ${minRate} and ${maxRate}`);
+                    return false;
+                }
+
+                return true;
+            }
+
+                    function showValidationError(input, message) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Rate',
+                    text: message,
+                }).then(() => {
+                    input.focus();
+                });
+            }
+
+                   $(document).on('submit', '#ratesForm', function (e) {
+                e.preventDefault();
+
+
+                const formData = new FormData();
+                for (let i = 0; i <= 9; i++) {
+                    const toggle = $(`#toggle-date-${i}`);
+
+
+                    // Only proceed if toggle is ON (checked)
+
+                    if (toggle.is(':checked')) {
+
+                        // Find all input fields related to this date index
+
+                        $(`[data-date-index="${i}"]`).each(function () {
+
+                            if (this.type !== 'checkbox' && this.name) {
+                        formData.append(this.name, this.value);
+                        $(this).parent().find('input[type="hidden"][name]').each(function () {
+                            formData.append(this.name, this.value);
+                        });
+                    }
+
+                });
+
+            }
+
+        }
+
+                // $(this).find('input:enabled, input[type="hidden"]').each(function() {
+
+                //     if (this.type !== 'checkbox') {
+                //         formData.append(this.name, this.value);
+                //     }
+                // });
+                let planId = $("#RatePlanId").val();
+                formData.append("PlanId",planId);
+
+                Swal.fire({
+                    title: 'Please Wait',
+                    text: 'Saving data...',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: this.action,
+                    type: this.method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        Swal.close();
+                        Swal.fire({
+                            icon: result.success ? 'success' : 'error',
+                            title: result.success ? 'Success' : 'Error',
+                            text: result.message
+                        }).then(() => {
+                            if (result.success) {
+                                updateDate();
+                            }
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to save rates: ' + error
+                        });
+                    }
+                });
+            });
+
+            // Date navigation
+            function navigateDate(direction) {
+                var calendar = document.getElementById("calendar");
+                var date = new Date(calendar.value);
+                var today = new Date('@DateTime.Today.ToString("yyyy-MM-dd")');
+
+                if (direction === "prev") {
+                    date.setDate(date.getDate() - 10);
+                    if (date < today) {
+                        date = today;
+                    }
+                } else {
+                    date.setDate(date.getDate() + 10);
+                }
+                calendar.value = date.toISOString().split("T")[0];
+                updateDate();
+            }
+
+            // Update table on date change
+            function updateDate() {
+                var date = document.getElementById("calendar").value;
+                var today = '@DateTime.Today.ToString("yyyy-MM-dd")';
+                if (new Date(date) < new Date(today)) {
+                    date = today;
+                    document.getElementById("calendar").value = date;
+                }
+                let planId = $("#RatePlanId").val();
+                BlockUI();
+                $.ajax({
+                    url: '/Rooms/GetRatesTable',
+                    type: 'GET',
+                    data: { startDate: date , PlanId:planId },
+                    cache: false,
+                    success: function (result) {
+                        UnblockUI();
+                        $('#ratesTableContainer').html(result);
+
+
+
+                    },
+                    error: function (xhr, status, error) {
+                        UnblockUI();
+                        console.error('Error updating table:', error);
+                    }
+                });
+            }
+
+            function ChangeRatesAccordingToPlan(){
+                updateDate();
+            }
+    </script>
+}

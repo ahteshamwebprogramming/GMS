@@ -2,10 +2,11 @@
 
 namespace GMS.Core.Repository;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : IDisposable
 {
     public IGMSFinalGuestRepository GMSFinalGuest { get; }
     public IEHRMSLoginRepository EHRMSLogin { get; }
+    public IRoleMasterRepository RoleMaster { get; }
     public IGenderMasterRepository GenderMaster { get; }
     public ItblCityRepository tblCity { get; }
     public ITblStateRepository TblState { get; }
@@ -32,5 +33,27 @@ public interface IUnitOfWork
     public IAmenitiesRepository Amenities { get; }
     public IRoomAmenetiesRepository RoomAmeneties { get; }
     public ITblCheckListsRepository TblCheckLists { get; }
+    public ICategoryMasterRepository CategoryMaster { get; }
+    public IGuestDocumentAttachmentsRepository GuestDocumentAttachments { get; }
+    public IRoomChkListRepository RoomChkList { get; }
+    public IBillingRepository Billing { get; }
+    public IPaymentRepository Payment { get; }
+    public ISettlementRepository Settlement { get; }
+    public IFeedbackResultsRepository FeedbackResults { get; }
+    public IFeedbackResultRatingsRepository FeedbackResultRatings { get; }
+    public IRatesRepository Rates { get; }
+    public IPaymentMethodRepository PaymentMethod { get; }
+    public IFeedbackRepository Feedback { get; }
+    public IAuditedRevenueRepository AuditedRevenue { get; }
+    public IGuestReservationRepository GuestReservation { get; }
+    public ISourcesRepository Sources { get; }
+    public ICreditDebitNoteAccountRepository CreditDebitNoteAccount { get; }
+    public IGuestLedgerRepository GuestLedger { get; }
+    public IMenuListRepository MenuList { get; }
+    public IRoleMenuMappingRepository RoleMenuMapping { get; }
+
+    void BeginTransaction();
+    void Commit();
+    void Rollback();
 
 }

@@ -1,0 +1,280 @@
+﻿@model GMS.Infrastructure.ViewModels.RoleMenuMapping.RoleMenuMappingViewModel
+@{
+    ViewData["Title"] = "Role Menu Mapping";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .menu-tree {
+        padding-left: 0;
+    }
+
+    .menu-group {
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+
+    .menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+
+        .menu-header label {
+            font-weight: bold;
+            margin-bottom: 0;
+            font-size: 16px;
+        }
+
+    .sub-menu {
+        margin-left: 25px;
+        margin-top: 10px;
+        display: none;
+    }
+
+        .sub-menu.show {
+            display: block;
+        }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .checkbox-label:hover {
+            background-color: #eef;
+            /* border-radius: 4px;
+                        padding: 2px 4px; */
+        }
+
+    figure {
+        margin: 0 0 0;
+    }
+
+
+
+
+    .form-label {
+        margin-bottom: 5px;
+        display: block;
+        font-size: 15px;
+    }
+
+    .form-select {
+        border: 1px solid #ccc;
+        background-color: #fff;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+        .form-select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+        }
+</style>
+<div class="admin_wrapper">
+    @Html.Partial("_userManagement/_leftNavigationUserManagement")
+
+    <div class="right_container">
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Role Menu Mapping</h2>
+                    <div class="btn_add">
+                        @* <a href="#" class="addNew_btn" onclick="AddPartialView(0)">Add New</a> *@
+                    </div>
+                </div>
+                <form asp-action="SaveMapping" method="post">
+                    <div class="form-group mb-3 col-md-3">
+                        <label for="Role" class="form-label" style="font-weight: 600;">Select Role</label>
+                        <select id="Role" name="RoleId" class="form-control form-select" style="border-radius: 6px; padding: 8px; font-size: 14px;">
+                            <option value="0">-- Select Role --</option>
+                            @{
+                                if (Model != null && Model.Roles != null)
+                                {
+                                    foreach (var role in Model.Roles)
+                                    {
+                                        <option value="@role.RoleID">@role.RoleName</option>
+                                    }
+                                }
+                            }
+                            <!-- Add more roles here -->
+                        </select>
+                    </div>
+                    <hr />
+                    <h4>Select Pages & Sub Pages</h4>
+
+                
+                    <div id="div_ListPartial">                    
+                        @Html.Partial("_roleMenuMapping/_roleMenuMapping",Model)
+                    </div>
+
+                   
+
+                    <br />
+                    <input type="button" value="Save Mapping" onclick="SaveMappingData()" class="btn btn-primary" />
+                </form>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+
+
+
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+@section Scripts {
+    @* <script src="~/customjs/Rooms/Amenities.js"></script> *@
+
+    <script>
+        $(document).ready(function () {
+
+            initializeTreeMap();
+            
+            $("#Role").change(function(){                 
+                let RoleId = $(this).val();
+                let inputDTO = { RoleId: RoleId }; // Initialize with default value
+                BlockUI();                    
+                $.ajax({
+                    type: "POST",                    
+                    contentType: "application/json; charset=utf-8",                    
+                    url: '/UserManagement/RoleMenuMappingPartial',                    
+                    data: JSON.stringify(inputDTO),                    
+                    cache: false,                    
+                    dataType: "html",                    
+                    success: function (data, textStatus, jqXHR) {            
+                        UnblockUI();            
+                        $('#div_ListPartial').html(data);
+                        initializeTreeMap();
+                    },                
+                    error: function (result) {                    
+                        UnblockUI();
+                        $erroralert("Transaction Failed!", result.responseText);                
+                    }            
+                });
+            });
+
+
+           
+        });
+
+        function initializeTreeMap(){
+             // Smooth toggle on menu header click
+            $(".menu-header").on("click", function (e) {
+                // Only toggle if not clicking on the checkbox itself
+                if (!$(e.target).is("input")) {
+                    const submenuSelector = $(this).data("submenu");
+                    const $submenu = $(submenuSelector);
+                    const $icon = $(this).find(".toggle-icon");
+
+                    $submenu.slideToggle(200); // smooth slide
+                    $icon.toggleClass("bi-chevron-down bi-chevron-up");
+                }
+            });
+
+            // Handle parent checkbox selection
+            $(".parent-checkbox").on("change", function () {
+                const parentId = $(this).data("id");
+                const checked = $(this).prop("checked");
+                $(`.child-checkbox[data-parent-id='${parentId}']`).prop("checked", checked);
+                $(this).prop("indeterminate", false);
+            });
+
+            // Handle child checkbox selection to update parent
+            $(".child-checkbox").on("change", function () {
+                const parentId = $(this).data("parent-id");
+                const $parent = $(`#parent-${parentId}`);
+                const $children = $(`.child-checkbox[data-parent-id='${parentId}']`);
+                const total = $children.length;
+                const checked = $children.filter(":checked").length;
+
+                if (checked === 0) {
+                    $parent.prop("checked", false).prop("indeterminate", false);
+                } else if (checked === total) {
+                    $parent.prop("checked", true).prop("indeterminate", false);
+                } else {
+                    $parent.prop("checked", false).prop("indeterminate", true);
+                }
+            });
+
+            // Initialize indeterminate state on page load
+            $(".parent-checkbox").each(function () {
+                const parentId = $(this).data("id");
+                const $children = $(`.child-checkbox[data-parent-id='${parentId}']`);
+                const total = $children.length;
+                const checked = $children.filter(":checked").length;
+
+                if (checked === 0) {
+                    $(this).prop("checked", false).prop("indeterminate", false);
+                } else if (checked === total) {
+                    $(this).prop("checked", true).prop("indeterminate", false);
+                } else {
+                    $(this).prop("checked", false).prop("indeterminate", true);
+                }
+            });
+        }
+
+        function SaveMappingData(){
+
+            const roleId = $("#Role").val();
+
+            if (roleId === "0") {
+                alert("Please select a role.");
+                return;
+            }
+
+            //const selectedPages = [];
+
+            const selectedPages = new Set();
+
+            $("input[name='SelectedPages']:checked").each(function () {        
+                selectedPages.add(parseInt($(this).val()));    
+            });
+            $("input[name='SelectedPages']").each(function () {        
+                if (this.indeterminate) {            
+                    selectedPages.add(parseInt($(this).val()));        
+                }    
+            });
+            const request = {        
+                RoleId: parseInt(roleId),        
+                MenuIds: Array.from(selectedPages) // convert Set to array    
+            };
+
+            // $("input[name='SelectedPages']:checked").each(function () {
+            //     selectedPages.push(parseInt($(this).val()));
+            // });
+
+            // const request = {
+            //     RoleId: parseInt(roleId),
+            //     MenuIds: selectedPages
+            // };
+            BlockUI();
+            $.ajax({
+                url: '@Url.Action("SaveMapping", "UserManagement")', // change controller if needed
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(request),
+                success: function (response) {
+                            UnblockUI();
+                    alert("Mapping saved successfully!");
+                    // Optionally: reload or redirect
+                },
+                error: function () {
+                            UnblockUI();
+            $erroralert("Transaction Failed!", result.responseText);
+                }
+            });
+        }
+
+
+
+    </script>
+
+
+}

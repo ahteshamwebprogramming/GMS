@@ -1,0 +1,198 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+@{
+    int a = 1;
+}
+
+<div class="row">
+    <div class="col-sm-6 padding0">
+        <div class="col-xs-12 padding0">
+
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label required">First Name</label>
+                <input type="text" class="contact_name form-control requiredInput" placeholder="" asp-for="MemberDetail.Fname" dbCol>
+            </div>
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label">Mid Name</label>
+                <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.Mname" dbCol>
+            </div>
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label">Surname</label>
+                <input type="text" class="contact_name form-control requiredInput" placeholder="" asp-for="MemberDetail.Lname" dbCol>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-sm-6 padding0">
+        <div class="col-xs-12 padding0">
+            <div class="form-group col-xs-12">
+                <label class="control-label" style="display: block">Mobile</label>
+                <input type="text" class="contact_name form-control requiredInput" placeholder="" asp-for="MemberDetail.MobileNo" style="padding-left:45px !important" dbCol>
+            </div>
+            <div class="form-group col-xs-12">
+                <label class="control-label">Email</label>
+                <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.Email" dbCol>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row" style="">
+    <div class="row">
+        <div class="col-md-12">
+            <span style="font-size:12px;" name="RoomsAvailabilityInformation"></span>
+        </div>
+    </div>
+    <div class="col-sm-6 padding0" style="">
+        <div class="col-xs-12 padding0">
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label">Packages</label>
+                @{
+                    if (Model?.MemberDetail?.PAXSno > 1)
+                    {
+                        <select asp-for="MemberDetail.CatId" class="contact_name form-control requiredInput" onchange="GetServices_NewCRM(@(Model?.MemberDetail?.ServiceId??"0"))" readonly disabled dbCol>
+                            <option value="0"></option>
+                            @{
+                                if (Model != null && Model.Services != null)
+                                {
+                                    foreach (var item in Model.Services)
+                                    {
+                                        <option value="@item.Id" minNight="@item.MinimumNight" maxNight="@item.MaximumNight" price="@item.Price">@item.Service</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <select asp-for="MemberDetail.CatId" class="contact_name form-control requiredInput" onchange="GetServices_NewCRM(@(Model?.MemberDetail?.ServiceId??"0"))" dbCol>
+                            <option value="0">--Primary Services *--</option>
+                            @{
+                                if (Model != null && Model.Services != null)
+                                {
+                                    foreach (var item in Model.Services)
+                                    {
+                                        <option value="@item.Id" minNight="@item.MinimumNight" maxNight="@item.MaximumNight" price="@item.Price">@item.Service</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    }
+                }
+            </div>
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label">Date of Arrival</label>
+                <input asp-for="MemberDetail.DateOfArrival" value="@Model?.MemberDetail?.DateOfArrival?.ToString("dd-MM-yyyy HH:mm")" type="text" class="contact_name form-control datetimeonly requiredInput" dateformat="YYYY-MM-DD HH:mm" autocomplete="off" placeholder="" dbCol>
+            </div>
+            <div class="form-group col-sm-12 col-xs-12" style="">
+                <label class="control-label">PAX</label>
+                <input asp-for="MemberDetail.Pax" type="number" class="contact_name form-control requiredInput" placeholder="Pax" dbCol>
+            </div>
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label">Room Category</label>
+                <select asp-for="MemberDetail.RoomType" class="contact_name form-control requiredInput" dbCol>
+                    <option value="0">-- Type of Room *--</option>
+                    @{
+                        if (Model != null && Model.RoomTypes != null)
+                        {
+                            foreach (var item in Model.RoomTypes)
+                            {
+                                <option value="@item.Id">@item.Rtype</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+
+        </div>
+    </div>
+    <div class="col-sm-6 padding0" style="">
+        <div class="col-xs-12 padding0">
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label">Number of Nights</label>
+                <select asp-for="MemberDetail.ServiceId" class="contact_name form-control requiredInput" dbCol>
+                    <option value="0">--Select No Of Nights *--</option>
+                </select>
+            </div>
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label">Date of Departure</label>
+                <input asp-for="MemberDetail.DateOfDepartment" value="@Model?.MemberDetail?.DateOfDepartment?.ToString("dd-MM-yyyy")" type="text" class="contact_name form-control dateonly requiredInput" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" readonly dbCol style="margin-right: 0px;width: 60%;display: inline-block;border-bottom-right-radius: 0px;border-top-right-radius: 0px;">
+                <input id="departure-time" name="TimeOfDepartment" value="@Model?.MemberDetail?.DateOfDepartment?.ToString("HH:mm")" type="text" class="form-control timepicker requiredInput" style="margin-left: -5px; border-left: 0px;width: 40%; display: inline-block; border-bottom-left-radius: 0px; border-top-left-radius: 0px;">
+            </div>
+            <div class="form-group col-sm-12 col-xs-12" style="">
+                <label class="control-label">No.of Rooms</label>
+                <input asp-for="MemberDetail.NoOfRooms" type="number" class="contact_name form-control requiredInput" placeholder="No of Rooms" dbCol>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="row" style="">
+    <div class="col-sm-6 padding0" style="">
+        <div class="col-xs-12 padding0">
+            <div class="form-group col-xs-12">
+                <label class="control-label">Sale Source</label>
+                <select asp-for="MemberDetail.SaleSource" class="contact_name form-control" dbCol>
+                    <option selected="selected" value="0">--Sources--</option>
+                    @{
+                        if (Model != null && Model.SourcesList != null)
+                        {
+                            foreach (var item in Model.SourcesList)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group col-xs-12">
+                <label class="control-label">Lead Source</label>
+                <select asp-for="MemberDetail.LeadSource" class="contact_name form-control" dbCol>
+                    <option value="0">--Lead Source--</option>
+                    @{
+                        if (Model != null && Model.LeadSources != null)
+                        {
+                            foreach (var item in Model.LeadSources)
+                            {
+                                <option value="@item.Id">@item.LeadSource</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 padding0" style="">
+        <div class="col-xs-12 padding0">
+            <div class="form-group col-sm-12 col-xs-12">
+                <label class="control-label">Brand Awareness</label>
+                <select asp-for="MemberDetail.AboutUs" class="contact_name form-control" dbCol>
+                    <option value="0">--Brand Awareness--</option>
+                    @{
+                        if (Model != null && Model.BrandAwarenesses != null)
+                        {
+                            foreach (var item in Model.BrandAwarenesses)
+                            {
+                                <option value="@item.Id">@item.Awareness</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+        </div>
+    </div>
+</div>
+<hr>
+<div class="col-xs-12">
+    <div class="form-group col-xs-12">
+        <label class="control-label">Comments</label>
+        <textarea rows="4" cols="50" asp-for="MembersDetails.Remarks" class="contact_name form-control"></textarea>
+    </div>
+</div>
+
+<input type="hidden" asp-for="MemberDetail.RegistrationNumber" dbCol />

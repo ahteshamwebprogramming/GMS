@@ -7,4 +7,5 @@ public class RoomAvailabilityDTO
     public string? RType { get; set; }
     public string? AvailabilityColumn { get; set; }
     public DateTime? DateValue { get; set; }
+    public int? NoOfRooms { get; set; }
 }

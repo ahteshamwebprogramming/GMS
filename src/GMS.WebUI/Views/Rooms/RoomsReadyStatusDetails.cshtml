@@ -1,0 +1,194 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomStatusViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Rooms Ready Status";
+}
+
+<div class="admin_wrapper">
+    @Html.Partial("_rooms/_leftNavigationRooms")
+
+    <!-- Modal -->
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Room</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="general_form">
+                        <div class="mb-3">
+                            <label class="form-label">Room Number</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Room Type</label>
+                            <select class="form-control">
+                                <option>Room Type</option>
+                                <option>Room Type</option>
+                                <option>Room Type</option>
+                                <option>Room Type</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Room Size</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bed Type</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Remark</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload Photos</label>
+                            <input type="file" class="form-control">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="roomDirty" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Room</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-sm-12 row p-3 form-group txt-mag-inn">
+                        <div class="col-sm-2 text-center padding-txt"><label for="PH.NO>">Room No.</label></div>
+                        <div class="col-sm-4 "><input type="text" class="form-control" id="Text6"></div>
+                        <div class="col-sm-2 text-center padding-txt"><label for="PH.NO>">Room Type</label></div>
+                        <div class="col-sm-4 "><input type="text" class="form-control" id="Text1"></div>
+                    </div>
+
+                    <table class="table table-bordered" id="Grvd">
+                        <thead>
+                            <tr style="background-color:#b5a38b;">
+                                <th>
+                                    <div class="checkbox">
+                                        <input type="checkbox" value="">
+                                    </div>
+                                </th>
+                                <th>Description</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="checkbox">
+                                        <input type="checkbox" value="">
+                                    </div>
+                                </td>
+                                <td>Bed is clean</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="checkbox">
+                                        <input type="checkbox" value="">
+                                    </div>
+                                </td>
+                                <td>  Room is clean</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="checkbox">
+                                        <input type="checkbox" value="">
+                                    </div>
+                                </td>
+                                <td>Bath Room is clean</td>
+                            </tr>
+
+
+                            <tr>
+                                <td>
+                                    <div class="checkbox">
+                                        <input type="checkbox" value="">
+                                    </div>
+                                </td>
+                                <td>ID veriffied</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Checkin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="roomCleaned" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    This Room is clean!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="right_container">
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+
+                <div class="title_area">
+                    <h2>Room Ready Status</h2>
+                </div>
+                <div id="div_ListPartial">
+                    @* @Html.Partial("_roomDetails/_list") *@
+                </div>
+                <div id="div_RoomCleanCheckListPartial">
+                    @* @Html.Partial("_roomDetails/_roomCleanList") *@
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+
+
+
+    </div>
+    @Html.Partial("_bottomNavigation1")
+
+</div>
+
+
+
+
+
+@section Scripts {
+    <script src="~/customjs/validation.js"></script>
+    <script src="~/customjs/rooms/roomReadyStatus.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            //AddPartialView();
+            //ListPartialView();
+            GetRoomList();
+        });
+    </script>
+}
+
+
+

@@ -1,0 +1,339 @@
+﻿@* Modal Code  *@
+@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<style>
+    /* Base Table Styling */
+    .table.settlement {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: #dedede solid 1px;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+        /* Header cells */
+        .table.settlement th {
+            background-color: #f5f7fa;
+            color: #333;
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+        /* Data cells */
+        .table.settlement td {
+            padding: 12px 16px;
+            color: #444;
+            border-bottom: 1px solid #f0f2f5;
+            vertical-align: middle;
+        }
+
+        /* Form input inside cells */
+        .table.settlement .form-control-c {
+            padding: 6px 10px;
+            font-size: 14px;
+            border: 1px solid #d1d9e6;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            width: 69px;
+        }
+
+            .table.settlement .form-control-c:focus {
+                border-color: #4a90e2;
+            }
+
+        /* Specific date cell styling */
+        .table.settlement td.date {
+            white-space: nowrap;
+        }
+
+        /* Optional: Make alternating rows shaded */
+        .table.settlement tbody tr:nth-child(odd) {
+            background-color: #fafbfc;
+        }
+
+    .fc-parent {
+        padding: 3px .5rem !important;
+    }
+
+    .form-control-c {
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        display: block;
+        padding: 3.375px 0.75rem !important;
+        appearance: none;
+        border-radius: .375rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        margin: 0;
+        color: #333;
+        background: #FFF2EB;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .invoice-header {
+        background-color: #005670;
+        color: #fff;
+        padding: 20px;
+        position: relative;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+        .invoice-header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+    .company-info {
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+        .company-info span {
+            display: block;
+        }
+
+    .section {
+        padding: 15px;
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .info-table td {
+        padding: 4px 8px;
+        vertical-align: top;
+    }
+
+    .payment-details {
+        color: #d9534f;
+        font-size: 13px;
+    }
+
+        .payment-details span {
+            display: block;
+        }
+
+    .data-table th {
+        background-color: #005670;
+        color: #fff;
+        padding: 8px;
+        border: 1px solid #ccc;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .data-table td {
+        padding: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .totals td {
+        padding: 8px;
+        font-weight: bold;
+    }
+
+    .footer {
+        background-color: #005670;
+        color: #ffcc00;
+        text-align: center;
+        padding: 20px;
+        font-size: 18px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .section td {
+        padding: 20px;
+    }
+
+    /* PAID Ribbon */
+    .paid-ribbon {
+        position: absolute;
+        top: 10px;
+        right: -50px;
+        background: #28a745;
+        color: white;
+        padding: 12px 58px;
+        font-size: 28px;
+        font-weight: bold;
+        transform: rotate(45deg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        z-index: 999;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* PAID Ribbon */
+    .unpaid-ribbon {
+        position: absolute;
+        top: 10px;
+        right: -50px;
+        background: red;
+        color: white;
+        padding: 12px 58px;
+        font-size: 28px;
+        font-weight: bold;
+        transform: rotate(45deg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        z-index: 999;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    }
+    /* Review Table Styling */
+    .table.review_table_inner {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin-bottom: 0 !important;
+    }
+
+    .review_table {
+        padding: 10px;
+    }
+    /* General cell styling */
+    .table.review_table_inner td {
+        padding: 14px 18px;
+        border-bottom: 1px solid #e4e6e9;
+        vertical-align: top;
+        color: #000;
+        font-size: 15px;
+        /*  border-right: 1px solid #e4e6e9 */
+    }
+
+        /* Strong values (labels or important info) */
+        .table.review_table_inner td strong {
+            display: block;
+            margin-top: 4px;
+            font-weight: 600;
+            color: #804d3e;
+        }
+
+    /* No-border class for second row */
+    .table.review_table_inner .no-border {
+        border-bottom: none !important;
+    }
+
+    /* Optional: alternate row background */
+    .table.review_table_inner tbody tr:nth-child(odd) {
+        background-color: #fafbfc;
+    }
+
+    .table.review_table_inner tbody tr:hover {
+        background-color: #f4f6f8;
+    }
+
+    .settlement tr td:last-child {
+        text-align: right;
+    }
+</style>
+<input type="button" id="btnSettlementModal" style="display:none" data-bs-toggle="modal" data-bs-target="#SettlementModal" value="button test" />
+<div class="modal fade" id="SettlementModal" tabindex="-1" aria-labelledby="BillingModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog1 modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="BillingModalLabel">Billing Settlement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="resposive_table review_table" style="background:#98c1d9">
+                    <table class="table table-striped" style="margin-bottom:0px !important">
+                        <tbody style="color:#000">
+                            <tr>
+                                <td>UHID <br /> <span class="headingInfo">#@Model?.MembersWithAttributes?.UHID </span> </td>
+                                <td>Guest Name <br /><span class="headingInfo">@Model?.MembersWithAttributes?.CustomerName</span></td>
+                                <td>Mobile No <br /> <span class="headingInfo">@Model?.MembersWithAttributes?.MobileNo</span></td>
+                            </tr>
+                            <tr>
+                                <td class="no-border">Stay Dates <br /><span class="headingInfo">@Model?.MembersWithAttributes?.DateOfArrival?.ToString("dd MMM yyyy") - @Model?.MembersWithAttributes?.DateOfDepartment?.ToString("dd MMM yyyy")</span></td>
+                                <td class="no-border">Room Type <br /><span class="headingInfo">@Model?.MembersWithAttributes?.RoomTypeName</span></td>
+                                <td class="no-border"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+
+                    <div class="col-md-6 m-auto">
+                        <table class="table settlement" id="tblSettlementAttributes">
+                            <tbody>
+                                <tr>
+                                    <th>Invoiced Amount</th>
+                                    <td colspan="2" class="invoicedamount"> @(Model?.BillingDataList?.Where(x => x.ServiceType == "GrossAmount").FirstOrDefault()?.TotalAmount ?? 0) </td>
+                                </tr>
+                                <tr>
+                                    <th>Payment Collected</th>
+                                    <td colspan="2" class="paymentcollected">@Model?.PaymentsWithAttr?.Sum(x => x.Amount)</td>
+                                </tr>
+                                <tr>
+                                    <th>Balance</th>
+                                    <td colspan="2" class="balance">25,000</td>
+                                </tr>
+                                <tr>
+                                    <th>Refund</th>
+                                    <td colspan="2" class="refund text-right fc-parent"><input type="number" class="form-control-c text-right" value="0" style="width:100%" /></td>
+                                </tr>
+                                <tr>
+                                    <th>Credit Amount</th>
+                                    <td colspan="2" class="creditamount text-right fc-parent"><input type="number" class="form-control-c text-right" value="0" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group inputcreditamount">
+                                <label>Note No.</label>
+                                <input type="text" name="NoteNumber" class="form-control" value="@Model?.SettlementDTO?.NoteNumber" />
+                            </div>
+                            <div class="col-md-6 form-group inputcreditamount">
+                                <label>Valid Till</label>
+                                <input type="text" name="ValidTill" class="form-control" />
+                            </div>
+                            <div class="col-md-12 form-group inputrefund">
+                                <label>Refund Remarks</label>
+                                <textarea name="RefundRemarks" class="form-control"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" name="GuestId" value="@Model?.MembersWithAttributes?.Id" />
+                <input type="hidden" name="GuestIdPaxSN1" value="@(Model?.MembersWithAttributes?.GuestIdPaxSN1)" />
+                <button type="button" class="btn btn-secondary" onclick="InitiateSettlementAndSave()">Settle</button>
+                <button type="button" class="btn btn-primary" onclick="window.open('/Guests/PrintInvoice/@Model?.MembersWithAttributes?.Id','_blank')">Print Invoice</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Code *@

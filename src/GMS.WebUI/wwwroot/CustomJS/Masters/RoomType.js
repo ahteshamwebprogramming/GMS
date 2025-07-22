@@ -158,7 +158,15 @@ function AddRoomType() {
 
 
 function DeleteList(Id) {
-    Swal.fire({ title: 'Are you sure?', text: "This will get deleted permanently!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!', customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' }, buttonsStyling: false }).then(function (result) {
+    Swal.fire({
+        title: 'Are you sure?'
+        , text: "This will get deleted permanently!"
+        , icon: 'warning'
+        , showCancelButton: true
+        , confirmButtonText: 'Yes, delete it!'
+        , customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' }
+        , buttonsStyling: false
+    }).then(function (result) {
         if (result.value) {
             BlockUI();
             var inputDTO = {

@@ -1,0 +1,247 @@
+﻿@using GMS.Infrastructure.Models.Masters
+@model List<GMS.Infrastructure.ViewModels.Rooms.RoomRateViewModel>
+@{
+    var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Today;
+    var days = 10;
+    if (startDate < DateTime.Today)
+    {
+        startDate = DateTime.Today;
+    }
+    int totallRooms = ViewBag.TotalRooms;
+    string Occupency = ViewBag.occupency;
+}
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 34px;
+        height: 20px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #4CAF50;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(14px);
+        }
+
+    .filterArea {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 15px;
+        background: #F2EAE0;
+        padding: 20px;
+        border-radius: 13px;
+        margin-bottom: 15px;
+    }
+
+</style>
+
+<form id="ratesForm" method="post" action="/Rooms/UpdateRates">
+
+    <div class="filterArea">
+        <div class="row" style="width:45%">
+            <div class="col-md-6">
+                <label for="month" class="form-label">Select Rate Plan</label>
+                <select class="form-select" id="RatePlanId" onchange="ChangeRatesAccordingToPlan()">
+                    @{
+                        <option value="0">Select Plan</option>
+                        List<ServicesDTO>? plans = ViewBag.RatePlans;
+                        int PlanId = ViewBag.PlanId ?? 0;
+                        if (plans != null && plans.Count > 0)
+                        {
+                            foreach (var item in plans)
+                            {
+                                if (item.Id == PlanId)
+                                {
+                                    <option selected value="@item.Id">@item.Service</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Id">@item.Service</option>
+                                }
+                            }
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <table class="ratesUpdated w-100 table" width="100%">
+        <thead class="table-dark">
+            <tr>
+                <th>
+                    <div class="controls">
+
+
+                        <button type="button" onclick="navigateDate('prev')"> < </button>
+                        <input type="date" id="calendar" value="@startDate.ToString("yyyy-MM-dd")"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")" onchange="updateDate()" />
+                        <button type="button" onclick="navigateDate('next')"> > </button>
+                    </div>
+                </th>
+                @for (int i = 0; i < days; i++)
+                {
+                    var date = startDate.AddDays(i);
+                    <th>@date.ToString("ddd")<br>@date.ToString("dd MMM")</th>
+                }
+            </tr>
+            <tr class="ratesUpdatedtd1">
+                <td>Dynamic Rates</td>
+                @for (int i = 0; i < days; i++)
+                {
+                    var toggleId = $"toggle-date-{i}";
+                    <td>
+                        <div class="toggle-container">
+                            <label class="switch">
+                                <input type="checkbox" id="@toggleId" onchange="toggleInputs('@i')">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                    </td>
+                }
+            </tr>
+            <tr class="ratesUpdatedtd1">
+                <td>Occupancy (Avail/%)</td>
+                @for (int i = 0; i < days; i++)
+                {
+                    var date = startDate.AddDays(i);
+
+                    var availableRooms = totallRooms;
+                    var occupancyPercentage = 0;
+                    <td>
+                        @availableRooms <br> (@Occupency%)
+                    </td>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rateIndex = 0;
+            }
+            @foreach (var room in Model)
+            {
+                <tr class="section-header">
+                    <td colspan="@(days + 1)" style="text-align: left;">@room.RoomTypeName</td>
+                </tr>
+                <tr>
+                    <td>Rates</td>
+                    @for (int i = 0; i < days; i++)
+                    {
+                        var date = startDate.AddDays(i);
+                        var rate = room.DailyRates.FirstOrDefault(r => r.Date.Date == date.Date);
+                        var priceId = $"price-{rateIndex}";
+                        var minRateId = $"minRate-{rateIndex}";
+                        var maxRateId = $"maxRate-{rateIndex}";
+                        <td>
+                            <input type="hidden" name="Rates[@rateIndex].Id" value="@(rate?.Id ?? 0)" />
+                            <input type="hidden" name="Rates[@rateIndex].RoomTypeId" value="@room.RoomTypeId" />
+                            <input type="hidden" name="Rates[@rateIndex].Date" value="@date.ToString("yyyy-MM-dd")" />
+                            <span style="margin-right: 5px;">₹</span>
+                            <input type="text" id="@priceId" name="Rates[@rateIndex].Price"
+                                   value="@(rate?.Price != null ? ((int)rate.Price).ToString("N0") : "0")"
+                                   onblur="validateRate('@priceId', '@minRateId', '@maxRateId')"
+                                   style="width: 80px;" data-date-index="@i" disabled />
+                        </td>
+                        rateIndex++;
+                    }
+                </tr>
+                <tr>
+                    <td>Min Rate</td>
+                    @for (int i = 0; i < days; i++)
+                    {
+                        var date = startDate.AddDays(i);
+                        var rate = room.DailyRates.FirstOrDefault(r => r.Date.Date == date.Date);
+                        var minRateId = $"minRate-{rateIndex - days + i}";
+                        <td>
+                            <span style="margin-right: 5px;">₹</span>
+                            <input type="text" id="@minRateId" name="Rates[@(rateIndex - days + i)].MinRate"
+                                   value="@(rate?.MinRate != null ? ((int)rate.MinRate).ToString("N0") : "0")"
+                                   onblur="validateRate('price-@(rateIndex - days + i)', '@minRateId', 'maxRate-@(rateIndex - days + i)')"
+                                   style="width: 80px;" data-date-index="@i"  />
+                        </td>
+                    }
+                </tr>
+                <tr>
+                    <td>Max Rate</td>
+                    @for (int i = 0; i < days; i++)
+                    {
+                        var date = startDate.AddDays(i);
+                        var rate = room.DailyRates.FirstOrDefault(r => r.Date.Date == date.Date);
+                        var maxRateId = $"maxRate-{rateIndex - days + i}";
+                        <td>
+                            <span style="margin-right: 5px;">₹</span>
+                            <input type="text" id="@maxRateId" name="Rates[@(rateIndex - days + i)].MaxRate"
+                                   value="@(rate?.MaxRate != null ? ((int)rate.MaxRate).ToString("N0") : "0")"
+                                   onblur="validateRate('price-@(rateIndex - days + i)', 'minRate-@(rateIndex - days + i)', '@maxRateId')"
+                                   style="width: 80px;" data-date-index="@i" />
+                        </td>
+                    }
+                </tr>
+
+            }
+            <tr>
+                <td colspan="@(days + 1)"><button type="submit" class="save_btn">Save All</button></td>
+            </tr>
+        </tbody>
+    </table>
+</form>
+<script>
+    function toggleSwitch() {
+        const toggle = document.querySelector('.toggle');
+        const text = document.getElementById('toggleText');
+
+        toggle.classList.toggle('active');
+
+    }
+
+        function toggleInputs(dateIndex) {
+        const isChecked = document.getElementById(`toggle-date-${dateIndex}`).checked;
+
+        document.querySelectorAll(`input[data-date-index="${dateIndex}"]`).forEach(input => {
+            input.disabled = !isChecked;
+        });
+    }
+
+    // Optional: Initialize all toggles on page load
+    document.addEventListener('DOMContentLoaded', function() {
+    @for (int i = 0; i < days; i++)
+    {
+        @:toggleInputs('@i');
+    }
+    });
+</script>

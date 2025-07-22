@@ -1,0 +1,13 @@
+﻿<div id="session-warning" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; text-align:center; color:white;">
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:#333; padding:30px; border-radius:10px;">
+        <div class="spinner-border" role="status" style="width:3rem; height:3rem;">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div style="margin-top:15px; font-size:1.2rem;">
+            Your session will expire in <span id="countdown-seconds">30</span> seconds...
+        </div>
+        <button onclick="stayLoggedIn()" class="btn btn-success" style="margin-top:20px;">
+            Stay Logged In
+        </button>
+    </div>
+</div>

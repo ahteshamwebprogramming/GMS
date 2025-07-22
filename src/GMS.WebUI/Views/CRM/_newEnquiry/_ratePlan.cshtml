@@ -1,0 +1,109 @@
+﻿ @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<style>
+    .formBlock table tbody tr td {
+        white-space: nowrap;
+    }
+
+    .tooltip-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip-button {
+        font-weight: normal;
+    }
+
+    .tooltip-text {
+        visibility: hidden;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        padding: 6px 10px;
+        border-radius: 5px;
+        /* Position the tooltip */
+        position: absolute;
+        z-index: 1;
+        bottom: 100%; /* Show above the button */
+        left: 0px;
+        /* Animation */
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .tooltip-container:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>
+@{
+    var dates = Model?.RoomRatesForEnquiryList?
+    .Select(x => x.RateDate?.Date)
+    .Distinct()
+    .OrderBy(x => x)
+    .ToList();
+    var groupedRows = Model?.RoomRatesForEnquiryList?
+        .GroupBy(x => new { x.PlanId, x.RoomTypeId })
+        .ToList();
+}
+
+<div class="formBlock">
+    <div style="overflow-y: scroll;height: 700px;">
+        <table class="table">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Packages</th>
+                    <th scope="col">Room Category</th>
+                    @{
+                        if (dates != null)
+                        {
+                            foreach (var item in dates)
+                            {
+                                <th scope="col">@item?.ToString("dd-MMM-yyyy")</th>
+                            }
+                        }
+
+                    }
+                    @* 
+                    <th scope="col">Price</th>
+                    <th scope="col">Date</th> *@
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    if (Model != null && Model.RoomRatesForEnquiryList != null && groupedRows != null)
+                    {
+                        foreach (var group in groupedRows)
+                        {
+                            var item = group.First();
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <div class="tooltip-container">
+                                        <strong class="tooltip-button">@item.PlanName</strong>
+                                        <span class="tooltip-text">@item.PlanDescription</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="tooltip-container">
+                                        <strong class="tooltip-button">@item.RoomType</strong>
+                                        <span class="tooltip-text">@item.RoomDescription</span>
+                                    </div>
+                                </td>
+                                @{
+                                    foreach (var date in dates)
+                                    {
+                                        var rate = Model?.RoomRatesForEnquiryList?.Where(x => x.RateDate == date && x.PlanId == item.PlanId && x.RoomTypeId == item.RoomTypeId)?.FirstOrDefault()?.Rate ?? 0;
+                                        <td>@rate</td>
+
+                                    }
+                                }
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

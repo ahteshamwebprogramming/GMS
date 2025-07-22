@@ -6,7 +6,8 @@
             <thead class="table-dark">
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">Unique No</th>
+                    <th scope="col">Registration No</th>
+                    <th scope="col">UHID</th>
                     <th scope="col">Name</th>
                     <th scope="col">Gender</th>
                     <th scope="col">Phone Number</th>
@@ -21,7 +22,8 @@
                         {
                             <tr>
                                 <td><input type="radio" name="GuestUniqueSelection" onclick="SelectGuestForForm(@item.Id)" /></td>
-                                <td>@item.UniqueNo</td>
+                                <td>@item.RegistrationNumber</td>
+                                <td>@item.UHID</td>
                                 <td>@item.CustomerName</td>
                                 <td>@item.GenderName</td>
                                 <td>@item.MobileNo</td>

@@ -1,0 +1,38 @@
+﻿@model GMS.Infrastructure.ViewModels.RoleMenuMapping.RoleMenuMappingViewModel 
+<div class="menu-tree">
+
+                        @{
+                            if (Model != null && Model.MenuListWithAttrs != null)
+                            {
+                                foreach (var parent in Model.MenuListWithAttrs.Where(x => x.MenuParentId == 0))
+                                {
+                                    var children = Model.MenuListWithAttrs.Where(x => x.MenuParentId == parent.Id).ToList();
+                                    <div class="menu-group" id="group-@parent.Id">
+                                        <div class="menu-header" data-submenu="#submenu-@parent.Id">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" class="parent-checkbox" id="parent-@parent.Id" data-id="@parent.Id" name="SelectedPages" value="@parent.Id" @(parent.Selected == true ? "checked" : "") />
+                                                @Html.Raw(parent.MenuIcon)
+                                                @parent.MenuName
+                                            </label>
+                                            <i class="bi bi-chevron-down toggle-icon" style="cursor:pointer;"></i>
+                                        </div>
+
+                                        @if (children.Any())
+                                        {
+                                            <div class="sub-menu" id="submenu-@parent.Id" style="display: none;">
+                                                @foreach (var child in children)
+                                                {
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" class="child-checkbox" data-parent-id="@parent.Id" name="SelectedPages" value="@child.Id" @(child.Selected == true ? "checked" : "") />
+                                                        @Html.Raw(child.MenuIcon)
+                                                        @child.MenuName
+                                                    </label>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+
+                        }
+                    </div>

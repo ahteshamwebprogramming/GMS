@@ -1,0 +1,172 @@
+ body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      background-color: #3f3425;
+      padding: 20px 0;
+      text-align: center;
+      color: #fff;
+      border-bottom: 4px solid #f29100;
+    }
+
+    .logo {
+      max-width: 100px;
+    }
+
+    .content-box {
+      max-width: 700px;
+      margin: 60px auto;
+      text-align: center;
+      padding: 30px;
+    }
+
+    .content-box h4 {
+      font-weight: 600;
+      margin-bottom: 25px;
+    }
+
+    .btn-custom {
+      padding: 10px 30px;
+      border-radius: 10px;
+      font-size: 18px;
+      background-color: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .btn-custom:hover {
+      background-color: #f8f8f8;
+      transform: translateY(-2px);
+    }
+
+    .footer {
+      background-color: #444;
+      color: #ddd;
+      text-align: center;
+      padding: 15px 10px;
+      font-size: 14px;
+   /*   position: absolute;
+      bottom: 0;*/
+      width: 100%;
+    }
+
+     .rating-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .rating-label {
+      cursor: pointer;
+      display: inline-block;
+      padding: 5px;
+    }
+
+    .rating-cell input[type="radio"] {
+      display: none;
+    }
+/*
+    .rating-cell input[type="radio"]:checked + label {
+      background-color:green;
+      border-radius: 25px;
+    }*/
+
+    .table th, .table td {
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .table th:first-child, .table td:first-child {
+      text-align: left;
+    }
+
+    .smiley-table {
+      overflow-x: auto;
+    }
+
+    .form-section {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .btn-custom {
+      padding: 10px 30px;
+      border-radius: 10px;
+      font-size: 16px;
+      background-color: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .btn-custom:hover {
+      background-color: #f1f1f1;
+    }
+
+    .client-id-table {
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-bottom: 30px;
+  }
+
+  .client-id-table td {
+    padding: 8px 20px;
+    font-size: 16px;
+    vertical-align: middle;
+  }
+
+  .client-id-table .label {
+    font-weight: 400;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .client-id-table .value {
+    font-weight: bold;
+    color: #222;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 20px;
+  }
+
+   .thank-you-container {
+    text-align: center;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .thank-you-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+  }
+
+  .thank-you-text {
+    font-size: 20px;
+    font-weight: 500;
+    color: #222;
+    margin-bottom: 25px;
+  }
+
+  .close-btn {
+    background-color: #e5d312;
+    color: #fff;
+    padding: 10px 35px;
+    border: none;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: background-color 0.3s ease;
+  }
+
+  .close-btn:hover {
+    background-color: #d4c100;
+  }

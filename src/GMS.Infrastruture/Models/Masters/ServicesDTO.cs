@@ -7,6 +7,12 @@ public class ServicesDTO
     public string? Service { get; set; }
 
     public int? Status { get; set; }
+    public bool? Readonly { get; set; }
 
     public DateTime? CreateDate { get; set; }
+
+    public int? MinimumNight { get; set; }
+    public int? MaximumNight { get; set; }
+    public decimal? Price { get; set; }
+    public string? Description { get; set; }
 }

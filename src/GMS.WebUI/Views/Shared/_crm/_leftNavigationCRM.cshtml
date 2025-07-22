@@ -1,32 +1,86 @@
-﻿<div class="left_container" id="left_container">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+﻿@using GMS.Infrastructure.Models.RoleMenuMapping
+@using Newtonsoft.Json
+<button class="hamburger">☰</button>
+<div class="left_container" id="left_container">
+    <div class="brand_logo"><img src="~/img/logo.png" /></div>
     <div class="top_menu">
         <ul>
-            <li>
-                <a href="/CRM/BookingList">
-                    <figure><i class="bi bi-bookmarks-fill"></i></figure>
-                    <h4> Booking List</h4>
-                </a>
-            </li>
-            <li>
-                <a href="/CRM/NewEnquiry">
-                    <figure><i class="bi bi-stickies-fill"></i></figure>
-                    <h4>New Enquiry</h4>
-                </a>
-            </li>
-            <li>
-                <a href="/CRM/CallingList">
-                    <figure><i class="bi bi-telephone-fill"></i></figure>
-                    <h4>Calling List</h4>
-                </a>
-            </li>
-            
-            <li>
-                <a href="/CRM/EnquiryList">
-                    <figure><i class="bi bi-telephone-plus-fill"></i></figure>
-                    <h4>Enquiry List</h4>
-                </a>
-            </li>
+
+            @{
+                if (User.IsInRole("General Management") || User.IsInRole("Admin"))
+                {
+                    <li>
+                        <a href="/Guests/GuestsList">
+                            <figure><i class="bi bi-house-fill"></i></figure>
+                            <h4>Guest List</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/CRM/NewEnquiry">
+                            <figure><i class="bi bi-stickies-fill"></i></figure>
+                            <h4>New Enquiry</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/CRM/ClosedEnquiry">
+                            <figure><i class="bi bi-bookmarks-fill"></i></figure>
+                            <h4> Closed Enquiry</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/CRM/CallingList">
+                            <figure><i class="bi bi-telephone-fill"></i></figure>
+                            <h4>Calling List</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/CRM/EnquiryList">
+                            <figure><i class="bi bi-telephone-plus-fill"></i></figure>
+                            <h4>Enquiry List</h4>
+                        </a>
+                    </li>
+                    <li onclick="AddGuestsPartialView()">
+                        <a href="javascript:void(0)">
+                            <figure><i class="bi bi-plus-circle-fill"></i></figure>
+                            <h4>Add Reservation</h4>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    var strMenuList = Context.Session.GetString("MenuList");
+                    if (!String.IsNullOrEmpty(strMenuList))
+                    {
+                        var menuList = JsonConvert.DeserializeObject<List<MenuListDTO>>(strMenuList);
+                        var menuListFilteredParent = menuList?.Where(x => x.MenuParentId == 2).ToList().OrderBy(x => x.SNo);
+                        foreach (var menu in menuListFilteredParent)
+                        {
+                            if (menu.MenuName == "Add Reservation")
+                            {
+                                <li onclick="AddGuestsPartialView()">
+                                    <a href="javascript:void(0)">
+                                        <figure><i class="bi bi-plus-circle-fill"></i></figure>
+                                        <h4>Add Reservation</h4>
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <a href="@menu.MenuLink">
+                                        @Html.Raw(menu.MenuIcon)
+                                        <h4>@menu.MenuName</h4>
+                                    </a>
+                                </li>
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+
         </ul>
     </div>
 </div>

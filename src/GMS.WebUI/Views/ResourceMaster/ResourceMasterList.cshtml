@@ -32,136 +32,9 @@
 </head>
 <body>
 
-
+    @Html.Partial("_logout")
     <div class="admin_wrapper">
-        <div class="left_container" id="left_container">
-            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-            <div class="top_menu">
-                <ul>
-                    <li>
-                        <a href="index.html">
-                            <figure><i class="bi bi-house-fill"></i></figure>
-                            <h4>Master</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/ScheduleMaster/ScheduleMasterList">
-                            <figure><i class="bi bi-speedometer"></i></figure>
-                            <h4>Schedule Master</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/TaskMaster/TaskMasterList">
-                            <figure><i class="bi bi-speedometer"></i></figure>
-                            <h4>Task Master</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/ResourceMaster/ResourceMasterList">
-                            <figure><i class="bi bi-speedometer"></i></figure>
-                            <h4>Resource Master</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-speedometer"></i></figure>
-                            <h4>Primary</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-grid-fill"></i></figure>
-                            <h4>Category</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-plus-square-fill"></i></figure>
-                            <h4>Sub Category</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-grid-fill"></i></figure>
-                            <h4>Category</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-grid-fill"></i></figure>
-                            <h4>Room Type</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-map-fill"></i></figure>
-                            <h4>Source Mapping</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-clock-fill"></i></figure>
-                            <h4>Schedule Upload</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-people-fill"></i></figure>
-                            <h4>Role</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-ban-fill"></i></figure>
-                            <h4>No Intrested</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-file-earmark-code-fill"></i></figure>
-                            <h4>Channel Code</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-file-earmark-code-fill"></i></figure>
-                            <h4>Guarantee Code</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-microsoft"></i></figure>
-                            <h4>Brand Awarenes</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-truck-front-fill"></i></figure>
-                            <h4>Car Type</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-credit-card-2-front-fill"></i></figure>
-                            <h4>Payment Status Type</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-person-circle"></i></figure>
-                            <h4>Guest Check In/ Out</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-check-circle-fill"></i></figure>
-                            <h4>Room CheckList</h4>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
+        @Html.Partial("_services/_leftNavigationServices")
         <!-- Modal -->
 
         <input type="button" id="btnOpenAddResourceMasterPopup" style="display:none" data-bs-toggle="modal" data-bs-target="#addResourceMasterPopup" />
@@ -260,7 +133,7 @@
 
 
         <div class="right_container">
-            <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+            
 
             <!-- filtered rooms Start-->
             <div class="filtered_rooms_container">
@@ -302,6 +175,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="assets/carousel/owl.carousel.js"></script>
     <script src="~/customjs/common.js"></script>
+    <script src="~/customjs/logout.js"></script>
     <script src="~/customjs/masters/ResourceMaster.js"></script>
     <script src="~/customjs/validation.js"></script>
     <script>
@@ -452,15 +326,6 @@
 
 
 
-        /* Set the width of the side navigation to 250px */
-        function openNav() {
-            document.getElementById("left_container").style.width = "450px";
-        }
-
-        /* Set the width of the side navigation to 0 */
-        function closeNav() {
-            document.getElementById("left_container").style.width = "0";
-        }
 
 
     </script>

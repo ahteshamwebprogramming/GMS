@@ -2,13 +2,16 @@
 using GMS.Endpoints.Accounts;
 using GMS.Endpoints.Guests;
 using GMS.Endpoints.Masters;
+using GMS.Endpoints.Rooms;
 using GMS.Infrastructure.Helper;
 using GMS.Infrastructure.Models.Guests;
 using GMS.Infrastructure.Models.Masters;
 using GMS.Infrastructure.Models.Rooms;
 using GMS.Infrastructure.ViewModels.Guests;
+using GMS.Infrastructure.ViewModels.Rooms;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Data;
@@ -69,9 +72,12 @@ public class GuestsController : Controller
     }
     public async Task<IActionResult> GuestsGridViewPartialView([FromBody] GuestsGridViewParameters inputDTO)
     {
-
-
         GuestsListViewModel viewModel = new GuestsListViewModel();
+
+        viewModel = await GuestsDataForGridViewPartialView(inputDTO);
+
+        return PartialView("_guestsList/_guestsGridView", viewModel);
+
         var res = await _guestsAPIController.GuestsListStatusWiseAndPageWise(inputDTO, "Data");
         if (res != null)
         {
@@ -80,7 +86,6 @@ public class GuestsController : Controller
                 viewModel.MemberDetailsWithChildren = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
                 //if (viewModel.MemberDetailsWithChildren != null)
                 //{
-
                 //    foreach (var item in viewModel.MemberDetailsWithChildren)
                 //    {
                 //        if (item != null)
@@ -109,6 +114,53 @@ public class GuestsController : Controller
         return PartialView("_guestsList/_guestsGridView", viewModel);
     }
 
+    public async Task<IActionResult> GuestsTableViewPartialView([FromBody] GuestsGridViewParameters inputDTO)
+    {
+        GuestsListViewModel viewModel = new GuestsListViewModel();
+
+        viewModel = await GuestsDataForGridViewPartialView(inputDTO);
+
+        return PartialView("../Home/_index/_guestsList", viewModel);
+    }
+
+    public async Task<GuestsListViewModel> GuestsDataForGridViewPartialView([FromBody] GuestsGridViewParameters inputDTO)
+    {
+        GuestsListViewModel viewModel = new GuestsListViewModel();
+        var res = await _guestsAPIController.GuestsListStatusWiseAndPageWise(inputDTO, "Data");
+        if (res != null)
+        {
+            if (((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                viewModel.MemberDetailsWithChildren = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                //if (viewModel.MemberDetailsWithChildren != null)
+                //{
+                //    foreach (var item in viewModel.MemberDetailsWithChildren)
+                //    {
+                //        if (item != null)
+                //        {
+                //            //item.encProjectID = CommonHelper.EncryptURLHTML(item.ProjectID.ToString());
+                //        }
+                //    }
+                //}
+            }
+        }
+
+        var resCount = await _guestsAPIController.GuestsListStatusWiseAndPageWise(inputDTO, "Count");
+        if (resCount != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resCount).StatusCode == 200)
+        {
+            GuestsGridViewParameters pageDetails = new GuestsGridViewParameters();
+            var totalRecords = (List<int>?)((Microsoft.AspNetCore.Mvc.ObjectResult)resCount).Value;
+            pageDetails.TotalRecords = totalRecords == null ? 0 : totalRecords.Count == 0 ? 0 : totalRecords[0];
+
+            pageDetails.PageSize = (inputDTO != null && inputDTO.PageSize != null) ? inputDTO.PageSize : 10;
+            pageDetails.PageNumber = (inputDTO != null && inputDTO.PageNumber != null) ? inputDTO.PageNumber : 1;
+            pageDetails.TotalPages = (int)Math.Ceiling((double?)pageDetails.TotalRecords / pageDetails.PageSize ?? default(int));
+            pageDetails.SearchKeyword = inputDTO == null ? "" : String.IsNullOrEmpty(inputDTO.SearchKeyword) ? "" : inputDTO.SearchKeyword;
+            viewModel.GuestsGridViewParameters = pageDetails;
+        }
+
+        return viewModel;
+    }
     public async Task<IActionResult> GuestCheckOutPartialView([FromBody] MembersDetailsDTO inputDTO)
     {
         GuestsCheckListViewModel viewModel = new GuestsCheckListViewModel();
@@ -127,6 +179,37 @@ public class GuestsController : Controller
 
         return PartialView("_guestsList/_guestsCheckOut", viewModel);
     }
+    public async Task<IActionResult> CheckSettlementBeforeCheckoutEligibility([FromBody] MembersDetailsDTO inputDTO1)
+    {
+        var accountSettled = await _guestsAPIController.AccountSettled(inputDTO1.Id);
+        if (accountSettled)
+        {
+            return Ok("");
+        }
+        else
+        {
+            return BadRequest(new { heading = "Pending Account Settlement", message = "Checkout cannot be processed until all outstanding charges are cleared" });
+        }
+
+    }
+    public async Task<IActionResult> GuestCheckInPartialView([FromBody] MembersDetailsDTO inputDTO)
+    {
+        GuestsCheckListViewModel viewModel = new GuestsCheckListViewModel();
+
+        var guestRes = await _guestsAPIController.GetGuestByIdWithChild(inputDTO.Id);
+        if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        {
+            viewModel.MemberDetails = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        }
+
+        var resCheckListIn = await _guestsAPIController.GetGuestCheckList("CheckIn");
+        if (resCheckListIn != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resCheckListIn).StatusCode == 200)
+        {
+            viewModel.CheckListOut = (List<TblCheckListsDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)resCheckListIn).Value;
+        }
+
+        return PartialView("_guestsList/_guestsCheckIn", viewModel);
+    }
 
 
     public async Task<IActionResult> AddGuestsPartialView([FromBody] MembersDetailsDTO inputDTO)
@@ -140,7 +223,48 @@ public class GuestsController : Controller
             {
                 viewModel.MemberDetail = (MembersDetailsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
             }
+            var guestattachments = await _guestsAPIController.GetGuestAttachmentsByGroupIdAndPax(inputDTO.GroupId, inputDTO.PAXSno);
+            if (guestattachments != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestattachments).StatusCode == 200)
+            //if (guestattachments != null && ((Microsoft.AspNetCore.Mvc.StatusCodeResult)guestattachments).StatusCode == 200)
+            {
+                viewModel.GuestAttachments = (List<GuestDocumentAttachmentsDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestattachments).Value;
+                if (viewModel.GuestAttachments != null)
+                {
+                    foreach (var item in viewModel.GuestAttachments)
+                    {
+                        item.eId = CommonHelper.EncryptURLHTML(item.Id.ToString());
+                    }
+                }
+            }
+
         }
+
+        if (inputDTO != null && !String.IsNullOrEmpty(inputDTO.GroupId))
+        {
+            var guestRes = await _guestsAPIController.GetGuestStayInformationByGroupId(inputDTO.GroupId ?? "");
+            if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+            {
+                var stayInformation = (MembersDetailsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+                if (viewModel.MemberDetail != null && stayInformation != null)
+                {
+                    viewModel.MemberDetail.CatId = stayInformation.CatId;
+                    viewModel.MemberDetail.ServiceId = stayInformation.ServiceId;
+                    viewModel.MemberDetail.AdditionalNights = stayInformation.AdditionalNights;
+                    viewModel.MemberDetail.DateOfArrival = stayInformation.DateOfArrival;
+                    viewModel.MemberDetail.DateOfDepartment = stayInformation.DateOfDepartment;
+                    viewModel.MemberDetail.RoomType = stayInformation.RoomType;
+                    viewModel.MemberDetail.Pax = stayInformation.Pax;
+                    viewModel.MemberDetail.NoOfRooms = stayInformation.NoOfRooms;
+                    viewModel.MemberDetail.PickUpDrop = stayInformation.PickUpDrop;
+                    viewModel.MemberDetail.PickUpType = stayInformation.PickUpType;
+                    viewModel.MemberDetail.CarType = stayInformation.CarType;
+                    viewModel.MemberDetail.PickUpLoaction = stayInformation.PickUpLoaction;
+                    viewModel.MemberDetail.FlightArrivalDateAndDateTime = stayInformation.FlightArrivalDateAndDateTime;
+                    viewModel.MemberDetail.FlightDepartureDateAndDateTime = stayInformation.FlightDepartureDateAndDateTime;
+                }
+            }
+        }
+
         var genderRes = await _genderAPIController.GenderList();
         if (genderRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)genderRes).StatusCode == 200)
         {
@@ -161,7 +285,7 @@ public class GuestsController : Controller
         {
             viewModel.Cities = (List<tblCityDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)cityRes).Value;
         }
-        var servicesRes = await _servicesAPIController.ServicesList();
+        var servicesRes = await _servicesAPIController.List();
         if (servicesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).StatusCode == 200)
         {
             viewModel.Services = (List<ServicesDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).Value;
@@ -186,12 +310,12 @@ public class GuestsController : Controller
         {
             viewModel.LeadSources = (List<LeadSourceDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)leadeSources).Value;
         }
-        var channelCodes = await _channelCodeAPIController.ChannelCodeList();
+        var channelCodes = await _channelCodeAPIController.List();
         if (channelCodes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)channelCodes).StatusCode == 200)
         {
             viewModel.ChannelCodes = (List<ChannelCodeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)channelCodes).Value;
         }
-        var guarenteeCodes = await _guaranteeCodeAPIController.GuaranteeCodeList();
+        var guarenteeCodes = await _guaranteeCodeAPIController.List();
         if (guarenteeCodes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guarenteeCodes).StatusCode == 200)
         {
             viewModel.GuaranteeCodes = (List<GuaranteeCodeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)guarenteeCodes).Value;
@@ -232,11 +356,10 @@ public class GuestsController : Controller
                 inputDTO.AboutUs = dataVM.MemberDetail.AboutUs;
                 inputDTO.Address1 = dataVM.MemberDetail.Address1;
                 inputDTO.Address2 = dataVM.MemberDetail.Address2;
-                inputDTO.City = dataVM.MemberDetail.City;
-                inputDTO.State = dataVM.MemberDetail.State;
-                inputDTO.Country = dataVM.MemberDetail.Country;
+                inputDTO.CityId = dataVM.MemberDetail.CityId;
+                inputDTO.StateId = dataVM.MemberDetail.StateId;
+                inputDTO.CountryId = dataVM.MemberDetail.CountryId;
                 inputDTO.Pincode = dataVM.MemberDetail.Pincode;
-                inputDTO.Idproof = dataVM.MemberDetail.Idproof;
                 inputDTO.RelativeName = dataVM.MemberDetail.RelativeName;
                 inputDTO.RelativeNumber = dataVM.MemberDetail.RelativeNumber;
                 inputDTO.Relations = dataVM.MemberDetail.Relations;
@@ -256,7 +379,7 @@ public class GuestsController : Controller
                 inputDTO.NoOfRooms = dataVM.MemberDetail.NoOfRooms;
 
                 inputDTO.Occupation = dataVM.MemberDetail.Occupation;
-                inputDTO.PassportNo = dataVM.MemberDetail.PassportNo;
+
                 inputDTO.PolicyHolder = dataVM.MemberDetail.PolicyHolder;
                 inputDTO.InsuranceCompany = dataVM.MemberDetail.InsuranceCompany;
                 inputDTO.PolicyNo = dataVM.MemberDetail.PolicyNo;
@@ -267,12 +390,12 @@ public class GuestsController : Controller
                 inputDTO.IsMonthlynewsletter = dataVM.MemberDetail.IsMonthlynewsletter;
 
                 inputDTO.BloodGroup = dataVM.MemberDetail.BloodGroup;
-                inputDTO.VisaDetails = dataVM.MemberDetail.VisaDetails;
+
                 inputDTO.CoveredIndia = dataVM.MemberDetail.CoveredIndia;
                 inputDTO.Staydays = 0;
 
                 inputDTO.Nights = "";
-                inputDTO.Nationality = dataVM.MemberDetail.Nationality;
+                inputDTO.NationalityId = dataVM.MemberDetail.NationalityId;
                 inputDTO.HoldTillDate = dataVM.MemberDetail.HoldTillDate;
                 inputDTO.PaymentDate = dataVM.MemberDetail.PaymentDate;
                 inputDTO.PickUpDrop = dataVM.MemberDetail.PickUpDrop;
@@ -283,6 +406,19 @@ public class GuestsController : Controller
                 inputDTO.FlightDepartureDateAndDateTime = dataVM.MemberDetail.FlightDepartureDateAndDateTime;
                 inputDTO.PickUpLoaction = dataVM.MemberDetail.PickUpLoaction;
                 inputDTO.PAXSno = dataVM.MemberDetail.PAXSno;
+
+                inputDTO.PhotoShared = dataVM.MemberDetail.PhotoShared;
+                inputDTO.Idproof = dataVM.MemberDetail.Idproof;
+                inputDTO.IdProofIssueDate = dataVM.MemberDetail.IdProofIssueDate;
+                inputDTO.IdProofExpiryDate = dataVM.MemberDetail.IdProofExpiryDate;
+                inputDTO.PassportNo = dataVM.MemberDetail.PassportNo;
+                inputDTO.PassportIssueDate = dataVM.MemberDetail.PassportIssueDate;
+                inputDTO.PassportExpiryDate = dataVM.MemberDetail.PassportExpiryDate;
+                inputDTO.VisaDetails = dataVM.MemberDetail.VisaDetails;
+                inputDTO.VisaIssueDate = dataVM.MemberDetail.VisaIssueDate;
+                inputDTO.VisaExpiryDate = dataVM.MemberDetail.VisaExpiryDate;
+
+                inputDTO.RegistrationNumber = await _guestsAPIController.GetRegistrationNo(dataVM.MemberDetail);
 
                 //if (dataVM.Source == "RoomAvailability")
                 //{
@@ -320,12 +456,14 @@ public class GuestsController : Controller
                         inputDTO.AprovedDate = DateTime.Now; //when id=0
                         inputDTO.IsApproved = 1;//When Id=0
                         inputDTO.ApprovedBy = Convert.ToInt32(User.FindFirstValue("Id")); //when id=0
+
                         inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
+                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
 
                         inputDTO.GroupId = await _guestsAPIController.GenerateRandomNumberAndValidate();//When Id=0
                     }
                 }
-                else if (String.IsNullOrEmpty(dataVM.MemberDetail.UniqueNo))
+                else if (String.IsNullOrEmpty(dataVM.MemberDetail.UHID))
                 {
                     if (dataVM.Source == "RoomAvailability")
                     {
@@ -358,6 +496,7 @@ public class GuestsController : Controller
                         inputDTO.IsApproved = 1;//When Id=0
                         inputDTO.ApprovedBy = Convert.ToInt32(User.FindFirstValue("Id")); //when id=0
                         inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
+                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
                         inputDTO.GroupId = dataVM.MemberDetail.GroupId;
                     }
 
@@ -384,11 +523,16 @@ public class GuestsController : Controller
                     {
                         inputDTO.GroupId = dataVM.MemberDetail.GroupId;
                         inputDTO.UniqueNo = dataVM.MemberDetail.UniqueNo;
+                        inputDTO.UHID = dataVM.MemberDetail.UHID;
                     }
                 }
                 if (String.IsNullOrEmpty(inputDTO.UniqueNo))
                 {
                     inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
+                }
+                if (String.IsNullOrEmpty(inputDTO.UHID))
+                {
+                    inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
                 }
 
                 //if (dataVM.MemberDetail.Id > 0)
@@ -412,113 +556,31 @@ public class GuestsController : Controller
 
                 #endregion
 
-                #region Photo Attachments
 
-                try
-                {
-                    var attachments = dataVM.PhotoAttachment;
-                    if (attachments != null)
-                    {
-                        foreach (var attachment in attachments)
-                        {
-                            if (attachment.Length > 0)
-                            {
-                                var attachmentName = Path.GetFileName(attachment.FileName);
-                                var attachmentExtension = Path.GetExtension(attachmentName);
-                                string fileName = inputDTO.UniqueNo + attachmentExtension;
-                                string FilePathWithoutRoot = Path.Combine("UploadedDocuments", "MembersPic");
-                                string FilePath = Path.Combine(_hostingEnv.WebRootPath, FilePathWithoutRoot);
-                                if (!Directory.Exists(FilePath))
-                                    Directory.CreateDirectory(FilePath);
-                                var filePath = Path.Combine(FilePath, fileName);
-                                inputDTO.Photo = fileName;
-                                using (FileStream fs = System.IO.File.Create(filePath))
-                                {
-                                    attachment.CopyTo(fs);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    return BadRequest(e.Message);
-                }
-
-                #endregion
-                #region IdProof Attachment
-
-                try
-                {
-                    var attachments = dataVM.IdProofAttachment;
-                    if (attachments != null)
-                    {
-                        foreach (var attachment in attachments)
-                        {
-                            if (attachment.Length > 0)
-                            {
-                                var attachmentName = Path.GetFileName(attachment.FileName);
-                                var attachmentExtension = Path.GetExtension(attachmentName);
-                                string fileName = inputDTO.UniqueNo + attachmentExtension;
-                                string FilePathWithoutRoot = Path.Combine("UploadedDocuments", "IDProof");
-                                string FilePath = Path.Combine(_hostingEnv.WebRootPath, FilePathWithoutRoot);
-                                if (!Directory.Exists(FilePath))
-                                    Directory.CreateDirectory(FilePath);
-                                var filePath = Path.Combine(FilePath, fileName);
-                                using (FileStream fs = System.IO.File.Create(filePath))
-                                {
-                                    attachment.CopyTo(fs);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    return BadRequest(e.Message);
-                }
-
-                #endregion
-                #region Passport Attachment
-
-                try
-                {
-                    var attachments = dataVM.PassportAttachment;
-                    if (attachments != null)
-                    {
-                        foreach (var attachment in attachments)
-                        {
-                            if (attachment.Length > 0)
-                            {
-                                var attachmentName = Path.GetFileName(attachment.FileName);
-                                var attachmentExtension = Path.GetExtension(attachmentName);
-                                string fileName = inputDTO.UniqueNo + attachmentExtension;
-                                string FilePathWithoutRoot = Path.Combine("UploadedDocuments", "VisaDetails");
-                                string FilePath = Path.Combine(_hostingEnv.WebRootPath, FilePathWithoutRoot);
-                                if (!Directory.Exists(FilePath))
-                                    Directory.CreateDirectory(FilePath);
-                                var filePath = Path.Combine(FilePath, fileName);
-                                using (FileStream fs = System.IO.File.Create(filePath))
-                                {
-                                    attachment.CopyTo(fs);
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    return BadRequest(e.Message);
-                }
-
-                #endregion
                 var res = await _guestsAPIController.ManageGuests(inputDTO);
                 if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
                 {
+                    MembersDetailsDTO? resInputDTO = (MembersDetailsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+
                     if (inputDTO.PAXSno == inputDTO.Pax)
                     {
                         inputDTO.PaxCompleted = true;
                         await _guestsAPIController.UpdatePAxCompleted(inputDTO);
+
+
+                        #region autoAssignRooms
+
+                        if (resInputDTO != null && resInputDTO.opt == "Add")
+                        {
+                            bool roomAssigned = await _guestsAPIController.AutoRoomAssign(inputDTO);
+                            if (roomAssigned)
+                            {
+                                inputDTO.LoggedInUser = Convert.ToInt32(User.FindFirstValue("Id"));
+                                await _guestsAPIController.PostChargesToAuditBySP(inputDTO.Id);
+                            }
+                        }
+
+                        #endregion
                     }
 
 
@@ -528,8 +590,8 @@ public class GuestsController : Controller
                         roomAllocationDTO.Rnumber = dataVM?.RoomAllocation?.Rnumber;
                         roomAllocationDTO.Rtype = inputDTO.RoomType;
                         roomAllocationDTO.GuestId = inputDTO.Id;
-                        roomAllocationDTO.Fd = inputDTO?.DateOfArrival?.ToString("MM/dd/yyyy hh:mm tt");
-                        roomAllocationDTO.Td = inputDTO?.DateOfDepartment?.ToString("MM/dd/yyyy hh:mm tt");
+                        roomAllocationDTO.Fd = inputDTO?.DateOfArrival;
+                        roomAllocationDTO.Td = inputDTO?.DateOfDepartment;
                         roomAllocationDTO.AsigndDate = DateTime.Now;
                         roomAllocationDTO.IsActive = 1;
                         roomAllocationDTO.Remarks = dataVM?.BookStatus;
@@ -541,6 +603,221 @@ public class GuestsController : Controller
                             return res;
                         }
                     }
+
+
+                    #region Photo Attachments
+                    try
+                    {
+                        var attachments = dataVM?.PhotoAttachment;
+                        if (attachments != null)
+                        {
+                            foreach (var attachment in attachments)
+                            {
+                                if (attachment.Length > 0)
+                                {
+                                    var attachmentName = Path.GetFileName(attachment.FileName);
+                                    var attachmentExtension = Path.GetExtension(attachmentName);
+                                    string FilePathWithoutRoot = Path.Combine("UploadedDocuments", "GuestPhoto", resInputDTO?.Id.ToString() ?? "0");
+                                    string FilePath = Path.Combine(_hostingEnv.WebRootPath, FilePathWithoutRoot);
+                                    if (!Directory.Exists(FilePath))
+                                        Directory.CreateDirectory(FilePath);
+                                    var filePathWithAttachment = Path.Combine(FilePath, attachmentName);
+
+                                    GuestDocumentAttachmentsDTO guestDocumentAttachmentsDTO = new GuestDocumentAttachmentsDTO();
+                                    guestDocumentAttachmentsDTO.AttachmentName = attachmentName;
+                                    guestDocumentAttachmentsDTO.AttachmentPath = FilePathWithoutRoot;
+                                    guestDocumentAttachmentsDTO.AttachmentExtension = attachmentExtension;
+                                    guestDocumentAttachmentsDTO.AttachmentType = "GuestPhoto";
+                                    guestDocumentAttachmentsDTO.IsActive = true;
+                                    guestDocumentAttachmentsDTO.CreatedDate = DateTime.Now;
+                                    guestDocumentAttachmentsDTO.CreatedBy = Convert.ToInt32(User.FindFirstValue("Id"));
+                                    guestDocumentAttachmentsDTO.AttachmentSource = "AddGuest_GuestPage";
+                                    guestDocumentAttachmentsDTO.ReferenceId = resInputDTO?.Id;
+                                    //Add to Database
+                                    var fileUploadRes = await _guestsAPIController.SaveAttachmentDetailsToDatabase(guestDocumentAttachmentsDTO);
+
+                                    if (fileUploadRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)fileUploadRes).StatusCode == 200)
+                                    {
+                                        using (FileStream fs = System.IO.File.Create(filePathWithAttachment))
+                                        {
+                                            attachment.CopyTo(fs);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return fileUploadRes ?? BadRequest("Some error has occurred while uploading attachment");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return BadRequest(e.Message);
+                    }
+
+                    #endregion
+                    #region IdProof Attachment
+
+                    try
+                    {
+                        var attachments = dataVM?.IdProofAttachment;
+                        if (attachments != null)
+                        {
+                            foreach (var attachment in attachments)
+                            {
+                                if (attachment.Length > 0)
+                                {
+                                    var attachmentName = Path.GetFileName(attachment.FileName);
+                                    var attachmentExtension = Path.GetExtension(attachmentName);
+                                    string FilePathWithoutRoot = Path.Combine("UploadedDocuments", "GuestIdProof", resInputDTO?.Id.ToString() ?? "0");
+                                    string FilePath = Path.Combine(_hostingEnv.WebRootPath, FilePathWithoutRoot);
+                                    if (!Directory.Exists(FilePath))
+                                        Directory.CreateDirectory(FilePath);
+                                    var filePathWithAttachment = Path.Combine(FilePath, attachmentName);
+
+                                    GuestDocumentAttachmentsDTO guestDocumentAttachmentsDTO = new GuestDocumentAttachmentsDTO();
+                                    guestDocumentAttachmentsDTO.AttachmentName = attachmentName;
+                                    guestDocumentAttachmentsDTO.AttachmentPath = FilePathWithoutRoot;
+                                    guestDocumentAttachmentsDTO.AttachmentExtension = attachmentExtension;
+                                    guestDocumentAttachmentsDTO.AttachmentType = "GuestIdProof";
+                                    guestDocumentAttachmentsDTO.IsActive = true;
+                                    guestDocumentAttachmentsDTO.CreatedDate = DateTime.Now;
+                                    guestDocumentAttachmentsDTO.CreatedBy = Convert.ToInt32(User.FindFirstValue("Id"));
+                                    guestDocumentAttachmentsDTO.AttachmentSource = "AddGuest_GuestPage";
+                                    guestDocumentAttachmentsDTO.ReferenceId = resInputDTO?.Id;
+                                    //Add to Database
+                                    var fileUploadRes = await _guestsAPIController.SaveAttachmentDetailsToDatabase(guestDocumentAttachmentsDTO);
+
+                                    if (fileUploadRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)fileUploadRes).StatusCode == 200)
+                                    {
+                                        using (FileStream fs = System.IO.File.Create(filePathWithAttachment))
+                                        {
+                                            attachment.CopyTo(fs);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return fileUploadRes ?? BadRequest("Some error has occurred while uploading attachment");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return BadRequest(e.Message);
+                    }
+
+                    #endregion
+                    #region Passport Attachment
+
+                    try
+                    {
+                        var attachments = dataVM?.PassportAttachment;
+                        if (attachments != null)
+                        {
+                            foreach (var attachment in attachments)
+                            {
+                                if (attachment.Length > 0)
+                                {
+                                    var attachmentName = Path.GetFileName(attachment.FileName);
+                                    var attachmentExtension = Path.GetExtension(attachmentName);
+                                    string FilePathWithoutRoot = Path.Combine("UploadedDocuments", "GuestPassport", resInputDTO?.Id.ToString() ?? "0");
+                                    string FilePath = Path.Combine(_hostingEnv.WebRootPath, FilePathWithoutRoot);
+                                    if (!Directory.Exists(FilePath))
+                                        Directory.CreateDirectory(FilePath);
+                                    var filePathWithAttachment = Path.Combine(FilePath, attachmentName);
+
+                                    GuestDocumentAttachmentsDTO guestDocumentAttachmentsDTO = new GuestDocumentAttachmentsDTO();
+                                    guestDocumentAttachmentsDTO.AttachmentName = attachmentName;
+                                    guestDocumentAttachmentsDTO.AttachmentPath = FilePathWithoutRoot;
+                                    guestDocumentAttachmentsDTO.AttachmentExtension = attachmentExtension;
+                                    guestDocumentAttachmentsDTO.AttachmentType = "GuestPassport";
+                                    guestDocumentAttachmentsDTO.IsActive = true;
+                                    guestDocumentAttachmentsDTO.CreatedDate = DateTime.Now;
+                                    guestDocumentAttachmentsDTO.CreatedBy = Convert.ToInt32(User.FindFirstValue("Id"));
+                                    guestDocumentAttachmentsDTO.AttachmentSource = "AddGuest_GuestPage";
+                                    guestDocumentAttachmentsDTO.ReferenceId = resInputDTO?.Id;
+                                    //Add to Database
+                                    var fileUploadRes = await _guestsAPIController.SaveAttachmentDetailsToDatabase(guestDocumentAttachmentsDTO);
+
+                                    if (fileUploadRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)fileUploadRes).StatusCode == 200)
+                                    {
+                                        using (FileStream fs = System.IO.File.Create(filePathWithAttachment))
+                                        {
+                                            attachment.CopyTo(fs);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return fileUploadRes ?? BadRequest("Some error has occurred while uploading attachment");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return BadRequest(e.Message);
+                    }
+
+                    #endregion
+                    #region Visa Attachment
+
+                    try
+                    {
+                        var attachments = dataVM?.VisaAttachment;
+                        if (attachments != null)
+                        {
+                            foreach (var attachment in attachments)
+                            {
+                                if (attachment.Length > 0)
+                                {
+                                    var attachmentName = Path.GetFileName(attachment.FileName);
+                                    var attachmentExtension = Path.GetExtension(attachmentName);
+                                    string FilePathWithoutRoot = Path.Combine("UploadedDocuments", "GuestVisa", resInputDTO?.Id.ToString() ?? "0");
+                                    string FilePath = Path.Combine(_hostingEnv.WebRootPath, FilePathWithoutRoot);
+                                    if (!Directory.Exists(FilePath))
+                                        Directory.CreateDirectory(FilePath);
+                                    var filePathWithAttachment = Path.Combine(FilePath, attachmentName);
+
+                                    GuestDocumentAttachmentsDTO guestDocumentAttachmentsDTO = new GuestDocumentAttachmentsDTO();
+                                    guestDocumentAttachmentsDTO.AttachmentName = attachmentName;
+                                    guestDocumentAttachmentsDTO.AttachmentPath = FilePathWithoutRoot;
+                                    guestDocumentAttachmentsDTO.AttachmentExtension = attachmentExtension;
+                                    guestDocumentAttachmentsDTO.AttachmentType = "GuestVisa";
+                                    guestDocumentAttachmentsDTO.IsActive = true;
+                                    guestDocumentAttachmentsDTO.CreatedDate = DateTime.Now;
+                                    guestDocumentAttachmentsDTO.CreatedBy = Convert.ToInt32(User.FindFirstValue("Id"));
+                                    guestDocumentAttachmentsDTO.AttachmentSource = "AddGuest_GuestPage";
+                                    guestDocumentAttachmentsDTO.ReferenceId = resInputDTO?.Id;
+                                    //Add to Database
+                                    var fileUploadRes = await _guestsAPIController.SaveAttachmentDetailsToDatabase(guestDocumentAttachmentsDTO);
+
+                                    if (fileUploadRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)fileUploadRes).StatusCode == 200)
+                                    {
+                                        using (FileStream fs = System.IO.File.Create(filePathWithAttachment))
+                                        {
+                                            attachment.CopyTo(fs);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        return fileUploadRes ?? BadRequest("Some error has occurred while uploading attachment");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return BadRequest(e.Message);
+                    }
+
+                    #endregion
+
+
                 }
 
 
@@ -577,7 +854,103 @@ public class GuestsController : Controller
             return StatusCode(StatusCodes.Status500InternalServerError, ex);
         }
     }
+
+    public async Task<IActionResult> GetRoomsAvailableForGuestsSharedNew([FromBody] RoomAllocationDTO inputDTO)
+    {
+        List<AvailableRoomsForGuestAllocation>? dto = new List<AvailableRoomsForGuestAllocation>();
+        if (inputDTO != null && inputDTO.Shared == 1)
+        {
+            var roomNumbers = await _guestsAPIController.GetRoomsAvailableForGuestsShared(inputDTO.GuestId ?? 0);
+            if (roomNumbers != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).StatusCode == 200)
+            {
+                dto = (List<AvailableRoomsForGuestAllocation>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).Value;
+            }
+        }
+        else
+        {
+            var roomNumbers = await _guestsAPIController.GetRoomsAvailableForGuestsNonShared(inputDTO.GuestId ?? 0);
+            if (roomNumbers != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).StatusCode == 200)
+            {
+                dto = (List<AvailableRoomsForGuestAllocation>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).Value;
+            }
+        }
+        return Ok(dto);
+    }
+
     public async Task<IActionResult> AddRoomPartialView([FromBody] MembersDetailsDTO inputDTO)
+    {
+        MembersDetailsDTO? membersDetailsDTO = new MembersDetailsDTO();
+        AddRoomPopupViewModel viewModel = new AddRoomPopupViewModel();
+        if (inputDTO.Id > 0)
+        {
+            var roomAllocation = await _guestsAPIController.GetRoomAllocationByGuestId(inputDTO.Id);
+            if (roomAllocation != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomAllocation).StatusCode == 200)
+            {
+                viewModel.RoomAllocationDetails = (RoomAllocationDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomAllocation).Value;
+
+                if (viewModel.RoomAllocationDetails != null && viewModel.RoomAllocationDetails.Shared == 1)
+                {
+                    var roomNumbers = await _guestsAPIController.GetRoomsAvailableForGuestsShared(inputDTO.Id);
+                    if (roomNumbers != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).StatusCode == 200)
+                    {
+                        viewModel.AvailableRoomsForGuestAllocationList = (List<AvailableRoomsForGuestAllocation>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).Value;
+                    }
+                }
+                else
+                {
+                    var roomNumbers = await _guestsAPIController.GetRoomsAvailableForGuestsNonShared(inputDTO.Id);
+                    if (roomNumbers != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).StatusCode == 200)
+                    {
+                        viewModel.AvailableRoomsForGuestAllocationList = (List<AvailableRoomsForGuestAllocation>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).Value;
+                    }
+                }
+            }
+            else
+            {
+                var roomNumbers = await _guestsAPIController.GetRoomsAvailableForGuestsNonShared(inputDTO.Id);
+                if (roomNumbers != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).StatusCode == 200)
+                {
+                    viewModel.AvailableRoomsForGuestAllocationList = (List<AvailableRoomsForGuestAllocation>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).Value;
+                }
+            }
+            var roomPArtnerDetails = await _guestsAPIController.GetGuestListSharingRoomByGuestId(inputDTO.Id);
+            if (roomPArtnerDetails != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomPArtnerDetails).StatusCode == 200)
+            {
+                viewModel.RoomPartnerName = (List<MembersDetailsDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomPArtnerDetails).Value;
+                if (viewModel.RoomPartnerName != null && viewModel.RoomPartnerName.Count > 0)
+                {
+                    viewModel.isShared = true;
+                }
+            }
+
+            var guestRes = await _guestsAPIController.GetGuestByIdWithChild(inputDTO.Id);
+            if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+            {
+                viewModel.MembersDetailWithChild = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+            }
+
+
+
+
+            //var sharedStatusRes = await _guestsAPIController.GetAvailableRoomsSharedStatusForGuest(inputDTO.Id);
+            //if (sharedStatusRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)sharedStatusRes).StatusCode == 200)
+            //{
+            //    List<AvailableRoomsSharedStatus>? availableRoomsSharedStatuses = (List<AvailableRoomsSharedStatus>?)((Microsoft.AspNetCore.Mvc.ObjectResult)sharedStatusRes).Value;
+            //    if (availableRoomsSharedStatuses != null && availableRoomsSharedStatuses.Count > 0)
+            //    {
+            //        viewModel.AvailableRoomsSharedStatus = availableRoomsSharedStatuses.FirstOrDefault();
+            //    }
+            //}
+        }
+        return PartialView("_guestsList/_addRoom", viewModel);
+    }
+
+    //public async Task<IActionResult> AllocateRoomToGuestNew([FromBody] RoomAllocationDTO inputDTO)
+    //{
+    //    return Ok();
+    //}
+
+    public async Task<IActionResult> AddRoomPartialView1([FromBody] MembersDetailsDTO inputDTO)
     {
         MembersDetailsDTO? membersDetailsDTO = new MembersDetailsDTO();
         AddRoomPopupViewModel viewModel = new AddRoomPopupViewModel();
@@ -658,11 +1031,68 @@ public class GuestsController : Controller
             return View(membersDetailsDTOs);
         }
     }
+    [Route("/Guests/ReviewMemberDetails/{GuestId}")]
+    public async Task<IActionResult> ReviewMemberDetails(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+
+            }
+            return View(membersDetailsDTOs);
+        }
+    }
     public async Task<IActionResult> AllocateRoom([FromBody] RoomAllocationDTO inputDTO)
     {
         if (inputDTO != null)
         {
             var res = await _guestsAPIController.AllocateRoom(inputDTO);
+            return res;
+        }
+        return BadRequest("Unable to assign room at the moment");
+    }
+    public async Task<IActionResult> MarkGuestNoShow([FromBody] RoomAllocationDTO inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            var res = await _guestsAPIController.MarkGuestNoShow(inputDTO);
+            return res;
+        }
+        return BadRequest("Unable to assign room at the moment");
+    }
+    public async Task<IActionResult> AllocateRoomToAllGroup([FromBody] RoomAllocationDTO inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            var res = await _guestsAPIController.AllocateRoomToAllGroup(inputDTO);
+            return res;
+        }
+        return BadRequest("Unable to assign room at the moment");
+    }
+    public async Task<IActionResult> ChangeRoomForCurrentGuestWithSharingStatus([FromBody] RoomAllocationDTO inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            var res = await _guestsAPIController.ChangeRoomForCurrentGuestWithSharingStatus(inputDTO);
+            return res;
+        }
+        return BadRequest("Unable to assign room at the moment");
+    }
+    public async Task<IActionResult> ChangeRoomForCurrentGuestWithNonSharingStatus([FromBody] RoomAllocationDTO inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            var res = await _guestsAPIController.ChangeRoomForCurrentGuestWithNonSharingStatus(inputDTO);
             return res;
         }
         return BadRequest("Unable to assign room at the moment");
@@ -678,6 +1108,12 @@ public class GuestsController : Controller
         var res = await _guestsAPIController.GuestCheckOut(inputDTO);
         return res;
     }
+
+    //public async Task<IActionResult> CheckInGuest([FromBody] MedicalSoultion_GuestCheckList inputDTO)
+    //{
+    //    var res = await _guestsAPIController.GuestCheckOut(inputDTO);
+    //    return res;
+    //}
 
     [Route("/Guests/GuestSchedule/{GuestId?}")]
     public async Task<IActionResult> GuestSchedule(int? GuestId)
@@ -746,6 +1182,11 @@ public class GuestsController : Controller
         var res = await _guestsAPIController.GetResourcesByTaskId(inputDTO.Id);
         return res;
     }
+    public async Task<IActionResult> GetTaskByTaskId([FromBody] TaskMasterDTO inputDTO)
+    {
+        var res = await _guestsAPIController.GetTaskByTaskId(inputDTO.Id);
+        return res;
+    }
     public async Task<IActionResult> SearchGuestDetailsByPhoneNumber([FromBody] MembersDetailsDTO inputDTO)
     {
         List<MemberDetailsWithChild>? memberDetails = new List<MemberDetailsWithChild>();
@@ -766,6 +1207,64 @@ public class GuestsController : Controller
             if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
             {
                 viewModel.MemberDetail = (MembersDetailsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+
+                if (viewModel.MemberDetail != null)
+                {
+                    viewModel.MemberDetail.CatId = null;
+                    viewModel.MemberDetail.ServiceId = null;
+                    viewModel.MemberDetail.AdditionalNights = null;
+                    viewModel.MemberDetail.DateOfArrival = null;
+                    viewModel.MemberDetail.DateOfDepartment = null;
+                    viewModel.MemberDetail.RoomType = null;
+                    viewModel.MemberDetail.Pax = null;
+                    viewModel.MemberDetail.NoOfRooms = null;
+                    viewModel.MemberDetail.PickUpDrop = null;
+                    viewModel.MemberDetail.PickUpType = null;
+                    viewModel.MemberDetail.CarType = null;
+                    viewModel.MemberDetail.PickUpLoaction = null;
+                    viewModel.MemberDetail.FlightArrivalDateAndDateTime = null;
+                    viewModel.MemberDetail.FlightDepartureDateAndDateTime = null;
+                }
+
+            }
+
+            var guestattachments = await _guestsAPIController.GetGuestAttachmentsByGuestId(inputDTO.Id);
+            if (guestattachments != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestattachments).StatusCode == 200)
+            {
+                viewModel.GuestAttachments = (List<GuestDocumentAttachmentsDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestattachments).Value;
+                if (viewModel.GuestAttachments != null)
+                {
+                    foreach (var item in viewModel.GuestAttachments)
+                    {
+                        item.eId = CommonHelper.EncryptURLHTML(item.Id.ToString());
+                    }
+                }
+            }
+
+        }
+        if (inputDTO != null && !String.IsNullOrEmpty(inputDTO.GroupId))
+        {
+            var guestRes = await _guestsAPIController.GetGuestStayInformationByGroupId(inputDTO.GroupId ?? "");
+            if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+            {
+                var stayInformation = (MembersDetailsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+                if (viewModel.MemberDetail != null && stayInformation != null)
+                {
+                    viewModel.MemberDetail.CatId = stayInformation.CatId;
+                    viewModel.MemberDetail.ServiceId = stayInformation.ServiceId;
+                    viewModel.MemberDetail.AdditionalNights = stayInformation.AdditionalNights;
+                    viewModel.MemberDetail.DateOfArrival = stayInformation.DateOfArrival;
+                    viewModel.MemberDetail.DateOfDepartment = stayInformation.DateOfDepartment;
+                    viewModel.MemberDetail.RoomType = stayInformation.RoomType;
+                    viewModel.MemberDetail.Pax = stayInformation.Pax;
+                    viewModel.MemberDetail.NoOfRooms = stayInformation.NoOfRooms;
+                    viewModel.MemberDetail.PickUpDrop = stayInformation.PickUpDrop;
+                    viewModel.MemberDetail.PickUpType = stayInformation.PickUpType;
+                    viewModel.MemberDetail.CarType = stayInformation.CarType;
+                    viewModel.MemberDetail.PickUpLoaction = stayInformation.PickUpLoaction;
+                    viewModel.MemberDetail.FlightArrivalDateAndDateTime = stayInformation.FlightArrivalDateAndDateTime;
+                    viewModel.MemberDetail.FlightDepartureDateAndDateTime = stayInformation.FlightDepartureDateAndDateTime;
+                }
             }
         }
         var genderRes = await _genderAPIController.GenderList();
@@ -788,7 +1287,7 @@ public class GuestsController : Controller
         {
             viewModel.Cities = (List<tblCityDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)cityRes).Value;
         }
-        var servicesRes = await _servicesAPIController.ServicesList();
+        var servicesRes = await _servicesAPIController.List();
         if (servicesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).StatusCode == 200)
         {
             viewModel.Services = (List<ServicesDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).Value;
@@ -813,16 +1312,472 @@ public class GuestsController : Controller
         {
             viewModel.LeadSources = (List<LeadSourceDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)leadeSources).Value;
         }
-        var channelCodes = await _channelCodeAPIController.ChannelCodeList();
+        var channelCodes = await _channelCodeAPIController.List();
         if (channelCodes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)channelCodes).StatusCode == 200)
         {
             viewModel.ChannelCodes = (List<ChannelCodeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)channelCodes).Value;
         }
-        var guarenteeCodes = await _guaranteeCodeAPIController.GuaranteeCodeList();
+        var guarenteeCodes = await _guaranteeCodeAPIController.List();
         if (guarenteeCodes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guarenteeCodes).StatusCode == 200)
         {
             viewModel.GuaranteeCodes = (List<GuaranteeCodeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)guarenteeCodes).Value;
         }
         return PartialView("_guestsList/_guestsFormDetails", viewModel);
     }
+
+    public async Task<IActionResult> ValidateRoomsAvailability([FromBody] MembersDetailsDTO inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            if (inputDTO.DateOfArrival != null && inputDTO.DateOfDepartment != null && inputDTO.Pax != null && inputDTO.NoOfRooms != null && inputDTO.RoomType != null && inputDTO.Pax > 0 && inputDTO.NoOfRooms > 0 && inputDTO.RoomType > 0)
+            {
+                if (inputDTO.DateOfArrival != null && inputDTO.DateOfDepartment != null && inputDTO.DateOfArrival > inputDTO.DateOfDepartment)
+                {
+                    return BadRequest("Date Of Arrival can not be greator then Date Of Department");
+                }
+
+                float pax = float.TryParse(inputDTO.Pax.ToString(), out pax) == true ? pax : 0;
+                float noofrooms = float.TryParse(inputDTO.NoOfRooms.ToString(), out noofrooms) == true ? noofrooms : 0;
+                if (pax == 0 || noofrooms == 0)
+                {
+                    return BadRequest("PAX or No Of Rooms are invalid");
+                }
+                float paxperroom = pax / noofrooms;
+                if (paxperroom > 3)
+                {
+                    return BadRequest("One room can afford only 3 person");
+                }
+                DateTime? DateOfDepartment = inputDTO.DateOfDepartment;
+                DateTime? DateOfArrival = inputDTO.DateOfArrival;
+                int? PAX = inputDTO.Pax;
+                int? NoOfRooms = inputDTO.NoOfRooms;
+                int? RoomType = inputDTO.RoomType;
+
+                var res = await _guestsAPIController.IsRoomsAvailable(inputDTO);
+                return res;
+            }
+            else
+            {
+                return BadRequest("data is invalid");
+            }
+        }
+        else
+        {
+            return BadRequest("data is invalid");
+        }
+        return BadRequest("Some error occurred while validating rooms");
+    }
+    public async Task<IActionResult> FetchState([FromBody] TblCountriesDTO inputDTO)
+    {
+        var res = await _guestsAPIController.FetchState(inputDTO);
+        return res;
+    }
+    public async Task<IActionResult> FetchCity([FromBody] TblStateDTO inputDTO)
+    {
+        var res = await _guestsAPIController.FetchCity(inputDTO);
+        return res;
+    }
+    public async Task<IActionResult> DeleteUploadedFile([FromBody] GuestDocumentAttachmentsDTO inputDTO)
+    {
+        try
+        {
+
+            if (inputDTO != null)
+            {
+                var res = await _guestsAPIController.DeleteGuestAttachmentById(inputDTO.Id);
+                return res;
+            }
+            throw new Exception("Data is not valid");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    [HttpGet]
+    [Route("Guests/DownloadFile/{eFileId}")]
+    public async Task<IActionResult> DownloadFile(string eFileId)
+    {
+        GuestDocumentAttachmentsDTO? inputDTO = new GuestDocumentAttachmentsDTO();
+        if (eFileId != null)
+        {
+            int FileID = Convert.ToInt32(CommonHelper.DecryptURLHTML(eFileId));
+            var res = await _guestsAPIController.GuestAttachmentByAttachmentId(FileID);
+            if (res != null)
+            {
+                if (((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+                {
+                    inputDTO = (GuestDocumentAttachmentsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                }
+            }
+        }
+
+        if (inputDTO != null)
+        {
+            string _filePath = Path.Combine(_hostingEnv.WebRootPath, inputDTO?.AttachmentPath ?? "", inputDTO?.AttachmentName ?? "");
+            if (!System.IO.File.Exists(_filePath))
+            {
+                return NotFound();
+            }
+            // Create a FileStream to read the file
+            var stream = new FileStream(_filePath, FileMode.Open, FileAccess.Read);
+            // Determine the content type based on the file extension
+            var contentType = CommonHelper.getContentTypeByExtesnion(inputDTO?.AttachmentExtension == null ? "" : inputDTO.AttachmentExtension);
+            var fileName = Path.GetFileName(_filePath);
+
+            // Return FileStreamResult with the file stream and content type
+            return File(stream, contentType, fileName);
+        }
+        else
+        {
+            return NotFound();
+        }
+    }
+    #region Billing
+    public async Task<IActionResult> BillingPartialView([FromBody] MembersDetailsDTO? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+        dto.AccountSettled = false;
+        var guestRes = await _guestsAPIController.GetGuestByIdWithChild(inputDTO?.Id ?? 0);
+        if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        {
+            dto.MembersWithAttributes = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        }
+        var packagesRes = await _guestsAPIController.GetPackagesForBilling(inputDTO?.Id ?? 0);
+        if (packagesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)packagesRes).StatusCode == 200)
+        {
+            dto.Services = (List<ServicesDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)packagesRes).Value;
+        }
+        var tasksRes = await _guestsAPIController.GetTasksForBilling(inputDTO?.Id ?? 0);
+        if (tasksRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)tasksRes).StatusCode == 200)
+        {
+            dto.Tasks = (List<TaskMasterDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)tasksRes).Value;
+        }
+        if (inputDTO != null)
+        {
+            var billingRes = await _guestsAPIController.GetBillingDataWithAttr(inputDTO.Id);
+            if (billingRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)billingRes).StatusCode == 200)
+            {
+                dto.BillingDataList = (List<BillingDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)billingRes).Value;
+            }
+            var allGuestsInRoomRes = await _guestsAPIController.GetAllGuestsInRoom(inputDTO.Id);
+            if (allGuestsInRoomRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).StatusCode == 200)
+            {
+                dto.MemberDetailsWithChildren = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).Value;
+            }
+            dto.AccountSettled = await _guestsAPIController.IsAccountSettled(inputDTO?.Id ?? 0);
+        }
+
+
+
+        return PartialView("_guestsList/_billing", dto);
+    }
+    public async Task<IActionResult> PaymentPartialView([FromBody] MembersDetailsDTO? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+        dto.opt = inputDTO?.opt ?? "";
+        var paymentMethodRes = await _guestsAPIController.GetPaymentMethodForBilling();
+        if (paymentMethodRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)paymentMethodRes).StatusCode == 200)
+        {
+            dto.PaymentMethods = (List<GuaranteeCodeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)paymentMethodRes).Value;
+        }
+        if (inputDTO != null)
+        {
+            var paymentRes = await _guestsAPIController.GetPaymentDataWithAttr(inputDTO.Id);
+            if (paymentRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).StatusCode == 200)
+            {
+                dto.PaymentsWithAttr = (List<PaymentWithAttr>?)((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).Value;
+            }
+        }
+
+        return PartialView("_guestsList/_payment", dto);
+    }
+    public async Task<IActionResult> GetServicesForBilling([FromBody] MembersDetailsDTO? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+
+        var guestRes = await _guestsAPIController.GetServicesForBilling(inputDTO?.Id ?? 0);
+        //if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        //{
+        //    dto.Services = (List<TaskMasterDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        //}
+        var tasksRes = await _guestsAPIController.GetTasksForBilling(inputDTO?.Id ?? 0);
+        if (tasksRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)tasksRes).StatusCode == 200)
+        {
+            dto.Tasks = (List<TaskMasterDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)tasksRes).Value;
+        }
+        var allGuestsInRoomRes = await _guestsAPIController.GetAllGuestsInRoom(inputDTO.Id);
+        if (allGuestsInRoomRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).StatusCode == 200)
+        {
+            dto.MemberDetailsWithChildren = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).Value;
+        }
+        return Ok(dto);
+    }
+    public async Task<IActionResult> GetPackagesForBilling([FromBody] MembersDetailsDTO? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+        //var guestRes = await _guestsAPIController.GetPackagesForBilling(inputDTO?.Id ?? 0);
+        //if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        //{
+        //    dto.Services = (List<TaskMasterDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        //}
+        var packagesRes = await _guestsAPIController.GetPackagesForBilling(inputDTO?.Id ?? 0);
+        if (packagesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)packagesRes).StatusCode == 200)
+        {
+            dto.Services = (List<ServicesDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)packagesRes).Value;
+        }
+        var allGuestsInRoomRes = await _guestsAPIController.GetAllGuestsInRoom(inputDTO.Id);
+        if (allGuestsInRoomRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).StatusCode == 200)
+        {
+            dto.MemberDetailsWithChildren = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).Value;
+        }
+        return Ok(dto);
+        //return guestRes;
+    }
+    public async Task<IActionResult> GetPaymentModesForBilling([FromBody] MembersDetailsDTO? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+        var res = await _guestsAPIController.GetPaymentMethodForBilling();
+        return res;
+    }
+    public async Task<IActionResult> SaveBillingData([FromBody] BillingViewModel? inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            int loginId = Convert.ToInt32(User.FindFirstValue("Id"));
+            var res = await _guestsAPIController.SaveBillingData(inputDTO, loginId);
+            return res;
+        }
+        else
+        {
+            return BadRequest("Data is not valid");
+        }
+    }
+
+    public async Task<IActionResult> ConfirmAndSaveBillingData([FromBody] BillingDTO? inputDTO)
+    {
+        if (inputDTO != null)
+        {
+
+            int loginId = Convert.ToInt32(User.FindFirstValue("Id"));
+            var res = await _guestsAPIController.ConfirmAndSaveBillingData(inputDTO, loginId);
+
+
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                inputDTO.CreatedBy = loginId;
+                if (inputDTO.ServiceType == "RoomCharges")
+                {
+                    await _guestsAPIController.PostRoomChargesToAudit(inputDTO);
+                }
+                else
+                {
+                    await _guestsAPIController.PostOtherChargesToAudit(inputDTO);
+                }
+
+                //await _guestsAPIController.PostChargesToLedger(inputDTO.GuestId ?? 0);
+
+            }
+
+            return res;
+        }
+        else
+        {
+            return BadRequest("Data is not valid");
+        }
+    }
+    public async Task<IActionResult> RemoveRecordFromBillingData([FromBody] BillingDTO? inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            int loginId = Convert.ToInt32(User.FindFirstValue("Id"));
+            var res = await _guestsAPIController.RemoveRecordFromBillingData(inputDTO);
+            return res;
+        }
+        else
+        {
+            return BadRequest("Data is not valid");
+        }
+    }
+    [Authorize]
+    public async Task<IActionResult> SavePaymentInformation([FromBody] PaymentDTO? inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            int loginId = Convert.ToInt32(User.FindFirstValue("Id"));
+
+            inputDTO.IsActive = true;
+            inputDTO.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
+            inputDTO.CreatedBy = loginId;
+            inputDTO.IsActive = true;
+
+            var res = await _guestsAPIController.SavePaymentData(inputDTO);
+            //await _guestsAPIController.PostPaymentsToLedger(inputDTO.GuestId ?? 0);
+
+            return res;
+        }
+        else
+        {
+            return BadRequest("Data is not valid");
+        }
+    }
+
+
+    #endregion
+    #region Settlement
+    public async Task<IActionResult> SettlementPartialView([FromBody] MemberDetailsWithChild? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+
+        var guestRes = await _guestsAPIController.GetGuestByIdWithChild(inputDTO?.Id ?? 0);
+        if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        {
+            dto.MembersWithAttributes = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+            if (dto.MembersWithAttributes != null)
+            {
+                dto.MembersWithAttributes.GuestIdPaxSN1 = inputDTO?.GuestIdPaxSN1;
+            }
+        }
+        var billingRes = await _guestsAPIController.GetBillingDataWithAttr(inputDTO?.Id ?? 0);
+        if (billingRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)billingRes).StatusCode == 200)
+        {
+            dto.BillingDataList = (List<BillingDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)billingRes).Value;
+        }
+        var paymentRes = await _guestsAPIController.GetPaymentDataWithAttr(inputDTO?.Id ?? 0);
+        if (paymentRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).StatusCode == 200)
+        {
+            dto.PaymentsWithAttr = (List<PaymentWithAttr>?)((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).Value;
+        }
+
+
+
+
+        return PartialView("_guestsList/_settlement", dto);
+    }
+
+    [Authorize]
+    public async Task<IActionResult> SaveSettlementInformation([FromBody] SettlementDTO? inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            int loginId = Convert.ToInt32(User.FindFirstValue("Id"));
+
+            inputDTO.IsActive = true;
+            inputDTO.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
+            inputDTO.CreatedBy = loginId;
+            var res = await _guestsAPIController.SaveSettlementInformation(inputDTO);
+            return res;
+            //return Ok();
+        }
+        else
+        {
+            return BadRequest("Data is not valid");
+        }
+    }
+
+    [Route("Guests/PrintInvoice/{Id}")]
+    public async Task<IActionResult> PrintInvoice(int Id)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+        var guestRes = await _guestsAPIController.GetGuestByIdWithChild(Id);
+        if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        {
+            dto.MembersWithAttributes = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        }
+        var settlementRes = await _guestsAPIController.GetSettlementData(Id);
+        if (settlementRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)settlementRes).StatusCode == 200)
+        {
+            dto.SettlementDTO = (SettlementDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)settlementRes).Value;
+        }
+        var allGuestsInRoomRes = await _guestsAPIController.GetAllGuestsInRoom(Id);
+        if (allGuestsInRoomRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).StatusCode == 200)
+        {
+            dto.MemberDetailsWithChildren = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).Value;
+        }
+        var billingRes = await _guestsAPIController.GetBillingDataWithAttr(Id);
+        if (billingRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)billingRes).StatusCode == 200)
+        {
+            dto.BillingDataList = (List<BillingDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)billingRes).Value;
+        }
+        var paymentRes = await _guestsAPIController.GetPaymentDataWithAttr(Id);
+        if (paymentRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).StatusCode == 200)
+        {
+            dto.PaymentsWithAttr = (List<PaymentWithAttr>?)((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).Value;
+        }
+        return View(dto);
+    }
+
+    #endregion
+
+
+    #region ChangeReservationDetails
+
+    public async Task<IActionResult> ChangeReservationDetailsPartialView([FromBody] MembersDetailsDTO? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+        if (inputDTO != null)
+        {
+            var guests = await _guestsAPIController.GetGuestById(inputDTO.Id);
+            if (guests != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guests).StatusCode == 200)
+            {
+                dto.MemberDetail = (MembersDetailsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)guests).Value;
+            }
+        }
+        else
+        {
+            return BadRequest("No Guest Selected.Please refresh the page and try again");
+        }
+
+        var servicesRes = await _servicesAPIController.List();
+        if (servicesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).StatusCode == 200)
+        {
+            dto.Services = (List<ServicesDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).Value;
+        }
+        var roomTypes = await _roomTypeAPIController.List();
+        if (roomTypes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomTypes).StatusCode == 200)
+        {
+            dto.RoomTypes = (List<RoomTypeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomTypes).Value;
+        }
+
+        return PartialView("_guestsList/_changeReservationDetails", dto);
+    }
+    public async Task<IActionResult> UpdateGuestReservationDetails(GuestsListViewModel dataVM)
+    {
+        if (dataVM != null && dataVM.MemberDetail != null)
+        {
+            var res = await _guestsAPIController.UpdateGuestReservationDetails(dataVM);
+            return res;
+        }
+        else
+        {
+            return BadRequest("The guest details are invalid;");
+        }
+        return BadRequest("");
+    }
+
+
+    #endregion
+
+
+    #region Add Services
+    public async Task<IActionResult> AddServicesPartialView([FromBody] MembersDetailsDTO? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+
+        var guestRes = await _guestsAPIController.GetGuestByIdWithChild(inputDTO?.Id ?? 0);
+        if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        {
+            dto.MembersWithAttributes = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        }
+
+        var servicesRes = await _guestsAPIController.GetTasks();
+        if (servicesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).StatusCode == 200)
+        {
+            dto.ServicesForAddServices = (List<TaskMasterDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)servicesRes).Value;
+        }
+
+
+        return PartialView("_guestsList/_addServices", dto);
+    }
+    #endregion
 }

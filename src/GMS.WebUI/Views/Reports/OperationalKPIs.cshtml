@@ -1,0 +1,304 @@
+﻿@model GMS.Infrastructure.ViewModels.Dashboard.DashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Operational KPIs";
+}
+<div class="admin_wrapper">
+    @* @Html.Partial("_home/_leftNavigationHome") *@
+    @Html.Partial("_reports/_leftNavigationReports")
+
+
+    <div class="right_container content">
+
+        <div class="">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Operational KPI's</h2>
+                </div>
+            </div>
+        </div>
+
+
+        @Html.Partial("_reports/_filterYearMonth")
+
+        <div class="">
+
+            <div class="table-container">
+                <button class="scroll-btn scroll-left hidden" id="scrollLeft">&#9664;</button>
+                <div class="scrollable-content" id="scrollContainer">
+                    <table class="table table-bordered text-center" style="margin-bottom:20px;">
+                        <thead class="table-dark">
+                            
+                            <tr>
+                                <th class="header-dark"> </th>
+                                <th class="header-dark">1</th>
+                                <th class="header-dark">2</th>
+                                <th class="header-dark">3</th>
+                                <th class="header-dark">4</th>
+                                <th class="header-dark">5</th>
+                                <th class="header-dark">6</th>
+                                <th class="header-dark">7</th>
+                                <th class="header-dark">8</th>
+                                <th class="header-dark">9</th>
+                                <th class="header-dark">10</th>
+                                <th class="header-dark">11</th>
+                                <th class="header-dark">12</th>
+                                <th class="header-dark">13</th>
+                                <th class="header-dark">14</th>
+                                <th class="header-dark">15</th>
+                                <th class="header-dark">16</th>
+                                <th class="header-dark">17</th>
+                                <th class="header-dark">18</th>
+                                <th class="header-dark">19</th>
+                                <th class="header-dark">20</th>
+                                <th class="header-dark">21</th>
+                                <th class="header-dark">22</th>
+                                <th class="header-dark">23</th>
+                                <th class="header-dark">24</th>
+                                <th class="header-dark">25</th>
+                                <th class="header-dark">26</th>
+                                <th class="header-dark">27</th>
+                                <th class="header-dark">28</th>
+                                <th class="header-dark">29</th>
+                                <th class="header-dark">30</th>
+                                <th class="header-dark">31</th>
+                            </tr>
+                            <tr>
+                                <th class="header-dark"> </th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                                <th class="header-grey">Sa</th>
+                                <th class="header-grey">Su</th>
+                                <th class="header-grey">Mo</th>
+                                <th class="header-grey">Tu</th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                                <th class="header-grey">Sa</th>
+                                <th class="header-grey">Su</th>
+                                <th class="header-grey">Mo</th>
+                                <th class="header-grey">Tu</th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                                <th class="header-grey">Sa</th>
+                                <th class="header-grey">Su</th>
+                                <th class="header-grey">Mo</th>
+                                <th class="header-grey">Tu</th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                                <th class="header-grey">Sa</th>
+                                <th class="header-grey">Su</th>
+                                <th class="header-grey">Mo</th>
+                                <th class="header-grey">Tu</th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (Model != null && Model.RoomOccupancyDataList != null)
+                                {
+                                    var roomTypesIds = Model.RoomOccupancyDataList.GroupBy(x => x.ID).ToList();
+                                    var dates = Model.RoomOccupancyDataList.GroupBy(x => x.TheDate).ToList();
+                                    <tr>
+                                        <td style="min-height: 34px;background:#8ACCD5"></td>
+                                        <td colspan="@dates.Count" style="background:#8ACCD5"> <strong>Operational Eficiency</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Average Booking To Checkin Time</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Average Stay Duration</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Staff - Guest Interation</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Average Consultaion time</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Average Treatment Time</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>                                    
+                                    <tr>
+                                        <td class="premium-room">Average Time Spent At F&B</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Average Leisure Time</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Average In-Room Time</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>                                 
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+                <button class="scroll-btn scroll-right" id="scrollRight">&#9654;</button>
+            </div>
+
+
+        </div>
+
+
+        <div class="card p-4" style="margin-bottom:150px;">
+            <h4>Average Booking To Checkin Time Vs Average Stay Duration</h4>
+            <!-- You can place a chart here later -->
+            <div id="AvgBookingToCheckinVsAvgStay">
+            </div>
+        </div>
+
+
+    </div>
+
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+
+
+
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="~/customjs/reports/filteryearmonth.js"></script>
+
+    <script src="~/customjs/validation.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+                     $("#inputmonthyearselector").datetimepicker({
+            format: 'M-Y',            // month-year format (e.g., 05-2025)
+            timepicker: false,        // no time picker
+            datepicker: true,         // enable datepicker
+            viewMode: 'months',       // start with month view (some plugins use this)
+            minView: 'months',        // limit selection to month level
+        });
+        AvgBookingToCheckinVsAvgStay();
+
+        });
+
+        const scrollContainer = document.getElementById("scrollContainer");
+        const scrollLeft = document.getElementById("scrollLeft");
+        const scrollRight = document.getElementById("scrollRight");
+        const scrollStep = 200; // Pixels to scroll on each click
+
+        function updateButtons() {
+            scrollLeft.classList.toggle("hidden", scrollContainer.scrollLeft <= 0);
+            scrollRight.classList.toggle("hidden", scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth);
+        }
+
+        scrollLeft.addEventListener("click", () => {
+            scrollContainer.scrollBy({ left: -scrollStep, behavior: "smooth" });
+        });
+
+        scrollRight.addEventListener("click", () => {
+            scrollContainer.scrollBy({ left: scrollStep, behavior: "smooth" });
+        });
+
+        scrollContainer.addEventListener("scroll", updateButtons);
+        window.addEventListener("resize", updateButtons);
+
+        updateButtons(); // Ensure correct button visibility on load
+
+
+        function AvgBookingToCheckinVsAvgStay(){
+            var options = {
+          series: [{
+          name: 'Average Booking To Checkin Time',
+          type: 'column',
+          data: [440, 505, 414, 671, 227, 413, 201, 352, 752]
+        }, {
+          name: 'Average Stay Duration',
+          type: 'line',
+          data: [23, 42, 35, 27, 43, 22, 17, 31, 22]
+        }],
+          chart: {
+          height: 350,
+          type: 'line',
+        },
+        stroke: {
+          width: [0, 4]
+        },
+        // title: {
+        //   text: 'Traffic Sources'
+        // },
+        dataLabels: {
+          enabled: true,
+          enabledOnSeries: [1]
+        },
+        labels: ['01 Apr 2001', '02 Apr 2001', '03 Apr 2001', '04 Apr 2001', '05 Apr 2001', '06 Apr 2001', '07 Apr 2001', '08 Apr 2001', '09 Apr 2001'],
+        yaxis: [{
+          title: {
+                    text: 'Average Booking To Checkin Time',
+          },
+
+        }, {
+          opposite: true,
+          title: {
+            text: 'Average Stay Duration'
+          }
+        }]
+        };
+
+        var chart = new ApexCharts(document.querySelector("#AvgBookingToCheckinVsAvgStay"), options);
+        chart.render();
+        }
+
+
+    </script>
+}

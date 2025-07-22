@@ -1,0 +1,77 @@
+﻿@model GMS.Infrastructure.ViewModels.Accounting.PaymentViewModel
+<div class="resposive_table" style="overflow-x:scroll">
+    <table class="table" id="ListOfPayment">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Guest Name</th>
+                <th scope="col">UHID</th>
+                <th scope="col">Payment Mode</th>
+                <th scope="col">Reference Number</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Payment Date</th>
+                <th scope="col">Comments</th>
+                <th scope="col">Amount Received</th>
+                <th scope="col">Differences</th>
+                <th scope="col">Approval Date</th>
+                <th scope="col">Approved By</th>
+                <th scope="col">Comments</th>
+                <th scope="col" width="300">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.PaymentsWithAttr != null)
+                {
+                    foreach (var item in Model.PaymentsWithAttr)
+                    {
+                        <tr class="@(item.Status==1 ? "approved":"pending")">
+                            <td scope="row" class="guestname">@item.GuestName</td>
+                            <td scope="row" class="uhid">@item.UHID</td>
+                            <td scope="row">@item.PaymentMethodName</td>
+                            <td scope="row">@item.ReferenceNumber</td>
+                            <td scope="row" class="amount">@item.Amount</td>
+                            <td scope="row">@item.DateOfPayment?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td scope="row">@item.Comments</td>
+                            @{
+                                if (item.Status == 1)
+                                {
+                                    <td scope="row" class="amountreceived">@item.AmountReceived</td>
+                                }
+                                else
+                                {
+                                    <td scope="row" class="amountreceived fc-parent">
+                                        <input type="number" class="form-control-c" value="@item.Amount" />
+                                    </td>
+                                }
+                            }
+                            <td scope="row" class="difference">@(item.Status == 1 ? item.Differences : 0)</td>
+                            <td scope="row" class="approvaldate">@item.ApprovalDate?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td scope="row">@item.ApprovedByName</td>
+                            @{
+                                if (item.Status == 1)
+                                {
+                                    <td scope="row" class="approvalcomments">@item.ApprovalComment</td>
+                                }
+                                else
+                                {
+                                    <td scope="row" class="approvalcomments fc-parent"> <input type="text" class="form-control-c" value="@item.ApprovalComment" /></td>
+                                }
+                            }
+                            
+                            @{
+                                if (item.Status == 1)
+                                {
+                                    <td scope="row">Approved</td>
+                                }
+                                else
+                                {
+                                    <td scope="row" class="fc-parent"> <input type="button" class="btn btn-primary btn-sm" value="Approve" onclick="Approve(@item.Id,this)" /></td>
+                                }
+                            }
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,698 @@
+﻿@* Modal Code  *@
+@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<style>
+
+    .clickabel-icon {
+        cursor: pointer;
+        transition: transform .2s; /* Animation */
+    }
+
+        .clickabel-icon:hover {
+            transform: scale(1.5); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+            cursor: pointer;
+        }
+
+    .fc-parent {
+        padding: 3px .5rem !important;
+    }
+
+    .discount {
+        text-align: right;
+    }
+
+    .form-control-c {
+        float: right;
+    }
+
+    .form-control-c {
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        display: block;
+        padding: 3.375px 0.75rem !important;
+        appearance: none;
+        border-radius: .375rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    .text-right {
+        text-align: right
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        margin: 0;
+        color: #333;
+        background: #FFF2EB;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .invoice-header {
+        background-color: #005670;
+        color: #fff;
+        padding: 20px;
+        position: relative;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+        .invoice-header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+    .company-info {
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+        .company-info span {
+            display: block;
+        }
+
+    .section {
+        padding: 15px;
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .info-table td {
+        padding: 4px 8px;
+        vertical-align: top;
+    }
+
+    .payment-details {
+        color: #d9534f;
+        font-size: 13px;
+    }
+
+        .payment-details span {
+            display: block;
+        }
+
+    .data-table th {
+        background-color: #005670;
+        color: #fff;
+        padding: 8px;
+        border: 1px solid #ccc;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .data-table td {
+        padding: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .totals td {
+        padding: 8px;
+        font-weight: bold;
+    }
+
+    .footer {
+        background-color: #005670;
+        color: #ffcc00;
+        text-align: center;
+        padding: 20px;
+        font-size: 18px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .section td {
+        padding: 20px;
+    }
+
+    /* PAID Ribbon */
+    .paid-ribbon {
+        position: absolute;
+        top: 10px;
+        right: -50px;
+        background: #28a745;
+        color: white;
+        padding: 12px 58px;
+        font-size: 28px;
+        font-weight: bold;
+        transform: rotate(45deg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        z-index: 999;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* PAID Ribbon */
+    .unpaid-ribbon {
+        position: absolute;
+        top: 10px;
+        right: -50px;
+        background: red;
+        color: white;
+        padding: 12px 58px;
+        font-size: 28px;
+        font-weight: bold;
+        transform: rotate(45deg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        z-index: 999;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .headingInfo {
+        color: dodgerblue !important
+    }
+
+    #tblBillingAttributes .bi-check-lg {
+        margin-right: 10px;
+    }
+
+</style>
+<input type="button" id="btnBillingModal" style="display:none" data-bs-toggle="modal" data-bs-target="#BillingModal" value="button test" />
+<div class="modal fade" id="BillingModal" tabindex="-1" aria-labelledby="BillingModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="width: 1568px;max-width: 1500px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="BillingModalLabel">Billing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="resposive_table review_table" style="background:#98c1d9">
+                    <table class="table table-striped" style="margin-bottom:0px !important">
+                        <tbody style="color:#000">
+                            <tr>
+                                <td>UHID <br /> <span class="headingInfo">#@Model?.MembersWithAttributes?.UHID </span> </td>
+                                <td>Guest Name <br /><span class="headingInfo">@Model?.MembersWithAttributes?.CustomerName</span></td>
+                                <td>Mobile No <br /> <span class="headingInfo">@Model?.MembersWithAttributes?.MobileNo</span></td>
+                            </tr>
+                            <tr>
+                                <td class="no-border">Stay Dates <br /><span class="headingInfo">@Model?.MembersWithAttributes?.DateOfArrival?.ToString("dd MMM yyyy") - @Model?.MembersWithAttributes?.DateOfDepartment?.ToString("dd MMM yyyy")</span></td>
+                                <td class="no-border">Room Type <br /><span class="headingInfo">@Model?.MembersWithAttributes?.RoomTypeName</span></td>
+                                <td class="no-border">
+                                    Status <br />
+                                    @{
+                                        if (Model != null && Model.AccountSettled == true)
+                                        {
+                                            <span class="headingInfo">Settled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="headingInfo">Pending</span>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table" id="tblBillingAttributes">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Services</th>
+                                    <th scope="col">Guest</th>
+                                    <th scope="col" class="text-right">Price</th>
+                                    <th scope="col" class="text-right">Count</th>
+                                    <th scope="col" class="text-right">Discount</th>
+                                    <th scope="col" class="text-right">Amount</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int guestIdPaxSno1 = Model?.MemberDetailsWithChildren?.OrderBy(x => x.PAXSno)?.FirstOrDefault()?.Id ?? Model?.MembersWithAttributes?.Id ?? 0;
+                                    if (Model != null && Model.MemberDetailsWithChildren != null)
+                                    {
+                                        foreach (var guestsInRoom in Model.MemberDetailsWithChildren)
+                                        {
+                                            int guestId = guestsInRoom.Id;
+                                            if (Model != null && Model.BillingDataList != null && Model.BillingDataList.Count(x => x.ServiceType == "RoomCharges" && x.GuestId == guestId) > 0)
+                                            {
+                                                var rec = Model?.BillingDataList.Where(x => x.ServiceType == "RoomCharges" && x.GuestId == guestId).FirstOrDefault();
+                                                bool isConfirmed = rec?.Confirmed ?? false;
+                                                if (isConfirmed)
+                                                {
+                                                    <tr class="cal trroomcharges" state="@Model?.MembersWithAttributes?.State" guestid="@guestId" recordid="@rec.Id">
+                                                        <td class="services">Room Charges</td>
+                                                        <td class="guest">
+                                                            @guestsInRoom.CustomerName
+                                                        </td>
+                                                        <td class="price text-right">@rec?.Price</td>
+                                                        <td class="count text-right">@(rec?.Count)</td>
+                                                        <td class="discount fc-parent text-right">@rec?.Discount</td>
+                                                        <td class="amount text-right"></td>
+                                                        <td class="action" style="text-align:end"></td>
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    <tr class="cal bdb trroomcharges" state="@Model?.MembersWithAttributes?.State" guestid="@guestId" recordid="@rec.Id">
+                                                        <td class="services">Room Charges</td>
+                                                        <td class="guest">
+                                                            @guestsInRoom.CustomerName
+                                                        </td>
+                                                        <td class="price text-right">@rec?.Price</td>
+                                                        <td class="count text-right">@(guestsInRoom?.NoOfNights == 0 ? 1 : guestsInRoom?.NoOfNights)</td>
+                                                        <td class="discount fc-paren text-right"><input type="number" class="form-control-c text-right" value="@rec?.Discount" /></td>
+                                                        <td class="amount text-right"></td>
+                                                        <td class="action text-right" style="text-align:end">
+                                                            <i style="color:green; @((Model != null && Model.AccountSettled == true) ? "display:none" : "")" class="bi bi-check-lg" onclick="ConfirmBillingRecord(this)"></i>
+                                                            @*<i style="color:red" class="bi bi-x-lg"></i>*@
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr class="cal bdb trroomcharges" state="@Model?.MembersWithAttributes?.State" guestid="@guestId" recordid="0">
+                                                    <td class="services">Room Charges</td>
+                                                    <td class="guest">
+                                                        @guestsInRoom.CustomerName
+                                                    </td>
+                                                    <td class="price text-right">@guestsInRoom?.RoomPrice</td>
+                                                    <td class="count text-right">@(guestsInRoom?.NoOfNights == 0 ? 1 : guestsInRoom?.NoOfNights)</td>
+                                                    <td class="discount fc-parent text-right">
+                                                        @{
+                                                            if (guestsInRoom?.Id != guestIdPaxSno1)
+                                                            {
+                                                                <input type="number" class="form-control-c text-right" value="@guestsInRoom?.RoomPrice" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <input type="number" class="form-control-c text-right" value="0" />
+                                                            }
+                                                        }
+
+                                                    </td>
+                                                    <td class="amount text-right"></td>
+                                                    <td class="action text-right" style="text-align:end">
+                                                        <i style="color:green; @((Model != null && Model.AccountSettled == true) ? "display:none" : "")" class="bi bi-check-lg" onclick="ConfirmBillingRecord(this)"></i>
+                                                        @*<i style="color:red" class="bi bi-x-lg"></i>*@
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        foreach (var guestsInRoom in Model.MemberDetailsWithChildren)
+                                        {
+                                            int guestId = guestsInRoom.Id;
+
+
+                                            if (Model != null && Model.BillingDataList != null && Model.BillingDataList.Count(x => x.ServiceType == "PackageSystem" && x.GuestId == guestId) > 0)
+                                            {
+                                                var recList = Model?.BillingDataList.Where(x => x.ServiceType == "PackageSystem" && x.GuestId == guestId);
+                                                foreach (var rec in recList)
+                                                {
+                                                    bool isConfirmed = rec?.Confirmed ?? false;
+                                                    if (isConfirmed)
+                                                    {
+                                                        <tr class="cal trpackagesystem" guestid="@guestId" recordid="@rec?.Id">
+                                                            <td class="services">
+                                                                @rec?.ServiceName
+                                                            </td>
+                                                            <td class="guest">@(guestsInRoom.CustomerName)</td>
+                                                            <td class="price text-right">@rec?.Price</td>
+                                                            <td class="count text-right">@(rec?.Count)</td>
+                                                            <td class="discount fc-parent text-right">@rec?.Discount</td>
+                                                            <td class="amount text-right"></td>
+                                                            <td class="action" style="text-align:end"></td>
+                                                        </tr>
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr class="cal bdb trpackagesystem" guestid="@guestId" recordid="@rec?.Id">
+                                                            <td class="services">
+                                                                <select class="selectSystem selectDB">
+                                                                    <option>Select Service</option>
+                                                                    @{
+                                                                        if (Model != null && Model.Services != null)
+                                                                        {
+                                                                            foreach (var item in Model.Services)
+                                                                            {
+                                                                                if (item.Id == rec?.ServiceId)
+                                                                                {
+                                                                                    <option selected="selected" value="@item.Id" price="@item.Price">@item.Service</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@item.Id" price="@item.Price">@item.Service</option>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                </select>
+                                                            </td>
+                                                            <td class="guest">
+                                                                <select class="selectDB">
+                                                                    <option value="0">Select Guest</option>
+                                                                    @{
+                                                                        foreach (var guestinRoomForSelect in Model.MemberDetailsWithChildren)
+                                                                        {
+                                                                            if (guestinRoomForSelect.Id == guestsInRoom.Id)
+                                                                            {
+                                                                                <option selected="selected" value="@guestinRoomForSelect.Id">@guestinRoomForSelect.CustomerName</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@guestinRoomForSelect.Id">@guestinRoomForSelect.CustomerName</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                </select>
+                                                            </td>
+                                                            <td class="price text-right">@rec?.Price</td>
+                                                            <td class="count text-right">@(guestsInRoom?.NoOfNights == 0 ? 1 : guestsInRoom?.NoOfNights)</td>
+                                                            <td class="discount fc-parent text-right"><input type="number" class="form-control-c text-right" value="@rec?.Discount" /></td>
+                                                            <td class="amount text-right"></td>
+                                                            <td class="action text-right" style="text-align:end">
+                                                                <i style="color:green; @((Model != null && Model.AccountSettled == true) ? "display:none" : "")" class="bi bi-check-lg" onclick="ConfirmBillingRecord(this)"></i>
+                                                                @*<i style="color:red" class="bi bi-x-lg"></i>*@
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr class="cal bdb trpackagesystem" guestid="@guestId" recordid="0">
+                                                    <td class="services">
+                                                        <select class="selectSystem selectDB">
+                                                            <option>Select Service</option>
+                                                            @{
+                                                                if (Model != null && Model.Services != null)
+                                                                {
+                                                                    foreach (var item in Model.Services)
+                                                                    {
+                                                                        if (item.Id == Model?.MembersWithAttributes?.CatId)
+                                                                        {
+                                                                            <option selected="selected" value="@item.Id" price="@item.Price">@item.Service</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@item.Id" price="@item.Price">@item.Service</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </td>
+                                                    <td class="guest">
+                                                        <select class="selectDB">
+                                                            <option value="0">Select Guest</option>
+                                                            @{
+                                                                foreach (var guestinRoomForSelect in Model.MemberDetailsWithChildren)
+                                                                {
+                                                                    if (guestinRoomForSelect.Id == guestsInRoom.Id)
+                                                                    {
+                                                                        <option selected="selected" value="@guestinRoomForSelect.Id">@guestinRoomForSelect.CustomerName</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@guestinRoomForSelect.Id">@guestinRoomForSelect.CustomerName</option>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </td>
+                                                    <td class="price text-right">@Model?.MembersWithAttributes?.PackagePrice</td>
+                                                    <td class="count text-right">@(guestsInRoom?.NoOfNights == 0 ? 1 : guestsInRoom?.NoOfNights)</td>
+                                                    <td class="discount fc-parent  text-right"><input type="number" class="form-control-c text-right" value="0" /></td>
+                                                    <td class="amount text-right"></td>
+                                                    <td class="action text-right" style="text-align:end">
+
+                                                        <i style="color:green; @((Model != null && Model.AccountSettled == true) ? "display:none" : "")" class="bi bi-check-lg" onclick="ConfirmBillingRecord(this)"></i>
+                                                        @*<i style="color:red" class="bi bi-x-lg"></i>*@
+                                                    </td>
+                                                </tr>
+                                            }
+
+                                            var cstmBilling = Model?.BillingDataList?.Where(x => (x.ServiceType == "Package" || x.ServiceType == "Service") && x.GuestId == guestId);
+                                            if (cstmBilling != null)
+                                            {
+                                                foreach (var billing in cstmBilling)
+                                                {
+                                                    if (billing.ServiceType == "Service")
+                                                    {
+                                                        bool isConfirmed = billing.Confirmed ?? false;
+                                                        <tr id="pkg" class="cal @(isConfirmed ? "" : "bdb") trservices" guestid="@guestId" recordid="@billing.Id">
+                                                            @{
+                                                                if (isConfirmed == false)
+                                                                {
+                                                                    <td class="services">
+                                                                        <select class='selectAdded selectDB'>
+                                                                            <option value='0'>Select Service</option>
+                                                                            @{
+                                                                                if (Model != null && Model.Tasks != null)
+                                                                                {
+                                                                                    foreach (var item in Model.Tasks)
+                                                                                    {
+                                                                                        if (item.Id == billing.ServiceId)
+                                                                                        {
+                                                                                            <option selected="selected" value="@item.Id" price="@item.Rate">@item.TaskName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@item.Id" price="@item.Rate">@item.TaskName</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </select>
+                                                                    </td>
+                                                                    <td class="guest">
+                                                                        <select class="selectDB">
+                                                                            <option value="0">Select Guest</option>
+                                                                            @{
+                                                                                foreach (var guestinRoomForSelect in Model.MemberDetailsWithChildren)
+                                                                                {
+                                                                                    if (guestinRoomForSelect.Id == guestsInRoom.Id)
+                                                                                    {
+                                                                                        <option selected="selected" value="@guestinRoomForSelect.Id">@guestinRoomForSelect.CustomerName</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@guestinRoomForSelect.Id">@guestinRoomForSelect.CustomerName</option>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </select>
+                                                                    </td>
+                                                                    <td class="price fc-paren text-right"><input type="number" class="form-control-c text-right" value="@billing.Price" /></td>
+                                                                    <td class="count fc-parent text-right"><input type="number" class="form-control-c text-right" value="@billing.Count" /></td>
+                                                                    <td class="discount fc-parent text-righ"><input type="number" class="form-control-c  text-right" value="@billing.Discount" /></td>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <td class="">@billing.ServiceName</td>
+                                                                    <td class="guest">@guestsInRoom?.CustomerName</td>
+                                                                    <td class="price text-right">@billing.Price</td>
+                                                                    <td class="count text-right">@billing.Count</td>
+                                                                    <td class="discount text-right">@billing.Discount</td>
+                                                                }
+                                                            }
+                                                            <td class="amount text-right"></td>
+                                                            <td class="action" style="text-align:end">
+                                                                @{
+                                                                    if (isConfirmed == false)
+                                                                    {
+                                                                        <i style="color:green" class="bi bi-check-lg" onclick="ConfirmBillingRecord(this)"></i>
+                                                                        <i style="color:red" class="bi bi-x-lg" onclick="RemoveBillingRecord(this)"></i>
+                                                                    }
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                    else if (billing.ServiceType == "Package")
+                                                    {
+                                                        bool isConfirmed = billing.Confirmed ?? false;
+                                                        <tr id="pkg" class="cal @(isConfirmed ? "" : "bdb") trpackages" guestid="@guestId" recordid="@billing.Id">
+                                                            @{
+                                                                if (isConfirmed == false)
+                                                                {
+                                                                    <td class="services">
+                                                                        <select class='selectAdded selectDB'>
+                                                                            <option value='0'>Select Package</option>
+                                                                            @{
+                                                                                if (Model != null && Model.Services != null)
+                                                                                {
+                                                                                    foreach (var item in Model.Services)
+                                                                                    {
+                                                                                        if (item.Id == billing.ServiceId)
+                                                                                        {
+                                                                                            <option selected="selected" value="@item.Id" price="@item.Price">@item.Service</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@item.Id" price="@item.Price">@item.Service</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </select>
+                                                                    </td>
+                                                                    <td class="guest">
+                                                                        <select class="selectDB">
+                                                                            <option value="0">Select Guest</option>
+                                                                            @{
+                                                                                foreach (var guestinRoomForSelect in Model.MemberDetailsWithChildren)
+                                                                                {
+                                                                                    if (guestinRoomForSelect.Id == guestsInRoom.Id)
+                                                                                    {
+                                                                                        <option selected="selected" value="@guestinRoomForSelect.Id">@guestinRoomForSelect.CustomerName</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@guestinRoomForSelect.Id">@guestinRoomForSelect.CustomerName</option>
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </select>
+                                                                    </td>
+                                                                    <td class="price fc-paren text-right"><input type="number" class="form-control-c text-right" value="@billing.Price" /></td>
+                                                                    <td class="count fc-parent text-right"><input type="number" class="form-control-c text-right" value="@billing.Count" /></td>
+                                                                    <td class="discount fc-parent text-right"><input type="number" class="form-control-c  text-right" value="@billing.Discount" /></td>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <td class="">@billing.ServiceName</td>
+                                                                    <td class="guest">@guestsInRoom?.CustomerName</td>
+                                                                    <td class="price text-right">@billing.Price</td>
+                                                                    <td class="count text-right">@billing.Count</td>
+                                                                    <td class="discount text-right">@billing.Discount</td>
+                                                                }
+                                                            }
+                                                            <td class="amount text-right"></td>
+                                                            <td class="action" style="text-align:end">
+                                                                @{
+                                                                    if (isConfirmed == false)
+                                                                    {
+                                                                        <i style="color:green; @((Model != null && Model.AccountSettled == true) ? "display:none" : "")" class="bi bi-check-lg" onclick="ConfirmBillingRecord(this)"></i>
+                                                                        <i style="color:red; @((Model != null && Model.AccountSettled == true) ? "display:none" : "")" class="bi bi-x-lg" onclick="RemoveBillingRecord(this)"></i>
+                                                                    }
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-right">Gross Amount</td>
+                                    <td class="grossamount text-right"></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-right">Discount Code</td>
+                                    @{
+                                        var discountCode = Model?.BillingDataList?.Where(x => x.ServiceType == "GrossAmount" && x.GuestId == guestIdPaxSno1).FirstOrDefault()?.DiscountCode;
+                                    }
+                                    <td class="fc-parent finaldiscountcode text-right"><input type="text" class="form-control-c" value="@discountCode" /></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-right">Discount</td>
+                                    <td class="fc-parent finaldiscount text-right">
+                                        @{
+                                            if (Model != null && Model.BillingDataList != null && Model.BillingDataList.Count(x => x.ServiceType == "GrossAmount" && x.GuestId == guestIdPaxSno1) > 0)
+                                            {
+                                                var finalDiscount = Model.BillingDataList.Where(x => x.ServiceType == "GrossAmount" && x.GuestId == guestIdPaxSno1).FirstOrDefault()?.Discount;
+
+                                                <input type="number" class="form-control-c text-right" value="@finalDiscount?.ToString("0.00")" />
+                                            }
+                                            else
+                                            {
+
+                                                <input type="number" class="form-control-c text-right" value="0" />
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-right">SGST <i>(2.5%)</i></td>
+                                    <td class="taxes_SGST text-right"></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-right">CGST <i>(2.5%)</i></td>
+                                    <td class="taxes_CGST  text-right"></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-right">IGST <i>(5%)</i></td>
+                                    <td class="taxes_IGST text-right"></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold">
+                                        Total Amount(in words)
+                                    </td>
+                                    <td colspan="4" class="inwords" style="font-weight:bold"></td>
+                                    <td class="text-right" style="font-weight:bold">Total Amount</td>
+                                    <td class="finaltotal text-right" style="font-weight:bold"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div id="div_PaymentPartial">
+                            @* @Html.Partial("_guestsList/_payment") *@
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" name="GuestId" value="@Model?.MembersWithAttributes?.Id" />
+                <input type="hidden" name="GuestIdPaxSN1" value="@(guestIdPaxSno1)" />
+
+                @{
+                    if (Model != null && Model.AccountSettled == true)
+                    {
+
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-primary" onclick="GetServicesForBilling(@Model?.MembersWithAttributes?.Id)"> <i class="bi bi-plus-lg"></i> Service</button>
+                        <button type="button" class="btn btn-primary" onclick="GetPackagesForBilling(@Model?.MembersWithAttributes?.Id)"> <i class="bi bi-plus-lg"></i> Package</button>
+                        <button type="button" class="btn btn-primary" onclick="PaymentPartialView(@Model?.MembersWithAttributes?.Id, 'add')"> <i class="bi bi-plus-lg"></i> Payment</button>
+
+                        <button type="button" class="btn btn-primary" onclick="SettlementPartialView(@Model?.MembersWithAttributes?.Id,@guestIdPaxSno1)"> <i class="bi bi-gear-wide-connected"></i> Settle</button>
+                        <button type="button" class="btn btn-primary" onclick="SaveBillingData()"> <i class="bi bi-floppy"></i> </button>
+                    }
+                }
+                <button type="button" class="btn btn-primary" onclick="printInvoice(@guestIdPaxSno1)"> <i class="bi bi-printer"></i> </button>
+                @* <button type="button" class="btn btn-primary" onclick="SubmitRoomCheckList()"> <i class="bi bi-x-lg"></i> </button> *@
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Code *@

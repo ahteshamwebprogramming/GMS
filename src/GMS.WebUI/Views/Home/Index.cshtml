@@ -1,618 +1,72 @@
-﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper *, GMSCore
-@{
-    Layout = null;
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Index";
 }
-
-<!doctype html>
-<html lang="en">
-<head>
-    <title>Index</title>
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap CSS -->
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" > -->
-
-
-    <link rel="stylesheet" href="~/assets/css/main.css" />
-    <link rel="stylesheet" href="~/assets/css/responsive.css" />
-    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-    <!-- Owl Stylesheets -->
-    <link rel="stylesheet" href="~/assets/carousel/owl.carousel.min.css">
-    <link rel="stylesheet" href="~/assets/carousel/owl.theme.default.min.css">
-
-</head>
-<body>
-
-
-    <div class="admin_wrapper">
-        <div class="left_container" id="left_container">
-            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-            <div class="top_menu">
-                <ul>
-                    <li>
-                        <a href="/Home/Index">
-                            <figure><i class="bi bi-house-fill"></i></figure>
-                            <h4>Home</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-speedometer"></i></figure>
-                            <h4>Dashboard</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-grid-fill"></i></figure>
-                            <h4>All Services</h4>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#">
-                            <figure><i class="bi bi-plus-square-fill"></i></figure>
-                            <h4>Add Room</h4>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="room_details_box">
-                <ul>
-                    <li>Booking ID <span><strong>#NAAD0010</strong></span></li>
-                    <li>Room No <span>202</span> </li>
-
-                    <li>Room Type <span>Premium</span> </li>
-
-                    <li>Room Size <span>20.17 s/m</span></li>
-
-                    <li>Bed Type <span>King Size</span></li>
-
-                    <li>Booking Date <span>19/06/2024</span> </li>
-
-                    <li>Availability <span>Available</span></li>
-                </ul>
-                <span class="devider"></span>
-                <div class="user_details">
-                    <div class="user_info">
-                        <figure><img src="~/assets/img/user.svg"></figure>
-                        <div class="detailsDD">
-                            <h4>Clair Burge</h4>
-                            <p>+919874605555</p>
-                        </div>
-                    </div>
-                    <div class="address_a">
-                        DE-STRESS AT NAAD - 5 NIGHTS
-                    </div>
-                    <a href="#" class="approved_btn">Approved</a>
-                </div>
-            </div>
-            <div class="bottom_menu">
-                <ul>
-                    <li class="edit">
-                        <a href="#">
-                            <figure><i class="bi bi-pencil-square"></i></figure>
-                            <h4>Edit</h4>
-                        </a>
-                    </li>
-                    <li class="delete">
-                        <a href="#">
-                            <figure><i class="bi bi-trash3-fill"></i></figure>
-                            <h4>Delete</h4>
-                        </a>
-                    </li>
-                    <li class="review">
-                        <a href="#">
-                            <figure><i class="bi bi-eye-fill"></i></figure>
-                            <h4>Review</h4>
-                        </a>
-                    </li>
-                    <li class="print">
-                        <a href="#">
-                            <figure><i class="bi bi-printer-fill"></i></figure>
-                            <h4>Print</h4>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-
-        <div class="right_container">
-            <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
-            <div class="top_rooms">
-                <ul>
-                    <li class="colorA">
-                        <a href="#">
-                            <h4>210</h4>
-                            <p>Total Room</p>
-                        </a>
-                    </li>
-                    <li class="colorB">
-                        <a href="#">
-                            <h4>10</h4>
-                            <p>Empty Room</p>
-                        </a>
-                    </li>
-                    <li class="colorC">
-                        <a href="#">
-                            <h4>11</h4>
-                            <p>Basic Room Occupied</p>
-                        </a>
-                    </li>
-                    <li class="colorD">
-                        <a href="#">
-                            <h4>12</h4>
-                            <p>Short Term Reservation</p>
-                        </a>
-                    </li>
-                    <li class="colorE">
-                        <a href="#">
-                            <h4>5/10</h4>
-                            <p>Premium Room Occupied</p>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <!-- filtered rooms Start-->
-            <div class="filtered_rooms_container">
-                <!-- Rooms Block -->
-                <div class="rooms_block">
-                    <h2>Premium Room</h2>
-                    <div class="owl-carousel premium_rooms_slider owl-theme">
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Rooms Block End-->
-                <!-- Rooms Block -->
-                <div class="rooms_block">
-                    <h2>Basic Room Occupied</h2>
-                    <div class="owl-carousel basic_rooms_slider owl-theme">
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Rooms Block End-->
-                <!-- Rooms Block -->
-                <div class="rooms_block">
-                    <h2>Short Term Reservation</h2>
-                    <div class="owl-carousel short_reservation_slider owl-theme">
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Rooms Block End-->
-                <!-- Rooms Block -->
-                <div class="rooms_block">
-                    <h2>Empty Room</h2>
-                    <div class="owl-carousel empty_room_slider owl-theme">
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="room_info">
-                                <a href="#">
-                                    <h4>103</h4>
-                                    <h3>Shuchi Gupta</h3>
-                                    <p>+919874605555</p>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Rooms Block End-->
-            </div>
-            <!-- filtered rooms end-->
-            @Html.Partial("_bottomNavigation1")
-
-        </div>
+<div class="admin_wrapper">
+    @Html.Partial("_home/_leftNavigationHome")
+    <!-- Modal -->
+    <input type="button" id="btnOpenAddServicesPopup" style="display:none" data-bs-toggle="modal" data-bs-target="#addServicesPopup" />
+    <div id="div_AddPartial">
+        @* @Html.Partial("_packageMasterList/_add") *@
     </div>
+    <!-- Modal -->
+
+    <div class="right_container">
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Guest Status</h2>
+                    <div class="btn_add">
+                        @* <a href="#" class="addNew_btn" onclick="AddPartialView(0)">Add Packages</a> *@
+                    </div>
+                </div>
+                <div id="div_ViewGuestsListPartial">
+                    @* @Html.Partial("_index/_guestsList", Model) *@
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
 
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" type="script"></script>
-    <!-- javascript -->
-    <script src="~/assets/carousel/jquery.min.js"></script>
-    <script type="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js" type="script"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 
 
-    <script src="~/assets/carousel/owl.carousel.js"></script>
 
-    <script>
+
+@section Scripts {
+    <script src="~/customjs/Home/Index.js"></script>
+    <script src="~/customjs/validation.js"></script>
+
+    <script type="text/javascript">
+
         $(document).ready(function () {
-            var owl = $('.premium_rooms_slider');
-            owl.owlCarousel({
-                margin: 10,
+        GuestsListPartialView();
+        });
 
-                responsive: {
-                    0: {
-                        items: 2,
-                        nav: true,
-                        loop: false
-                    },
-                    600: {
-                        items: 4,
-                        nav: true,
-                        loop: false
-                    },
-                    768: {
-                        items: 4,
-                        nav: true,
-                        loop: false
+        const scrollContainer = document.getElementById("scrollContainer");
+        const scrollLeft = document.getElementById("scrollLeft");
+        const scrollRight = document.getElementById("scrollRight");
+        const scrollStep = 200; // Pixels to scroll on each click
 
-                    },
-                    1024: {
-                        items: 4,
-                        nav: true,
-                        loop: false
-                    },
-                    1266: {
-                        items: 6,
-                        nav: true,
-                        loop: false
-                    }
-                }/*,
-                        onInitialized : function(){
-                    if($('.owl-item').first().hasClass('active'))
-                      $('.owl-prev').hide();
-                    else
-                      $('.owl-prev').show();
-                  } */
-            })
-        })
-
-        var owl = $('.basic_rooms_slider');
-        owl.owlCarousel({
-            margin: 10,
-
-            responsive: {
-                0: {
-                    items: 2,
-                    nav: true,
-                    loop: false
-                },
-                600: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-                },
-                768: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-
-                },
-                1024: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-                },
-                1266: {
-                    items: 6,
-                    nav: true,
-                    loop: false
-                }
-            }
-        })
-        var owl = $('.short_reservation_slider');
-        owl.owlCarousel({
-            margin: 10,
-
-            responsive: {
-                0: {
-                    items: 2,
-                    nav: true,
-                    loop: false
-                },
-                600: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-                },
-                768: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-
-                },
-                1024: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-                },
-                1266: {
-                    items: 6,
-                    nav: true,
-                    loop: false
-                }
-            }
-        })
-        var owl = $('.empty_room_slider');
-        owl.owlCarousel({
-            margin: 10,
-
-            responsive: {
-                0: {
-                    items: 2,
-                    nav: true,
-                    loop: false
-                },
-                600: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-                },
-                768: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-
-                },
-                1024: {
-                    items: 4,
-                    nav: true,
-                    loop: false
-                },
-                1266: {
-                    items: 6,
-                    nav: true,
-                    loop: false
-                }
-            }
-        })
-
-
-
-        /* Set the width of the side navigation to 250px */
-        function openNav() {
-            document.getElementById("left_container").style.width = "450px";
+        function updateButtons() {
+            scrollLeft.classList.toggle("hidden", scrollContainer.scrollLeft <= 0);
+            scrollRight.classList.toggle("hidden", scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth);
         }
 
-        /* Set the width of the side navigation to 0 */
-        function closeNav() {
-            document.getElementById("left_container").style.width = "0";
-        }
+        scrollLeft.addEventListener("click", () => {
+            scrollContainer.scrollBy({ left: -scrollStep, behavior: "smooth" });
+        });
 
+        scrollRight.addEventListener("click", () => {
+            scrollContainer.scrollBy({ left: scrollStep, behavior: "smooth" });
+        });
 
+        scrollContainer.addEventListener("scroll", updateButtons);
+        window.addEventListener("resize", updateButtons);
+
+        updateButtons(); // Ensure correct button visibility on load
     </script>
-
-</body>
-</html>
+}

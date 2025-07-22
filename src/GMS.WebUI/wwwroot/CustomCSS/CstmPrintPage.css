@@ -1,0 +1,46 @@
+﻿
+@media print {
+    table {
+        page-break-inside: avoid;
+    }
+    table {
+        page-break-before: always; /* Each table starts on a new page */
+    }
+        table:last-child {
+            page-break-after: auto; /* Prevents extra blank page at the end */
+        }
+}
+@media print {
+    .table-container {
+        page-break-after: always; /* Ensures each table ends before a new page starts */
+    }
+        .table-container:last-child {
+            page-break-after: auto; /* Prevents extra blank page at the end */
+        }
+}
+
+
+@media print {
+    th {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background-color: #114378 !important;
+        color: white !important;
+    }
+}
+
+@media print {
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+}
+@media print {
+    table {
+        overflow: hidden;
+    }

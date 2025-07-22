@@ -1,0 +1,87 @@
+﻿@model GMS.Infrastructure.ViewModels.Accounting.InvoicesViewModel
+<div class="resposive_table" style="overflow-x:scroll">
+    <table class="table" id="ListOfPayment">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Invoice No</th>
+                <th scope="col">DateTime</th>
+                <th scope="col">Room Category</th>
+                <th scope="col">Room No</th>                
+                <th scope="col">Guest Names</th>
+                <th scope="col">Checkin</th>
+                <th scope="col">Checkout</th>
+                <th scope="col">Package</th>
+                <th scope="col">No Of Nights</th>
+                
+                
+                <th scope="col">Gross Amount</th>
+
+                <th scope="col">Room Charges</th>
+                <th scope="col">Treatment Charges</th>
+
+                <th scope="col">Discount</th>
+                <th scope="col">Taxes</th>
+                <th scope="col">Amount Payable</th>
+                <th scope="col">Amount Received</th>
+                <th scope="col">Differences</th>
+                <th scope="col">Comments</th>
+                <th scope="col">Approved By</th>
+                <th scope="col">Approved On</th>
+                <th scope="col" width="300">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.Invoicing != null)
+                {
+                    foreach (var item in Model.Invoicing)
+                    {
+                        <tr class="@(item.Status==1 ? "approved":"pending")">
+                            <td scope="row" class="invoicenmuber">@item.InvoiceNumber</td>
+                            <td scope="row" class="invoicedatetime">@(item.InvoiceDatetime?.ToString("dd-MMM-yyyy hh:mm tt"))</td>
+                            <td scope="row">@item.RoomType</td>
+                            <td scope="row">@item.RNumber</td>                            
+                            <td scope="row">@item.GuestNames</td>
+                            <td scope="row">@item.CheckInDate?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td scope="row">@item.CheckOutDate?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td scope="row">@item.Package</td>
+                            <td scope="row">@item.NoOfNights</td>                            
+                            <td scope="row" class="amount">@item.GrossAmount</td>
+
+                            <td scope="row">@item.RoomCharges</td>
+                            <td scope="row">@item.TreatmentCharges</td>
+
+                            <td scope="row">@item.Discount</td>
+                            <td scope="row">@(item.IGST + item.CGST + item.SGST)</td>
+                            <td scope="row">@item.AmountPayable</td>
+                            <td scope="row">@item.AmountReceived</td>
+                            <td scope="row">@item.Differences</td>
+                            @{
+                                if (item.Status == 1)
+                                {
+                                    <td scope="row" class="approvalcomments">@item.ApprovalComment</td>
+                                }
+                                else
+                                {
+                                    <td scope="row" class="approvalcomments fc-parent"> <input type="text" class="form-control-c" value="@item.ApprovalComment" /></td>
+                                }
+                            }
+                            <td scope="row">@item.ApprovedByName</td>
+                            <td scope="row" class="approvaldate">@item.ApprovedOn?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            @{
+                                if (item.Status == 1)
+                                {
+                                    <td scope="row" style="color:green">Accounted</td>
+                                }
+                                else
+                                {
+                                    <td scope="row" class="fc-parent"> <input type="button" class="btn btn-primary btn-sm" value="Account" onclick="Approve(@item.Id,this)" /></td>
+                                }
+                            }
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

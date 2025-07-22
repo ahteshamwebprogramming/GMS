@@ -1,0 +1,164 @@
+﻿@model GMS.Infrastructure.ViewModels.Reports.FinancialKPIViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Financial KPIs";
+}
+<div class="admin_wrapper">
+    @* @Html.Partial("_home/_leftNavigationHome") *@
+    @Html.Partial("_reports/_leftNavigationReports")
+
+
+    <div class="right_container content">
+
+
+        <div class="">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Daily Sales and Payment Collection Report</h2>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .filterArea {
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                gap: 15px;
+                background: #F2EAE0;
+                padding: 20px;
+                border-radius: 13px;
+                /* margin-bottom: 15px; */
+            }
+        </style>
+        @Html.Partial("_reports/_filterYearMonth")
+
+        <div class="">
+            <div class="table-container">
+                <button class="scroll-btn scroll-left hidden" id="scrollLeft">&#9664;</button>
+                <div class="scrollable-content" id="scrollContainer">
+                    <table class="table table-bordered text-center" style="margin-bottom:20px;">
+                        <thead class="table-dark">
+                            @{
+                                var daysInMonth = DateTime.DaysInMonth(@Model.Date?.Year ?? DateTime.Now.Year, @Model?.Date?.Month ?? DateTime.Now.Month);
+                                <tr>
+                                    <th class="header-dark"> </th>
+                                    @for (int day = 1; day <= daysInMonth; day++)
+                                    {
+                                        <th class="header-dark">@day</th>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th class="header-grey"> </th>
+                                    @for (int day = 1; day <= daysInMonth; day++)
+                                    {
+                                        var date = new DateTime(@Model?.Date?.Year ?? DateTime.Now.Year, @Model?.Date?.Month ?? DateTime.Now.Month, day);
+                                        var dayShortName = date.ToString("ddd"); // Mon, Tue, ...
+                                        <th class="header-grey">@dayShortName</th>
+                                    }
+                                </tr>
+                            }
+                        </thead>
+                        <tbody>
+                            @{
+                                if (Model != null && Model.FinancialKPIDatas != null)
+                                {
+                                    //var roomTypesIds = Model.RoomOccupancyDataList.GroupBy(x => x.ID).ToList();
+                                    var dates = Model.FinancialKPIDatas.GroupBy(x => x.TheDate).ToList();
+                                    <tr>
+                                        <td style="min-height: 34px;background:#8ACCD5"></td>
+                                        <td colspan="@dates.Count" style="background:#8ACCD5"> <strong>Revenue Report</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Sales Revenue</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>@date?.FirstOrDefault()?.SalesRevenue</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Payment Collected</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>@date?.FirstOrDefault()?.PaymentCollected</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Payment Due</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                double? paymentDue = date?.FirstOrDefault()?.SalesRevenue - date?.FirstOrDefault()?.PaymentCollected;
+                                                <td>@paymentDue</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td class="premium-room">Average Revenue Loss</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                <td>#####</td>
+                                            }
+                                        }
+                                    </tr>
+
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+                <button class="scroll-btn scroll-right" id="scrollRight">&#9654;</button>
+            </div>
+
+
+        </div>
+
+
+        <div class="card p-4" style="margin-bottom:150px;">
+            <h4>Win Vs Loss Revenue</h4>
+            <!-- You can place a chart here later -->
+            <div id="WinLossChart">
+            </div>
+        </div>
+
+
+    </div>
+
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+
+
+
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script src="~/customjs/validation.js"></script>
+    <script src="~/customjs/reports/filteryearmonth.js"></script>
+    <script src="~/customjs/Reports/FinancialKPIs.js"></script>
+
+    <script type="text/javascript">
+                            const candleChartData = @Html.Raw(Json.Serialize(
+        Model?.FinancialKPIDatas?.Where(x => x.FirstSale.HasValue && x.HighestSale.HasValue && x.LowestSale.HasValue && x.LastSale.HasValue)
+        .Select(x => new
+        {
+            TheDate = x.TheDate?.ToString("yyyy-MM-dd"),
+            Open = x.FirstSale,
+            High = x.HighestSale,
+            Low = x.LowestSale,
+            Close = x.LastSale
+        })
+    ));
+    </script>
+}

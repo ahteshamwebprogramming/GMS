@@ -1,0 +1,74 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomLockingViewModel
+<input type="button" id="btnModalAddNewRoom" style="display:none" data-bs-toggle="modal" data-bs-target="#ModalAddNewRoom" />
+
+<div class="modal fade" id="ModalAddNewRoom" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add New Room</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="general_form" id="FormAddNewRoom">
+                    <input type="hidden" asp-for="Room.Id" dbCol />
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Room Number</label>
+                        <input type="text" class="form-control numeric requiredInput" asp-for="Room.Rnumber" charslimit="4" dbCol>
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Room Type</label>
+                        <select class="form-control requiredInput" dbCol asp-for="Room.RtypeId">
+                            <option value="0">Select Room Type</option>
+                            @{
+                                if (Model != null && Model.RoomTypes != null)
+                                {
+                                    foreach (var item in Model.RoomTypes)
+                                    {
+                                        <option value="@item.Id">@item.Rtype</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Room Size</label>
+                        <input type="text" class="form-control requiredInput" dbCol asp-for="Room.Rsize">
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Bed Type</label>
+                        <input type="text" class="form-control requiredInput" dbCol asp-for="Room.BedSize">
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label class="form-label">Amenities</label>
+                        <div>
+                            @* <select class="form-control search" id="amenitiesDropdown" multiple="multiple" dbCol asp-for="AmenityIds" ameneties="@(String.Join(',',Model?.AmenityIds))"> *@
+                            <select class="form-control search" id="amenitiesDropdown" multiple="multiple" dbCol asp-for="AmenityIds">
+                                @{
+                                    if (Model != null && Model.Amenities != null)
+                                    {
+                                        foreach (var item in Model.Amenities)
+                                        {
+                                            <option value="@item.Id">@item.AmenityName</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" rows="3" dbCol asp-for="Room.Remarks"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Upload Photos</label>
+                        <input type="file" class="form-control" id="roompictures" accept="image/*" multiple>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AddRoom()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>

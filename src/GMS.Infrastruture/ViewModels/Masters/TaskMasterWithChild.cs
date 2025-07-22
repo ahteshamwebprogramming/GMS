@@ -9,6 +9,13 @@
         public bool IsDeleted { get; set; }
         public string? RoleName { get; set; }
         public bool? Readonly { get; set; }
+
+        public int? CategoryId { get; set; }
+        public TimeOnly? Duration { get; set; }
+        public decimal? Rate { get; set; }
+        public bool? DoctorAdviceRequired { get; set; }
+        public string? Remarks { get; set; }
+        public string? Category { get; set; }
     }
 
 }

@@ -135,6 +135,7 @@ public class CheckListAPIController : ControllerBase
                     checkLists.IsMandatory = dto.IsMandatory;
                     checkLists.ChecklistType = dto.ChecklistType;
                     checkLists.Description = dto.Description;
+                    checkLists.Score = dto.Score;
 
                     var updated = await _unitOfWork.TblCheckLists.UpdateAsync(checkLists);
                     if (updated)

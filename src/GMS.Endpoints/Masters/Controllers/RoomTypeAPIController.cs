@@ -145,6 +145,7 @@ public class RoomTypeAPIController : ControllerBase
                 {
                     roomType.Rtype = dto.Rtype;
                     roomType.RoomRank = dto.RoomRank;
+                    roomType.Remarks= dto.Remarks;
 
                     var updated = await _unitOfWork.RoomType.UpdateAsync(roomType);
                     if (updated)

@@ -1,0 +1,24 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.FeedbackViewModel
+<div class="modal fade" id="addFeedbackPopup" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Feedback Attributes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="general_form" id="AddFeedback">
+                    <input type="hidden" name="Id" value="@Model?.Feedback?.Id" dbCol />
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Question</label>
+                        <input type="text" class="form-control requiredInput" name="Question" dbCol value="@Model?.Feedback?.Question">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AddFeedback()">Add Question</button>
+            </div>
+        </div>
+    </div>
+</div>

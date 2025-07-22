@@ -1,0 +1,549 @@
+﻿@{
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Booking List";
+}
+
+<link href="~/customcss/channelmanager/main.css" rel="stylesheet" />
+
+<style>
+    .tab-content {
+        display: inherit !important;
+        border: 1px solid #fff !important;
+        padding: 0;
+        background: #fff;
+    }
+
+    .nav-tabs .nav-link {
+        margin-bottom: -1px;
+        background: 0 0;
+        border: 1px solid #6f6f6f14;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        margin-right: 10px;
+    }
+
+        .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+            color: #ffffff;
+            background-color: #002366;
+            border-color: #dee2e6 #dee2e6 #fff;
+        }
+
+    .toggle-container {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .toggle-checkbox {
+        display: none;
+    }
+
+    .toggle-label {
+        position: relative;
+        display: block;
+        width: 40px;
+        height: 20px;
+        background-color: #ccc;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .toggle-circle {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.3s;
+    }
+
+    .toggle-checkbox:checked + .toggle-label {
+        background-color: #28a745;
+    }
+
+        .toggle-checkbox:checked + .toggle-label .toggle-circle {
+            transform: translateX(20px);
+        }
+
+    .ratesUpdated input {
+        border: #eccccc solid 1px;
+    }
+
+    .preloader {
+        background-color: transparent;
+    }
+
+    .blockUI.blockMsg.blockPage {
+        position: sticky !important;
+    }
+</style>
+
+
+@model GMS.Infrastructure.ViewModels.Rooms.BulkUpdateViewModel
+@using GMS.Infrastructure.ViewModels.Rooms
+@{
+    var days = (Model.ToDate - Model.FromDate).Days + 1;
+    if (days > 365) { days = 365; Model.ToDate = Model.FromDate.AddDays(364); }
+}
+<div class="admin_wrapper">
+    @Html.Partial("_services/_leftNavigationServices")
+    <div class="right_container">
+
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Rate & Inventory <span>Bulk Update</span></h2>
+                </div>
+                <div class="text-left d-flex title2 mb-2 justify-content-start">
+                    <div class="controlsForm" name="SelectPlanDiv">
+                        <label>Select Plan</label>
+                        <select class="form-control" name="ChannelId" id="channelId">
+                            @{
+                                if (Model != null && Model.RatePlansList != null)
+                                {
+                                    <option value="0">Select Plan</option>
+                                    foreach (var item in Model.RatePlansList)
+                                    {
+                                        <option value="@item.Id">@item.Service</option>
+                                    }
+                                }
+                            }
+
+                            <!-- Populate dynamically if needed -->
+                        </select>
+                    </div>
+                    <div class="controlsForm">
+                        <label>From Date</label>
+                        <input type="date" class="form-control" name="FromDate" id="fromDate"
+                               value="@Model.FromDate.ToString("yyyy-MM-dd")"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")" onchange="updateDateRange()" />
+                    </div>
+                    <div class="controlsForm">
+                        <label>To Date</label>
+                        <input type="date" class="form-control" name="ToDate" id="toDate"
+                               value="@Model.ToDate.ToString("yyyy-MM-dd")"
+                               min="@Model.FromDate.ToString("yyyy-MM-dd")"
+                               max="@Model.FromDate.AddDays(364).ToString("yyyy-MM-dd")" onchange="updateDateRange()" />
+                    </div>
+                </div>
+
+                <div class="tabs_content">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">Inventory</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab">Rate</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab3-tab" data-bs-toggle="tab" data-bs-target="#tab3" type="button" role="tab">Increment</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab4-tab" data-bs-toggle="tab" data-bs-target="#tab4" type="button" role="tab">Restrictions</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3" id="myTabContent">
+                        <!-- Inventory Tab -->
+                        <div class="tab-pane fade show active" id="tab1" role="tabpanel">
+                            <form id="inventoryForm" method="post" action="/Rooms/UpdateBulk">
+                                <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                <input type="hidden" id="inventoryFromDate" name="FromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" id="inventoryToDate" name="ToDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" name="activeTab" value="tab1" />
+                                <div class="resposive_table">
+                                    <table class="ratesUpdated w-100 table" width="100%">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th><input type="checkbox" id="selectAllInventory" onclick="toggleSelectAll('inventoryForm', this.checked)"></th>
+                                                <th>Rooms Category</th>
+                                                <th>Rooms Count</th>
+                                                <th>Rooms Open</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="inventoryTableBody"></tbody>
+                                    </table>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-2">Update Selected</button>
+                            </form>
+                        </div>
+
+                        <!-- Rates Tab -->
+                        <div class="tab-pane fade" id="tab2" role="tabpanel">
+                            <form id="ratesForm" method="post" action="/Rooms/UpdateBulk">
+                                <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                <input type="hidden" id="ratesFromDate" name="FromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" id="ratesToDate" name="ToDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" name="activeTab" value="tab2" />
+                                <div class="resposive_table">
+                                    <table class="ratesUpdated w-100 table" width="100%">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th><input type="checkbox" id="selectAllRates" onclick="toggleSelectAll('ratesForm', this.checked)"></th>
+                                                <th>Rooms Category</th>
+                                                <th>Minimum Rate</th>
+                                                <th>Maximum Rate</th>
+                                                <th>Sale Rate</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="ratesTableBody"></tbody>
+                                    </table>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-2">Update Selected Rates</button>
+                            </form>
+                        </div>
+
+                        <!-- Increment Tab -->
+                        <div class="tab-pane fade" id="tab3" role="tabpanel">
+                            <form id="incrementForm" method="post" action="/Rooms/UpdateBulk">
+                                <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                <input type="hidden" id="incrementFromDate" name="FromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" id="incrementToDate" name="ToDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" name="activeTab" value="tab3" />
+
+                                <div class="resposive_table">
+                                    <table class="ratesUpdated w-100 table" width="100%">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th><input type="checkbox" id="selectAllIncrement" onclick="toggleSelectAll('incrementForm', this.checked)"></th>
+                                                <th>Room Name</th>
+                                                <th>Number of Rooms</th>
+                                                <th>AT 0%</th>
+                                                <th>AT 10%</th>
+                                                <th>AT 20%</th>
+                                                <th>AT 30%</th>
+                                                <th>AT 40%</th>
+                                                <th>AT 50%</th>
+                                                <th>AT 60%</th>
+                                                <th>AT 70%</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="incrementTableBody"></tbody>
+                                    </table>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-2">Save Selected Percentages</button>
+                            </form>
+                        </div>
+                        <!-- Restrictions Tab -->
+                        <div class="tab-pane fade" id="tab4" role="tabpanel">
+                            <form id="restrictionsForm" method="post" action="/Rooms/UpdateBulk">
+                                <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
+                                <input type="hidden" id="restrictionsFromDate" name="FromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" id="restrictionsToDate" name="ToDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" name="activeTab" value="tab4" />
+                                <div class="resposive_table">
+                                    <table class="ratesUpdated w-100 table" width="100%">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th><input type="checkbox" id="selectAllRestrictions" onclick="toggleSelectAll('restrictionsForm', this.checked)"></th>
+                                                <th>Rooms Category</th>
+                                                <th>Stop Sell</th>
+                                                <th>Close on Arrival</th>
+                                                <th>Restrict Stay</th>
+                                                <th>Minimum Nights</th>
+                                                <th>Maximum Nights</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="restrictionsTableBody"></tbody>
+                                    </table>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-2">Update Selected Restrictions</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+
+    @Html.Partial("_bottomNavigation1")
+</div>
+@section Scripts {
+
+
+    <script>
+
+        $(document).ready(function () {
+
+            $("div[name='SelectPlanDiv']").find("[name='ChannelId']").change(function(){
+                let channelId = this.value;
+                $("#myTabContent").find("[name='ChannelId']").val(channelId);
+            });
+        });
+
+                function updateDateRange() {
+                    const fromDate = document.getElementById("fromDate").value;
+                    const toDate = document.getElementById("toDate").value;
+
+                    document.getElementById("inventoryFromDate").value = fromDate;
+                    document.getElementById("inventoryToDate").value = toDate;
+                    document.getElementById("ratesFromDate").value = fromDate;
+                    document.getElementById("ratesToDate").value = toDate;
+                    document.getElementById("restrictionsFromDate").value = fromDate;
+                    document.getElementById("restrictionsToDate").value = toDate;
+                    document.getElementById("incrementFromDate").value = fromDate;
+                    document.getElementById("incrementToDate").value = toDate;
+                    const activeTab = document.querySelector('.nav-link.active').id;
+                    console.log("Active tab on date change:", activeTab);
+                    loadTabData(activeTab.replace('-tab', ''));
+                }
+
+                function loadTabData(tabId) {
+                    console.log("Loading data for tab:", tabId);
+                    const fromDate = document.getElementById("fromDate").value;
+                    const toDate = document.getElementById("toDate").value;
+
+                    let url, tbodyId;
+                    if (tabId === 'tab1') {
+                        url = '/Rooms/GetInventoryData';
+                        tbodyId = 'inventoryTableBody';
+                    } else if (tabId === 'tab2') {
+                        url = '/Rooms/GetRatesData';
+                        tbodyId = 'ratesTableBody';
+                    } else if (tabId === 'tab3') {
+                        url = '/Rooms/GetIncrementData';
+                        tbodyId = 'incrementTableBody';
+                    } else if (tabId === 'tab4') {
+                        url = '/Rooms/GetRestrictionsData';
+                        tbodyId = 'restrictionsTableBody';
+                    } else {
+                        console.log("Skipping tab:", tabId);
+                        return;
+                    }
+
+                    console.log("AJAX URL:", url, "From:", fromDate, "To:", toDate);
+                    BlockUI();
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        data: { fromDate: fromDate, toDate: toDate },
+                        success: function (data) {
+                            UnblockUI();
+                            console.log("Data received for", tabId, ":", data);
+                            const tbody = document.getElementById(tbodyId);
+                            tbody.innerHTML = '';
+
+                            if (tabId === 'tab1') {
+                                data.forEach((item, index) => {
+                                    tbody.innerHTML += `
+                                        <tr>
+                                            <td><input type="checkbox" name="Inventory[${index}].IsSelected" value="true" /></td>
+                                            <td>${item.roomTypeName}</td>
+                                            <td><input type="number" name="Inventory[${index}].RoomsAvailable" value="${item.roomsAvailable || ''}" readonly style="width: 60px; background-color: #e9ecef; border: none;" /></td>
+                                            <td>
+                                                <input type="number" name="Inventory[${index}].RoomsOpen" value="${item.roomsOpen || ''}" min="0" step="1" style="width: 60px;" oninput="validateRoomsOpen(this)" />
+                                                <input type="hidden" name="Inventory[${index}].RoomTypeId" value="${item.roomTypeId}" />
+                                            </td>
+                                        </tr>`;
+                                });
+                                setRoomsOpenMaxValues();
+                            } else if (tabId === 'tab2') {
+                                data.forEach((item, index) => {
+                                    tbody.innerHTML += `
+                                        <tr>
+                                            <td><input type="checkbox" name="Rates[${index}].IsSelected" value="true" /></td>
+                                            <td>${item.roomTypeName}</td>
+                                            <td><input type="number" id="minRate-${index}" name="Rates[${index}].MinimumRate" value="${item.minimumRate || ''}" min="0" step="0.01" style="width: 80px;" /></td>
+                                            <td><input type="number" id="maxRate-${index}" name="Rates[${index}].MaximumRate" value="${item.maximumRate || ''}" min="0" step="0.01" style="width: 80px;" /></td>
+                                            <td>
+                                                <input type="number" id="saleRate-${index}" name="Rates[${index}].SaleRate" value="${item.saleRate || ''}" min="0" step="0.01" style="width: 80px;" onblur="validateRate('saleRate-${index}', 'minRate-${index}', 'maxRate-${index}')" />
+                                                <input type="hidden" name="Rates[${index}].RoomTypeId" value="${item.roomTypeId}" />
+                                            </td>
+                                        </tr>`;
+                                });
+                            }
+                            else if (tabId === 'tab3') {
+                               data.forEach((item, index) => {
+                                const percentages = item.percentages || [-0.10, 0, 0.25, 0.50, 0.35, 0.20, 0.10, 0.75];
+                                const percentageValues = percentages.map(pct => (pct * 100).toFixed(2));
+                                tbody.innerHTML += `
+                                    <tr>
+                                        <td><input type="checkbox" name="Percentages[${index}].IsSelected" value="true" /></td>
+                                        <td>${item.roomTypeName}</td>
+                                        <td>${item.numberOfRooms}</td>
+                                        <td><input type="number" name="Percentages[${index}].Percentages[0]" value="${percentageValues[0]}" step="0.01" class="form-control" style="width: 100px;" /></td>
+                                        <td><input type="number" name="Percentages[${index}].Percentages[1]" value="${percentageValues[1]}" step="0.01" class="form-control" style="width: 100px;" /></td>
+                                        <td><input type="number" name="Percentages[${index}].Percentages[2]" value="${percentageValues[2]}" step="0.01" class="form-control" style="width: 100px;" /></td>
+                                        <td><input type="number" name="Percentages[${index}].Percentages[3]" value="${percentageValues[3]}" step="0.01" class="form-control" style="width: 100px;" /></td>
+                                        <td><input type="number" name="Percentages[${index}].Percentages[4]" value="${percentageValues[4]}" step="0.01" class="form-control" style="width: 100px;" /></td>
+                                        <td><input type="number" name="Percentages[${index}].Percentages[5]" value="${percentageValues[5]}" step="0.01" class="form-control" style="width: 100px;" /></td>
+                                        <td><input type="number" name="Percentages[${index}].Percentages[6]" value="${percentageValues[6]}" step="0.01" class="form-control" style="width: 100px;" /></td>
+                                        <td><input type="number" name="Percentages[${index}].Percentages[7]" value="${percentageValues[7]}" step="0.01" class="form-control" style="width: 100px;" /></td>
+                                        <input type="hidden" name="Percentages[${index}].RoomTypeId" value="${item.roomTypeId}" />
+                                    </tr>`;
+                            });
+                        }
+
+                 else if (tabId === 'tab4') {
+                                data.forEach((item, index) => {
+                                    tbody.innerHTML += `
+                                        <tr>
+                                            <td><input type="checkbox" name="Restrictions[${index}].IsSelected" value="true" /></td>
+                                            <td>${item.roomTypeName}</td>
+                                            <td>
+                                                <div class="toggle-container">
+                                                    <input type="checkbox" id="toggle-${index}" name="Restrictions[${index}].StopSell" value="true" ${item.stopSell === true ? 'checked' : ''} class="toggle-checkbox">
+                                                    <label for="toggle-${index}" class="toggle-label">
+                                                        <span class="toggle-circle"></span>
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td>
+
+                <input type="checkbox"
+                           name="Restrictions[${index}].CloseOnArrival"
+
+                           ${item.closeOnArrival ? 'checked' : ''}>
+                                            </td>
+                                            <td>
+
+
+                                                   <input type="hidden" name="Restrictions[${index}].RestrictStay" value="false">
+                <input type="checkbox"
+                       name="Restrictions[${index}].RestrictStay"
+
+                       value="true"
+                       ${item.restrictStay ? 'checked' : ''}>
+                                            </td>
+                                            <td><input type="number" name="Restrictions[${index}].MinimumNights" value="${item.minimumNights || ''}" min="0" step="1" style="width: 80px;" /></td>
+                                            <td>
+                                                <input type="number" name="Restrictions[${index}].MaximumNights" value="${item.maximumNights || ''}" min="0" step="1" style="width: 80px;" />
+                                                <input type="hidden" name="Restrictions[${index}].RoomTypeId" value="${item.roomTypeId}" />
+                                            </td>
+                                        </tr>`;
+                                });
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            UnblockUI();
+                            console.error('Error fetching data for', tabId, ':', error, xhr.status, xhr.responseText);
+                            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load data for ' + tabId });
+                        }
+                    });
+                }
+
+                $('#myTab li').on('shown.bs.tab', function (e) {
+                    const tabId = e.target.id.replace('-tab', '');
+                    console.log("Tab switched to:", tabId);
+                    loadTabData(tabId);
+                });
+
+                document.addEventListener("DOMContentLoaded", function () {
+                    console.log("DOM loaded, loading initial tab1 data");
+                    updateDateRange();
+                    loadTabData('tab1');
+                });
+                        $(document).on('submit', '#incrementForm', function (e) {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: 'Please Wait',
+                        text: 'Saving percentages...',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: this.action,
+                        type: this.method,
+                        data: $(this).serialize(), // Send as form-encoded data
+                        success: function (result) {
+                            Swal.close();
+                            Swal.fire({
+                                icon: result.success ? 'success' : 'error',
+                                title: result.success ? 'Success' : 'Error',
+                                text: result.message
+                            }).then(() => {
+                                if (result.success) {
+                                    loadTabData('tab3');
+                                }
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            Swal.close();
+                            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to save percentages: ' + error });
+                        }
+                    });
+                });
+                $(document).on('submit', '#inventoryForm, #ratesForm, #restrictionsForm', function (e) {
+                    e.preventDefault();
+                    const formId = this.id;
+                    const selectedRows = $(this).find('[name$=".IsSelected"]:checked').length;
+
+                    if (selectedRows === 0) {
+                        Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one row to update.' });
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Please Wait',
+                        text: 'Saving updates...',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    $.ajax({
+                        url: this.action,
+                        type: this.method,
+                        data: $(this).serialize(),
+                        success: function (result) {
+                            Swal.close();
+                            Swal.fire({
+                                icon: result.success ? 'success' : 'error',
+                                title: result.success ? 'Success' : 'Error',
+                                text: result.message
+                            }).then(() => {
+                                if (result.success) {
+                                    loadTabData(formId.replace('Form', ''));
+                                }
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            Swal.close();
+                            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to save updates: ' + error });
+                        }
+                    });
+                });
+
+                function setRoomsOpenMaxValues() {
+                    document.querySelectorAll('input[name$=".RoomsOpen"]').forEach(input => {
+                        const row = input.closest('tr');
+                        const roomsCountInput = row.querySelector('input[name$=".RoomsAvailable"]');
+                        const roomsCount = parseInt(roomsCountInput.value) || 0;
+                        input.setAttribute('max', roomsCount);
+                    });
+                }
+
+                function validateRoomsOpen(input) {
+                    const roomsOpen = parseInt(input.value) || 0;
+                    const max = parseInt(input.getAttribute('max')) || 0;
+                    if (roomsOpen < 0) {
+                        input.value = 0;
+                        Swal.fire({ icon: 'warning', title: 'Invalid Input', text: 'Rooms Open cannot be less than 0.' });
+                    } else if (roomsOpen > max) {
+                        input.value = max;
+                        Swal.fire({ icon: 'warning', title: 'Limit Exceeded', text: `Rooms Open cannot exceed Rooms Count (${max}).` });
+                    }
+                }
+
+                function validateRate(saleRateId, minRateId, maxRateId) {
+                    const saleRate = parseFloat(document.getElementById(saleRateId).value) || 0;
+                    const minRate = parseFloat(document.getElementById(minRateId).value) || 0;
+                    const maxRate = parseFloat(document.getElementById(maxRateId).value) || 0;
+                    if (saleRate < minRate) document.getElementById(saleRateId).value = minRate;
+                    if (maxRate > 0 && saleRate > maxRate) document.getElementById(saleRateId).value = maxRate;
+                }
+
+                function toggleSelectAll(formId, isChecked) {
+                    document.querySelectorAll(`#${formId} [name$='.IsSelected']`).forEach(cb => cb.checked = isChecked);
+                }
+    </script>
+}

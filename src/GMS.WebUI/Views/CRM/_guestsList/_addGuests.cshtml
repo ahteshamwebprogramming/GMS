@@ -1,0 +1,60 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+
+<style>
+    .add_user_form .form-control {
+        background: #eaeaeaa3 !important;
+    }
+</style>
+
+<div class="modal fade" id="addGuestPopup" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-addGuestPopup modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Guest Registration Form</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+
+                <div class="add_user_form" id="AddGuestForm">
+                    <input type="hidden" asp-for="MemberDetail.Id" dbCol />
+                    <input type="hidden" asp-for="MemberDetail.GroupId" dbCol />
+                    <input type="hidden" asp-for="MemberDetail.UHID" dbCol />
+                    <input type="hidden" asp-for="MemberDetail.UniqueNo" dbCol />
+                    <input type="hidden" name="MemberDetail.PAXSno" />
+                    <div class="container">
+                        <div class="row">
+                            @* <div class="col-md-12" id="div_GuestsSearchPartial">
+                                @Html.Partial("_guestsList/_guestsSearch", new List<GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild>())
+                            </div> *@
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label style="float:right">Pax No : <span name="spnPAXSno"></span></label>
+                                <label style="clear:both"></label>
+                            </div>
+                            <div class="col-md-12">
+                                <div id="div_GuestsFormDetailsPartialView">
+                                    @{
+                                        if (ClientConfiguration["ClientInfo:ClientName"] == "OKS")
+                                        {
+                                            @Html.Partial("_guestsList/_guestsHotelFormDetails", Model);
+                                        }
+                                        else
+                                        {
+                                            @Html.Partial("_guestsList/_guestsFormDetails", Model);
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btnCloseAddGuestForm">Cancel</button>
+                <input type="button" class="btn btn-primary" onclick="AddGuests()" value="Save and Continue" />
+            </div>
+        </div>
+    </div>
+</div>

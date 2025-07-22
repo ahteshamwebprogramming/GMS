@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "Category Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="admin_wrapper">
+    @Html.Partial("_services/_leftNavigationServices")
+
+    <!-- Modal -->
+
+    <input type="button" id="btnOpenAddCategoryMasterPopup" style="display:none" data-bs-toggle="modal" data-bs-target="#addCategoryMasterPopup" />
+    <div id="div_AddPartial">
+        @* @Html.Partial("_categoryMasterList/_add") *@
+    </div>
+
+    <!-- Modal -->
+
+
+
+    <div class="right_container">
+        
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Category Master</h2>
+                    <div class="btn_add">
+                        <a href="#" class="addNew_btn" onclick="AddPartialView(0)">Add New</a>
+                    </div>
+                </div>
+
+                <div id="div_ListPartial">
+                    @* @Html.Partial("_categoryMasterList/_list") *@
+                </div>
+
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+
+
+
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+@section Scripts {
+    <script src="~/customjs/masters/CategoryMaster.js"></script>
+    <script src="~/customjs/validation.js"></script>    
+}
+
+
+

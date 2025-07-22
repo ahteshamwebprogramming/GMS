@@ -1,0 +1,183 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.PackageMastersViewModel
+
+<style>
+
+    .tooltipTh {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        color: #fff;
+        font-weight: 400 !important;
+    }
+
+        .tooltipTh strong {
+            max-width: 150px; /* Adjust width */
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            text-overflow: ellipsis; /* Adds three dots */
+            color: #fff;
+            font-weight: 600 !important;
+        }
+
+        .tooltipTh .tooltip-text {
+            visibility: hidden;
+            width: 240px;
+            background-color: #7b584f;
+            color: #fff;
+            text-align: center;
+            padding: 5px;
+            border-radius: 5px;
+            white-space: normal; /* Allows full text */
+            /* Positioning */
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+            /* Tooltip arrow */
+            .tooltipTh .tooltip-text::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                border-width: 6px;
+                border-style: solid;
+                border-color: #7b584f transparent transparent transparent;
+            }
+
+        .tooltipTh:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    /*tooltip for td*/
+    .tooltiptd {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        color: #000;
+        font-weight: 400 !important;
+    }
+
+        .tooltiptd strong {
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            text-overflow: ellipsis; /* Adds three dots */
+            color: #000;
+            font-weight: 400 !important;
+            display: -webkit-box;
+            -webkit-line-clamp: 1; /* Show ellipsis after 2 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal; /* Allow multiple lines */
+            max-width: fit-content;
+        }
+
+        .tooltiptd .tooltip-text {
+            visibility: hidden;
+            width: 240px;
+            background-color: #7b584f;
+            color: #fff;
+            text-align: center;
+            padding: 5px;
+            border-radius: 5px;
+            white-space: normal; /* Allows full text */
+            /* Positioning */
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+            /* Tooltip arrow */
+            .tooltiptd .tooltip-text::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                border-width: 6px;
+                border-style: solid;
+                border-color: #7b584f transparent transparent transparent;
+            }
+
+        .tooltiptd:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+    .table thead th {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">
+                    <span class="tooltipTh">
+                        <strong>Services</strong>
+                        <span class="tooltip-text">This is the full text that appears on hover.</span>
+                    </span>
+
+                </th>
+                <th scope="col">Min Night</th>
+                <th scope="col">Max Night</th>
+                <th scope="col">Price</th>
+                <th scope="col">Description</th>
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.Services != null)
+                {
+                    foreach (var item in Model.Services)
+                    {
+                        <tr>
+                            <td scope="row">
+                                <span class="tooltiptd">
+                                    <strong>@item.Service</strong>
+                                    <span class="tooltip-text">@item.Service</span>
+                                </span>
+                            </td>
+                            <td scope="row">@item.MinimumNight</td>
+                            <td scope="row">@item.MaximumNight</td>
+                            <td scope="row">@item.Price</td>
+                            <td scope="row">
+                                <div class="tooltiptd">
+                                    <strong>@item.Description</strong>
+                                    <div class="tooltip-text">@item.Description</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="actions_btns">
+                                    @{
+                                        if (item.Readonly == true)
+                                        {
+                                            <span style="font-size:11px;color:red">These attributes cannot be modified</span>
+                                        }
+                                        else
+                                        {
+                                            <a href="#" class="trash" onclick="DeleteList(@item.Id)"><i class="bi bi-trash-fill"></i></a>
+                                            <a href="#" onclick="AddPartialView(@item.Id)" class="pencil ms-2"><i class="bi bi-pencil-fill"></i></a>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

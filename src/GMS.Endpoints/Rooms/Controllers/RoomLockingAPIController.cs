@@ -3,7 +3,9 @@ using GMS.Core.Entities;
 using GMS.Core.Repository;
 using GMS.Infrastructure.Models.Masters;
 using GMS.Infrastructure.Models.Rooms;
+using GMS.Infrastructure.ViewModels.Guests;
 using GMS.Infrastructure.ViewModels.Rooms;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mail;
@@ -28,7 +30,7 @@ public class RoomLockingAPIController : ControllerBase
         try
         {
             //string query = "Select * from GMSFinalGuest order by id desc";
-            string query = @"Select * from Rooms where Status=1";
+            string query = @"Select * from Rooms where Status=1 order by Rnumber asc";
             var res = await _unitOfWork.Rooms.GetTableData<RoomsDTO>(query);
             return Ok(res);
         }
@@ -46,6 +48,67 @@ public class RoomLockingAPIController : ControllerBase
             string query = @"Select * from Rooms where ID=@Id";
             var param = new { @Id = Id };
             var res = await _unitOfWork.Rooms.GetEntityData<RoomsDTO>(query, param);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRooms)}");
+            throw;
+        }
+    }
+    public async Task<IActionResult> GetRoomWithCleaningAttributeById(int Id)
+    {
+        try
+        {
+            string query = @"SELECT 
+                                rt.RType,
+                                rclLatest.CheckedBy AS AttendedBy,
+                                rclLatest.ChkDate AS AttendedDate,
+                                em.WorkerName AS AttendedByName,
+                                rclLatest.Reason,
+                                rclLatest.Comments,
+                                r.*,
+                                CASE 
+                                    WHEN rclLatest.ChkDate IS NULL THEN 0
+                                    WHEN ISNULL(r.RoomClean, 0) = 0 THEN 0
+                                    WHEN DATEDIFF(HOUR, rclLatest.ChkDate, GETDATE()) > 24 THEN 0
+                                    ELSE 1
+                                END AS CleanStatus
+                            FROM Rooms r
+                            LEFT JOIN RoomType rt ON r.RTypeID = rt.ID
+                            OUTER APPLY (
+                                SELECT TOP 1 *
+                                FROM RoomChkList rcl
+                                WHERE rcl.RID = r.ID
+                                ORDER BY rcl.ChkDate DESC
+                            ) rclLatest
+                            LEFT JOIN EHRMS.dbo.WorkerMaster em ON rclLatest.CheckedBy = em.WorkerID";
+            if (Id != 0)
+            {
+                query = query += @" where r.ID=@Id";
+                var param = new { @Id = Id };
+                var res = await _unitOfWork.Rooms.GetEntityData<RoomsWithAttribute>(query, param);
+                return Ok(res);
+            }
+            else
+            {
+                var res = await _unitOfWork.Rooms.GetTableData<RoomsWithAttribute>(query);
+                return Ok(res);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRooms)}");
+            throw;
+        }
+    }
+    public async Task<IActionResult> GetRoomCleanCheckList()
+    {
+        try
+        {
+            string query = @"Select * from [dbo].[TblCheckLists] where IsACtive=1 and CheckListType='RoomCleaning'";
+            //var param = new { @Id = Id };
+            var res = await _unitOfWork.Rooms.GetTableData<TblCheckListsDTO>(query);
             return Ok(res);
         }
         catch (Exception ex)
@@ -455,5 +518,80 @@ public class RoomLockingAPIController : ControllerBase
             _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRooms)}");
             throw;
         }
+    }
+    public async Task<IActionResult> RoomCleanCheckList(RoomChkListDTO inputDTO)
+    {
+        try
+        {
+            bool allMandatoryFieldsChecked = await CheckMandatoryCheckList(inputDTO, "RoomCleaning");
+            if (!allMandatoryFieldsChecked)
+            {
+                return StatusCode(430, new { message = "❌ Please review the action items." });
+            }
+            inputDTO.Id = await _unitOfWork.RoomChkList.AddAsync(_mapper.Map<RoomChkList>(inputDTO));
+            if (inputDTO.Id > 0)
+            {
+                string sQuery = @"Select * from Rooms where Id=@Id";
+                var sParam = new { @Id = inputDTO.RID };
+                var rooms = await _unitOfWork.Rooms.GetEntityData<Core.Entities.Rooms>(sQuery, sParam);
+                if (rooms != null)
+                {
+                    rooms.RoomClean = true;
+                    await _unitOfWork.Rooms.UpdateAsync(rooms);
+                }
+                return Ok(inputDTO);
+            }
+            else
+            {
+                return BadRequest("Unable to clean right now");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRooms)}");
+            throw;
+        }
+    }
+    public async Task<bool> CheckMandatoryCheckList(RoomChkListDTO inputDTO, string CheckListType)
+    {
+        int[] mandatoryFields = Array.Empty<int>(); // Ensure it's initialized
+        int[] fieldsFromPage = Array.Empty<int>();  // Ensure it's initialized
+
+        string squery = "Select * from TblCheckLists where ChecklistType=@CheckListType and IsMandatory=1 and IsActive=1";
+        var sparam = new { @CheckListType = CheckListType };
+
+        // Fetch mandatory checklist IDs from the database
+        var res = await _unitOfWork.GenOperations.GetTableData<TblCheckListsDTO>(squery, sparam);
+        if (res != null && res.Any())
+        {
+            mandatoryFields = res.Select(x => x.ID).ToArray();
+        }
+
+        // Fetch checklist IDs from inputDTO
+        if (inputDTO != null && !string.IsNullOrEmpty(inputDTO.RChkLstID))
+        {
+            fieldsFromPage = inputDTO.RChkLstID.Split(',')
+                          .Select(s => int.TryParse(s, out int num) ? num : (int?)null)
+                          .Where(num => num.HasValue)
+                          .Select(num => num.Value)
+                          .ToArray();
+        }
+        if (mandatoryFields.Length > 0 && fieldsFromPage != null)
+        {
+            // Check if all mandatory checklist items are present in fieldsFromPage
+            bool allPresent = mandatoryFields.Length > 0 && fieldsFromPage.Length > 0 &&
+                              mandatoryFields.All(id => fieldsFromPage.Contains(id));
+
+            if (allPresent)
+            {
+                return true;
+                //Console.WriteLine("✅ All mandatory checklist items are present.");
+            }
+            //else
+            //{
+            //    Console.WriteLine("❌ Some mandatory checklist items are missing.");
+            //}
+        }
+        return false;
     }
 }

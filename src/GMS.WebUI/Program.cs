@@ -1,6 +1,7 @@
 using Dapper;
 using GMS.Core.Repository;
 using GMS.Infrastructure.Helper;
+using GMS.Infrastructure.Models.AppParameters;
 using GMS.Infrastruture.Helper;
 using GMS.Services;
 using GMS.Services.Configurations;
@@ -22,17 +23,18 @@ SqlMapper.AddTypeHandler(new SqlTimeOnlyTypeHandler());
 SqlMapper.AddTypeHandler(new DapperSqlDateOnlyTypeHandler());
 
 builder.Services.AddDistributedMemoryCache();
+builder.Services.Configure<ClientInfo>(builder.Configuration.GetSection("ClientInfo"));
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(10);
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(options =>
         {
-            options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             options.SlidingExpiration = true;
             options.AccessDeniedPath = "/Account/ErrorMessage";
             options.LoginPath = "/Account/Login";

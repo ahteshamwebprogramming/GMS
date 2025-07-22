@@ -1,0 +1,24 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.PaymentMethodViewModel
+<div class="modal fade" id="addPaymentMethodPopup" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Payment Method</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="general_form" id="AddPaymentMethod">
+                    <input type="hidden" name="Id" value="@Model?.PaymentMethod?.Id" dbCol />
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Payment Method</label>
+                        <input type="text" class="form-control requiredInput" name="PaymentMethodName" dbCol value="@Model?.PaymentMethod?.PaymentMethodName">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AddPaymentMethod()">Add Payment Method</button>
+            </div>
+        </div>
+    </div>
+</div>

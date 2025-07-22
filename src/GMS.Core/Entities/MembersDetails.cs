@@ -156,4 +156,19 @@ public class MembersDetails
     public string GroupId { get; set; }
     public int PAXSno { get; set; }
     public bool PaxCompleted { get; set; }
+    public string? RegistrationNumber { get; set; }
+    public string? UHID { get; set; }
+
+    public int? CountryId { get; set; }
+    public int? StateId { get; set; }
+    public int? CityId { get; set; }
+    public int? NationalityId { get; set; }
+
+    public DateTime? PassportIssueDate { get; set; }
+    public DateTime? PassportExpiryDate { get; set; }
+    public DateTime? VisaIssueDate { get; set; }
+    public DateTime? VisaExpiryDate { get; set; }
+    public DateTime? IdProofIssueDate { get; set; }
+    public DateTime? IdProofExpiryDate { get; set; }
+    public bool? PhotoShared { get; set; }
 }

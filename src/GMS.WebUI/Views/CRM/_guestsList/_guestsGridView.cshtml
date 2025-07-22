@@ -1,0 +1,157 @@
+﻿@using System.Globalization
+@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+
+
+
+
+<div class="guest_list">
+    @{
+        if (Model != null && Model.MemberDetailsWithChildren != null)
+        {
+            if (Model.MemberDetailsWithChildren.Count > 0)
+            {
+                foreach (var item in Model.MemberDetailsWithChildren)
+                {
+                    <div class="guest_info @(item.PaxCompleted==false ? "guest_info_attention" : "")">
+                        <div class="guest_header">
+
+                            <span class="user_icon @(item.PaxCompleted==false ? "user_icon_attention" : "")"><strong>@item.RoomNumber</strong> </span>
+                            <div class="dropdown">
+                                <button class="three-dots dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddGuestsPartialView('@item.GroupId')"><i class="bi bi-pencil-fill"></i> Modify Reservation </a></li>
+                                    @*<li><a class="dropdown-item" href="/Guests/ReviewMemberDetails/@item.Id" target="_blank"><i class="bi bi-eye-fill"></i> Review</a></li>*@
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change Room</a></li>
+                                    @*<li><a class="dropdown-item" href="javascript:void(0)" onclick="AddServicesPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Add Services</a></li>*@
+                                    @*<li><a class="dropdown-item" href="/Guests/GuestSchedule/@item.Id"><i class="bi bi-clock-fill"></i> Schedules</a></li>*@
+                                    <li><a class="dropdown-item" href="/Guests/PrintMemberDetails/@item.Id" target="_blank"><i class="bi bi-printer-fill"></i> Print</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal2"><i class="bi bi-file-earmark-arrow-up-fill"></i> Upload</a></li>
+                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="BillingPartialView('@item.Id')"><i class="bi bi-cash-stack"></i> Billing</a></li>
+                                    @*<li><a class="dropdown-item" href="javascript:void(0)" onclick="SettlementPartialView('@item.Id')"><i class="bi bi-pencil-fill"></i> Settelment</a></li>*@
+                                    @*<li><a class="dropdown-item" onclick="OpenFeedbackView(@item.Id)" href="/ReviewAndFeedbacks/Feedback/@item.Id" target="_blank"><i class="bi bi-chat-dots"></i> Feedback</a></li>*@
+                                    <li><a class="dropdown-item" onclick="OpenFeedbackView(@item.Id)"><i class="bi bi-chat-dots"></i> Feedback</a></li>
+                                </ul>
+                            </div>
+
+                        </div>
+                        <a href="#">
+
+                            <ul class="usert_info">
+                                <li><i class="bi bi-person-vcard"></i> <span>@item.UHID</span></li>
+                                <li><i class="bi bi-person"></i> <span>@item.CustomerName</span></li>
+                                <li><i class="bi bi-phone"></i> <span>@item.MobileNo</span></li>
+                                <li><i class="bi bi-calendar"></i> <span> @item.DateOfArrival?.ToString("dd-MMM-yy") to @item.DateOfDepartment?.ToString("dd-MMM-yy")</span></li>
+                                <li><i class="bi bi-clock"></i> <span>@item.Category</span></li>
+
+                                @{
+                                    string memberAge = "-";
+                                    if (!String.IsNullOrEmpty(item.Dob))
+                                    {
+                                        DateTime today = DateTime.Today;
+                                        DateTime dob = DateTime.ParseExact(item.Dob, "dd-MM-yyyy", CultureInfo.InvariantCulture);
+                                        int age = today.Year - dob.Year;
+                                        if (dob.Date > today.AddYears(-age)) age--;
+                                        memberAge = age.ToString();
+                                    }
+                                }
+                                <li><i class="bi bi-gender-ambiguous"></i> <span>@(item.GenderName == null ? "-" : item.GenderName) / @(memberAge)</span></li>
+                                @*<li><i class="bi bi-person-fill"></i> <span>@(memberAge)</span></li>*@
+
+                            </ul>
+                        </a>
+                        <div class="guest_info_bottom_button">
+                            @{
+                                if (item.CheckInStatus == 1)
+                                {
+                                    @*<a href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)" class="checkin_btn">Add Room</a>*@
+                                }
+                                else if (item.CheckInStatus == 2)
+                                {
+                                    @*<a href="javascript:void(0)" onclick="OpenCheckInListModalPartialView(@item.Id,'@item.UniqueNo','@item.CustomerName','@item.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")')" class="checkin_btn">Check In</a>*@
+                                    <div class="d-flex justify-content-start gap-3 align-items-center">
+                                        <div class="ckin">
+                                            <a href="javascript:void(0)" onclick="OpenCheckInListModalPartialView(@item.Id,'@item.UniqueNo','@item?.CustomerName?.Replace("'", "\\'")','@item.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")')" class="checkin_btn"> <i class="bi bi-door-open"></i> </a>
+                                        </div>
+                                        <div class="noshow">
+                                            <a href="javascript:void(0)" class="noshow_btn"> <i class="bi bi-ban"></i></a>
+                                        </div>
+                                    </div>
+
+
+                                }
+                                else if (item.CheckInStatus == 3)
+                                {
+                                    <a href="javascript:void(0)" onclick="OpenCheckOutListModalPartialView(@item.Id,'@item.UniqueNo','@item.CustomerName','@item.DateOfDepartment?.ToString("yyyy-MM-dd HH:mm")')" class="checkin_btn2 checkin_btn" style="background-color: #FFDF88; border: #FFDF88 solid 2px;"><i class="bi bi-door-closed"></i></a>
+                                }
+                                else if (item.CheckInStatus == 4)
+                                {
+                                    <a href="javascript:void(0)" class="checkin_btn checkin_btn_review"><i class="bi bi-file-check"></i></a>
+                                }
+                                else
+                                {
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        }
+    }
+
+</div>
+@{
+    if (Model?.GuestsWithChildren?.Count == 0)
+    {
+        <div class="no_record">
+            <div class="noc">
+                <span><img src="~/assets/img/no-record.png"></span>
+                <h3>No Guests Found!</h3>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="pagination2">
+            @{
+                if (Model != null && Model.GuestsGridViewParameters != null)
+                {
+                    int PageIndex = Model.GuestsGridViewParameters.PageNumber ?? default(int);
+                    int TotalPages = Model.GuestsGridViewParameters.TotalPages ?? default(int);
+
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            <li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="GuestsListPartialView(@(PageIndex > 1 ? PageIndex - 1 : 1))">Previous</a></li>
+
+                            @if (PageIndex > 3)
+                            {
+                                <li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="GuestsListPartialView(1)">1</a></li>
+                                <li class="page-item disabled"><a class="page-link" href="javascript:void(0)">...</a></li>
+                            }
+                            @for (var i = Math.Max(1, PageIndex - 1); i <= Math.Min(PageIndex + 1, TotalPages); i++)
+                            {
+                                <li class="page-item @(i == PageIndex ? "active" : "")"><a class="page-link" href="javascript:void(0)" onclick="GuestsListPartialView(@i)">@i</a></li>
+                            }
+                            @if (PageIndex < TotalPages - 2)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                <li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="GuestsListPartialView(@TotalPages)">@TotalPages</a></li>
+                            }
+                            <li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="GuestsListPartialView(@(PageIndex < TotalPages ?  PageIndex + 1 : TotalPages))">Next</a></li>
+
+
+                            @*<li class="page-item last">
+            <a class="page-link" href="javascript:void(0)" onclick="ProjectListPartialView(@TotalPages)">
+            <i class="fa-solid fa-angles-right"></i>
+            </a>
+            </li>*@
+
+                        </ul>
+                    </nav>
+
+                }
+            }
+        </div>
+    }
+}

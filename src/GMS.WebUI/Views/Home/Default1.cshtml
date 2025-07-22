@@ -1,0 +1,333 @@
+﻿@model GMS.Infrastructure.ViewModels.Dashboard.DashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Index";
+}
+<div class="admin_wrapper">    
+    @Html.Partial("_home/_leftNavigationHome")
+
+
+    <div class="right_container content">
+        <div class="">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Front Office Dashboard</h2>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="mt-4" style="margin-bottom:130px;">
+
+            <div class="table-container">
+                <button class="scroll-btn scroll-left hidden" id="scrollLeft">&#9664;</button>
+                <div class="scrollable-content" id="scrollContainer">
+                    <table class="table table-bordered text-center" style="margin-bottom:20px;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="header-dark" colspan="31">
+                                    <input type="text" id="inputmonthyearselector" class="" />
+                                </th>
+                            </tr>
+                            <tr>
+                                <th class="header-dark"> </th>
+                                <th class="header-dark">1</th>
+                                <th class="header-dark">2</th>
+                                <th class="header-dark">3</th>
+                                <th class="header-dark">4</th>
+                                <th class="header-dark">5</th>
+                                <th class="header-dark">6</th>
+                                <th class="header-dark">7</th>
+                                <th class="header-dark">8</th>
+                                <th class="header-dark">9</th>
+                                <th class="header-dark">10</th>
+                                <th class="header-dark">11</th>
+                                <th class="header-dark">12</th>
+                                <th class="header-dark">13</th>
+                                <th class="header-dark">14</th>
+                                <th class="header-dark">15</th>
+                                <th class="header-dark">16</th>
+                                <th class="header-dark">17</th>
+                                <th class="header-dark">18</th>
+                                <th class="header-dark">19</th>
+                                <th class="header-dark">20</th>
+                                <th class="header-dark">21</th>
+                                <th class="header-dark">22</th>
+                                <th class="header-dark">23</th>
+                                <th class="header-dark">24</th>
+                                <th class="header-dark">25</th>
+                                <th class="header-dark">26</th>
+                                <th class="header-dark">27</th>
+                                <th class="header-dark">28</th>
+                                <th class="header-dark">29</th>
+                                <th class="header-dark">30</th>
+                                <th class="header-dark">31</th>
+                            </tr>
+                            <tr>
+                                <th class="header-dark"> </th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                                <th class="header-grey">Sa</th>
+                                <th class="header-grey">Su</th>
+                                <th class="header-grey">Mo</th>
+                                <th class="header-grey">Tu</th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                                <th class="header-grey">Sa</th>
+                                <th class="header-grey">Su</th>
+                                <th class="header-grey">Mo</th>
+                                <th class="header-grey">Tu</th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                                <th class="header-grey">Sa</th>
+                                <th class="header-grey">Su</th>
+                                <th class="header-grey">Mo</th>
+                                <th class="header-grey">Tu</th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                                <th class="header-grey">Sa</th>
+                                <th class="header-grey">Su</th>
+                                <th class="header-grey">Mo</th>
+                                <th class="header-grey">Tu</th>
+                                <th class="header-grey">We</th>
+                                <th class="header-grey">Th</th>
+                                <th class="header-grey">Fr</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                if (Model != null && Model.RoomOccupancyDataList != null)
+                                {
+                                    var roomTypesIds = Model.RoomOccupancyDataList.GroupBy(x => x.ID).ToList();
+                                    var dates = Model.RoomOccupancyDataList.GroupBy(x => x.TheDate).ToList();
+                                    <tr>
+                                        <td style="min-height: 34px;background:#8ACCD5"></td>
+                                        <td colspan="@dates.Count" style="background:#8ACCD5"> <strong>Occupancy Rate</strong></td>
+                                    </tr>
+                                    foreach (var roomTypeId in roomTypesIds)
+                                    {
+                                        var roomType = Model.RoomOccupancyDataList.Where(x => x.ID == roomTypeId.Key).FirstOrDefault();
+                                        <tr>
+                                            <td class="premium-room">@roomType?.RType</td>
+                                            @{
+                                                foreach (var date in dates)
+                                                {
+                                                    var dateData = Model.RoomOccupancyDataList.Where(x => x.ID == roomTypeId.Key && x.TheDate == date.Key).FirstOrDefault();
+                                                    var PercentOccupied = Math.Ceiling(dateData?.PercentOccupied ?? 0);
+                                                    <td>@PercentOccupied.ToString("F2")</td>
+                                                }
+                                            }
+                                        </tr>
+                                    }
+
+                                    <tr class="bgwhite">
+                                        <td>Total Rooms</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var dateData = Model.RoomOccupancyDataList.Where(x => x.TheDate == date.Key).ToList();
+                                                var totalRooms = dateData.Sum(x => x.TotalRooms);
+                                                <td>@totalRooms</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr class="bgwhite">
+                                        <td>Rooms Occupied</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var dateData = Model.RoomOccupancyDataList.Where(x => x.TheDate == date.Key).ToList();
+                                                var bookedRooms = dateData.Sum(x => x.BookedRooms);
+                                                <td>@bookedRooms</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr class="occupancy">
+                                        <td>Occupancy (%)</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var dateData = Model.RoomOccupancyDataList.Where(x => x.TheDate == date.Key).ToList();
+                                                decimal bookedRooms = dateData.Sum(x => x.BookedRooms) ?? 0;
+                                                var totalRooms = dateData.Sum(x => x.TotalRooms) ?? 0;
+                                                var totaloccupancypercent = (bookedRooms * 100) / (totalRooms);
+                                                <td style="color: black; padding: 5px;white-space:nowrap"> @(totaloccupancypercent.ToString("F2"))%</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td style="min-height: 34px;background:#8ACCD5"></td>
+                                        <td colspan="@dates.Count" style="background:#8ACCD5"> <strong>Revenue Rate</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Room Revenue</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var dateData = Model?.RoomRevenueDataList?.Where(x => x.TheDate == date.Key).FirstOrDefault();
+                                                <td>@dateData?.TotalRevenue?.ToString("F2")</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td>F&B Revenue</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var dateData = Model?.PackageRevenueDataList?.Where(x => x.TheDate == date.Key).FirstOrDefault();
+                                                <td>@dateData?.TotalRevenue?.ToString("F2")</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <td>Upsell Revenue</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var dateData = Model?.UpsellRevenueDataList?.Where(x => x.TheDate == date.Key).FirstOrDefault();
+                                                <td>@dateData?.TotalRevenue?.ToString("F2")</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr class="occupancy">
+                                        <td style="color: black; padding: 5px;"> Total Revenue</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var dateDataRoom = Model?.RoomRevenueDataList?.Where(x => x.TheDate == date.Key).FirstOrDefault();
+                                                var dateDataFnB = Model?.PackageRevenueDataList?.Where(x => x.TheDate == date.Key).FirstOrDefault();
+                                                var dateDataUpsell = Model?.UpsellRevenueDataList?.Where(x => x.TheDate == date.Key).FirstOrDefault();
+                                                <td>@((dateDataRoom?.TotalRevenue + dateDataFnB?.TotalRevenue + dateDataUpsell?.TotalRevenue)?.ToString("F2"))</td>
+                                            }
+                                        }
+                                    </tr>
+
+                                    <tr>
+                                        <td style="min-height: 34px;background:#8ACCD5"></td>
+                                        <td colspan="@dates.Count" style="background:#8ACCD5"> <strong>Rate KPIs</strong></td>
+                                    </tr>
+                                    <tr class="bgwhite">
+                                        <td>ADR (Average Daily Rate)</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var roomOccupied = Model?.RoomOccupancyDataList?.Where(x => x.TheDate == date.Key).ToList().Sum(x => x.BookedRooms);
+                                                var roomRevenue = Model?.RoomRevenueDataList?.Where(x => x.TheDate == date.Key)?.FirstOrDefault()?.TotalRevenue;
+                                                var adr = roomOccupied == 0 ? 0 : (roomRevenue / roomOccupied) ?? 0;
+                                                <td>@(adr.ToString("F2"))</td>
+                                            }
+                                        }
+                                    </tr>
+
+                                    <tr class="bgwhite">
+                                        <td>RevPAR</td>
+                                        @{
+                                            foreach (var date in dates)
+                                            {
+                                                var totalRooms = Model?.RoomOccupancyDataList.Where(x => x.TheDate == date.Key).ToList().Sum(x => x.TotalRooms);
+                                                var roomRevenue = Model?.RoomRevenueDataList?.Where(x => x.TheDate == date.Key)?.FirstOrDefault()?.TotalRevenue;
+                                                var revpar = totalRooms == 0 ? 0 : (roomRevenue / totalRooms) ?? 0;
+                                                <td>@(revpar.ToString("F2"))</td>
+                                            }
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+                <button class="scroll-btn scroll-right" id="scrollRight">&#9654;</button>
+            </div>
+
+
+        </div>
+
+
+        
+
+
+    </div>
+
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+
+
+
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script src="~/customjs/validation.js"></script>
+    <script type="text/javascript">
+               $(document).ready(function() {
+            $("#inputmonthyearselector")
+                .datetimepicker({
+                    format: 'M-Y', // month-year format (e.g., 05-2025)
+                    timepicker: false, // no time picker
+                    datepicker: true, // enable datepicker
+                    viewMode: 'months', // start with month view (some plugins use this)
+                    minView: 'months', // limit selection to month level
+                });
+            
+        });
+
+        const scrollContainer = document
+            .getElementById("scrollContainer");
+        const scrollLeft = document
+            .getElementById("scrollLeft");
+        const scrollRight = document
+            .getElementById("scrollRight");
+        const scrollStep =
+            200; // Pixels to scroll on each click
+
+        function updateButtons() {
+            scrollLeft.classList.toggle(
+                "hidden", scrollContainer
+                .scrollLeft <= 0);
+            scrollRight.classList.toggle(
+                "hidden", scrollContainer
+                .scrollLeft +
+                scrollContainer
+                .clientWidth >=
+                scrollContainer.scrollWidth);
+        }
+
+        scrollLeft.addEventListener("click",
+            () => {
+                scrollContainer.scrollBy({
+                    left: -scrollStep,
+                    behavior: "smooth"
+                });
+            });
+
+        scrollRight.addEventListener("click",
+            () => {
+                scrollContainer.scrollBy({
+                    left: scrollStep,
+                    behavior: "smooth"
+                });
+            });
+
+        scrollContainer.addEventListener(
+            "scroll", updateButtons);
+        window.addEventListener("resize",
+            updateButtons);
+
+        updateButtons
+            (); // Ensure correct button visibility on load
+
+
+       
+
+    </script>
+}

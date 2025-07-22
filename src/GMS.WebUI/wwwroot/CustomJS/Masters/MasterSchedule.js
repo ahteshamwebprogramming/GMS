@@ -33,7 +33,8 @@ function initDates() {
     $("#AddSchedule").find("[name='Duration']").datetimepicker({
         datepicker: false,
         format: 'H:i',
-        step: 10 // Optional: Define minute intervals
+        step: 5, // Optional: Define minute intervals
+        minTime: '00:05'
     });
     //$("#AddGuestForm").find("[name='MemberDetail.FlightArrivalDateAndDateTime']").datetimepicker({
     //    format: 'd-m-Y H:i',
@@ -356,7 +357,7 @@ function AddSchedule() {
         error: function (xhr, ajaxOptions, error) {
             UnblockUI();
             $erroralert("Transaction Failed!", xhr.responseText + '!');
-            
+
             //responseText
         }
     });

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using GMS.Core.Entities;
 using GMS.Core.Repository;
 using GMS.Infrastructure.Models.Masters;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,8 @@ public class CountryAPIController : Controller
     {
         try
         {
-            string query = "Select * from TblCountries";
+            
+            string query = "Select * from countries order by name asc";
             var res = await _unitOfWork.TblCountries.GetTableData<TblCountriesDTO>(query);
             return Ok(res);
         }
@@ -34,7 +36,7 @@ public class CountryAPIController : Controller
     {
         try
         {
-            string query = "Select * from TblState";
+            string query = "Select * from TblState order by State asc";
             var res = await _unitOfWork.TblState.GetTableData<TblStateDTO>(query);
             return Ok(res);
         }
@@ -48,7 +50,7 @@ public class CountryAPIController : Controller
     {
         try
         {
-            string query = "Select * from tblCity";
+            string query = "Select * from tblCity order by City asc";
             var res = await _unitOfWork.tblCity.GetTableData<tblCityDTO>(query);
             return Ok(res);
         }

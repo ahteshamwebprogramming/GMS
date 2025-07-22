@@ -1,0 +1,104 @@
+﻿@using GMS.Infrastructure.Models.RoleMenuMapping
+@using Newtonsoft.Json
+<button class="hamburger">☰</button>
+<div class="left_container">
+    <div class="brand_logo"><img src="~/img/logo.png" /></div>
+    <div class="top_menu">
+        <ul>
+            @{
+                if (User.IsInRole("General Management") || User.IsInRole("Admin"))
+                {
+                    <li>
+                        <a href="/Home/Default">
+                            <figure><i class="bi bi-flag"></i></figure>
+                            <h4>Home</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Home/Index">
+                            <figure><i class="bi bi-house-fill"></i></figure>
+                            <h4>Guest Status</h4>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    var strMenuList = Context.Session.GetString("MenuList");
+                    if (!String.IsNullOrEmpty(strMenuList))
+                    {
+                        var menuList = JsonConvert.DeserializeObject<List<MenuListDTO>>(strMenuList);
+                        var menuListFilteredParent = menuList?.Where(x => x.MenuParentId == 1).ToList().OrderBy(x => x.SNo);
+                        foreach (var menu in menuListFilteredParent)
+                        {
+                            <li>
+                                <a href="@menu.MenuLink">
+                                    @Html.Raw(menu.MenuIcon)
+                                    <h4>@menu.MenuName</h4>
+                                </a>
+                            </li>
+                        }
+                    }
+                }
+            }
+
+        </ul>
+    </div>
+    <div class="room_details_box" style="display:none">
+        <ul>
+            <li>Booking ID <span><strong>#NAAD0010</strong></span></li>
+            <li>Room No <span>202</span> </li>
+
+            <li>Room Type <span>Premium</span> </li>
+
+            <li>Room Size <span>20.17 s/m</span></li>
+
+            <li>Bed Type <span>King Size</span></li>
+
+            <li>Booking Date <span>19/06/2024</span> </li>
+
+            <li>Availability <span>Available</span></li>
+        </ul>
+        <span class="devider"></span>
+        <div class="user_details">
+            <div class="user_info">
+                <figure><img src="~/assets/img/user.svg"></figure>
+                <div class="detailsDD">
+                    <h4>Clair Burge</h4>
+                    <p>+919874605555</p>
+                </div>
+            </div>
+            <div class="address_a">
+                DE-STRESS AT NAAD - 5 NIGHTS
+            </div>
+            <a href="#" class="approved_btn">Approved</a>
+        </div>
+    </div>
+    <div class="bottom_menu d-none">
+        <ul>
+            <li class="edit">
+                <a href="#">
+                    <figure><i class="bi bi-pencil-square"></i></figure>
+                    <h4>Edit</h4>
+                </a>
+            </li>
+            <li class="delete">
+                <a href="#">
+                    <figure><i class="bi bi-trash3-fill"></i></figure>
+                    <h4>Delete</h4>
+                </a>
+            </li>
+            <li class="review">
+                <a href="#">
+                    <figure><i class="bi bi-eye-fill"></i></figure>
+                    <h4>Review</h4>
+                </a>
+            </li>
+            <li class="print">
+                <a href="#">
+                    <figure><i class="bi bi-printer-fill"></i></figure>
+                    <h4>Print</h4>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

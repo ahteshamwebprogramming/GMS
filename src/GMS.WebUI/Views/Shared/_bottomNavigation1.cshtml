@@ -1,16 +1,77 @@
-﻿<div class="bottom_menu_right">
+﻿@using GMS.Infrastructure.Models.RoleMenuMapping
+@using Newtonsoft.Json
+<style>
+    .designby {
+        position: absolute;
+        bottom: 25%;
+        left: 20px;
+        color: #333;
+        font-size: 15px;
+        text-align: center;
+    }
 
-    <ul class="menu_bottom">
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Home/Index"><span><i class="bi bi-house-fill"></i></span><p>Home</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Master/Masters"><span><i class="bi bi-grid-fill"></i></span><p>Master</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/CRM/BookingList"><span><i class="bi bi-gear-fill"></i></span><p>CRM</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Guests/GuestsList"><span><i class="bi bi-person-badge-fill"></i></span><p>Guest</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Rooms/RoomsDetails"><span><i class="bi bi-building-fill"></i></span><p>Rooms</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Services/Services"><span><i class="bi bi-collection-fill"></i></span><p>Services</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Reports/SummaryReport"><span><i class="bi bi-stickies-fill"></i></span><p>Reports</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Home/SendFeedback"><span><i class="bi bi-plus-square-fill"></i></span><p>Feedback</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Home/Contact"><span><i class="bi bi-person-lines-fill"></i></span><p>Contact</p></a></div></li>
-        <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Account/Logout"><span><i class="bi bi-box-arrow-right"></i></i></span><p>Logout</p></a></div></li>
-    </ul>
+    .parent-logo {
+        width: 140px
+    }
 
-</div>
+    .designby a {
+        display: block;
+    }
+</style>
+
+@{
+    if (User.IsInRole("General Management") || User.IsInRole("Admin"))
+    {
+        <div class="bottom_menu_right">
+            <ul class="menu_bottom">
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Home/Default"><span><i class="bi bi-house-fill"></i></span><p>Home</p></a></div></li>
+                <li class="d-none"><div class="btn-group dropup"><a class="btn btn-secondary" href="/Guests/GuestsList"><span><i class="bi bi-person-badge-fill"></i></span><p>Guest</p></a></div></li>
+
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Guests/GuestsList"><span><i class="bi bi-people-fill"></i></span><p>CRM</p></a></div></li>
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/SalesReport/List"><span><i class="bi bi-coin"></i></span><p>Accounting</p></a></div></li>
+
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/AmenetiesCategory/List"><span><i class="bi bi-grid-fill"></i></span><p>Master</p></a></div></li>
+
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Rooms/RoomsDetails"><span><i class="bi bi-building-fill"></i></span><p>Rooms</p></a></div></li>
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Rooms/RoomRates"><span><i class="bi bi-collection-fill"></i></span><p>Rates</p></a></div></li>
+                <li class="d-none"><div class="btn-group dropup"><a class="btn btn-secondary" href="/PackageMaster/List"><span><i class="bi bi-collection-fill"></i></span><p>Services</p></a></div></li>
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Home/Dashboard"><span><i class="bi bi-stickies-fill"></i></span><p>Reports</p></a></div></li>
+
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/UserManagement/UserList"><span><i class="bi bi-gear-fill"></i></span><p>Settings</p></a></div></li>
+
+                @* <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Home/Contact"><span><i class="bi bi-person-lines-fill"></i></span><p>Contact</p></a></div></li> *@
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Account/Logout"><span><i class="bi bi-box-arrow-right"></i></span><p>Logout</p></a></div></li>
+            </ul>
+
+            <div class="designby">© A Product of <a href="https://www.08consultings.com/" target="_blank"><span class="parent-logo"> <img src="/assets/img/08-consultings.svg"> </span></a></div>
+        </div>
+    }
+    else
+    {
+        <div class="bottom_menu_right">
+            <ul class="menu_bottom">
+
+                @{
+                    var strMenuList = Context.Session.GetString("MenuList");
+                    if (!String.IsNullOrEmpty(strMenuList))
+                    {
+                        var menuList = JsonConvert.DeserializeObject<List<MenuListDTO>>(strMenuList);
+                        var menuListFilteredParent = menuList?.Where(x => x.MenuParentId == 0).ToList().OrderBy(x => x.SNo);
+                        foreach (var menu in menuListFilteredParent)
+                        {
+                            var menuLink = menuList?.Where(x => x.MenuParentId == menu.Id)?.OrderBy(x => x.SNo)?.FirstOrDefault()?.MenuLink;
+                            if (menu.SelfMenu == true)
+                            {
+                                menuLink = menu.MenuLink;
+                            }
+                            <li><div class="btn-group dropup"><a class="btn btn-secondary" href="@menuLink"> @Html.Raw(menu.MenuIcon) <p>@menu.MenuName</p></a></div></li>
+                        }
+                    }
+                }
+                <li><div class="btn-group dropup"><a class="btn btn-secondary" href="/Account/Logout"><span><i class="bi bi-box-arrow-right"></i></span><p>Logout</p></a></div></li>
+            </ul>
+            <div class="designby">© A Product of <a href="https://www.08consultings.com/" target="_blank"><span class="parent-logo"> <img src="/assets/img/08-consultings.svg"> </span></a></div>
+        </div>
+    }
+}
+

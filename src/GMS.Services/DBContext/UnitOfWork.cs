@@ -17,6 +17,7 @@ public class UnitOfWork : IUnitOfWork
         _dapperEHRMSDBContext = dapperEHRMSDBContext;
         GMSFinalGuest = new GMSFinalGuestRepository(_dapperDBContext);
         EHRMSLogin = new EHRMSLoginRepository(_dapperEHRMSDBContext);
+        RoleMaster = new RoleMasterRepository(_dapperEHRMSDBContext);
         GenderMaster = new GenderMasterRepository(_dapperDBContext);
         tblCity = new tblCityRepository(_dapperDBContext);
         TblState = new TblStateRepository(_dapperDBContext);
@@ -43,11 +44,30 @@ public class UnitOfWork : IUnitOfWork
         Amenities = new AmenitiesRepository(_dapperDBContext);
         RoomAmeneties = new RoomAmenetiesRepository(_dapperDBContext);
         TblCheckLists = new TblCheckListsRepository(_dapperDBContext);
+        CategoryMaster = new CategoryMasterRepository(_dapperDBContext);
+        GuestDocumentAttachments = new GuestDocumentAttachmentsRepository(_dapperDBContext);
+        RoomChkList = new RoomChkListRepository(_dapperDBContext);
+        Billing = new BillingRepository(_dapperDBContext);
+        Payment = new PaymentRepository(_dapperDBContext);
+        Settlement = new SettlementRepository(_dapperDBContext);
+        FeedbackResults = new FeedbackResultsRepository(_dapperDBContext);
+        FeedbackResultRatings = new FeedbackResultRatingsRepository(_dapperDBContext);
+        Rates = new RatesRepository(_dapperDBContext);
+        PaymentMethod = new PaymentMethodRepository(_dapperDBContext);
+        Feedback = new FeedbackRepository(_dapperDBContext);
+        AuditedRevenue = new AuditedRevenueRepository(_dapperDBContext);
+        GuestReservation = new GuestReservationRepository(_dapperDBContext);
+        Sources = new SourcesRepository(_dapperDBContext);
+        CreditDebitNoteAccount = new CreditDebitNoteAccountRepository(_dapperDBContext);
+        GuestLedger = new GuestLedgerRepository(_dapperDBContext);
+        MenuList = new MenuListRepository(_dapperDBContext);
+        RoleMenuMapping = new RoleMenuMappingRepository(_dapperDBContext);
     }
 
 
     public IGMSFinalGuestRepository GMSFinalGuest { get; private set; }
     public IEHRMSLoginRepository EHRMSLogin { get; private set; }
+    public IRoleMasterRepository RoleMaster { get; private set; }
     public IGenderMasterRepository GenderMaster { get; private set; }
     public ItblCityRepository tblCity { get; private set; }
     public ITblStateRepository TblState { get; private set; }
@@ -74,5 +94,43 @@ public class UnitOfWork : IUnitOfWork
     public IAmenitiesRepository Amenities { get; private set; }
     public IRoomAmenetiesRepository RoomAmeneties { get; private set; }
     public ITblCheckListsRepository TblCheckLists { get; private set; }
+    public ICategoryMasterRepository CategoryMaster { get; private set; }
+    public IGuestDocumentAttachmentsRepository GuestDocumentAttachments { get; private set; }
+    public IRoomChkListRepository RoomChkList { get; private set; }
+    public IBillingRepository Billing { get; private set; }
+    public IPaymentRepository Payment { get; private set; }
+    public ISettlementRepository Settlement { get; private set; }
+    public IFeedbackResultsRepository FeedbackResults { get; private set; }
+    public IFeedbackResultRatingsRepository FeedbackResultRatings { get; private set; }
+    public IRatesRepository Rates { get; private set; }
+    public IPaymentMethodRepository PaymentMethod { get; private set; }
+    public IFeedbackRepository Feedback { get; private set; }
 
+    public IAuditedRevenueRepository AuditedRevenue { get; private set; }
+    public IGuestReservationRepository GuestReservation { get; private set; }
+    public ISourcesRepository Sources { get; private set; }
+    public ICreditDebitNoteAccountRepository CreditDebitNoteAccount { get; private set; }
+    public IGuestLedgerRepository GuestLedger { get; private set; }
+    public IMenuListRepository MenuList { get; private set; }
+    public IRoleMenuMappingRepository RoleMenuMapping { get; private set; }
+
+    public void BeginTransaction()
+    {
+        _dapperDBContext.BeginTransaction();
+    }
+
+    public void Commit()
+    {
+        _dapperDBContext.Commit();
+    }
+
+    public void Rollback()
+    {
+        _dapperDBContext.Rollback();
+    }
+
+    public void Dispose()
+    {
+        _dapperDBContext.Dispose();
+    }
 }

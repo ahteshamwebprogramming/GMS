@@ -1,0 +1,88 @@
+﻿@model GMS.Infrastructure.ViewModels.CRM.EnquiryListViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Closed Enquiry";
+}
+<style>
+    table tbody tr td {
+        white-space:nowrap;
+    }
+</style>
+<div class="admin_wrapper">
+    @Html.Partial("_crm/_leftNavigationCRM")
+    <div class="right_container">
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Closed Enquiry</h2>
+                    <div class="btn_add">
+                        @* <a href="#" class="addNew_btn" onclick="AddPartialView(0)">Add Packages</a> *@
+                    </div>
+                </div>
+                <div id="">
+                    <div class="resposive_table" style="overflow-x:scroll">
+                        <table class="table" id="ListOfPayment">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Mobile No</th>
+                                    <th scope="col">Guest Name</th>
+                                    <th scope="col">Email Id</th>
+                                    <th scope="col">Rate Plan</th>
+                                    <th scope="col">No Of Nights</th>
+                                    <th scope="col">Arrival Date</th>
+                                    <th scope="col">Depart Date</th>
+                                    <th scope="col">Room Category</th>
+                                    <th scope="col">Sale Source</th>
+                                    <th scope="col">Brand Awareness</th>
+                                    <th scope="col">Lead Source</th>
+                                    @* <th scope="col" width="300">Action</th> *@
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    if (Model != null && Model.GuestEnquiryWithAttrList != null)
+                                    {
+                                        foreach (var item in Model.GuestEnquiryWithAttrList)
+                                        {
+                                            <tr class="">
+                                                <td scope="row" class="">@item.MobileNo</td>
+                                                <td scope="row">@string.Join(" ", new[] { item.Fname, item.Mname, item.Lname }.Where(s => !string.IsNullOrWhiteSpace(s)))</td>
+                                                <td scope="row" class="">@item.EmailId</td>
+                                                <td scope="row" class="">@item.RatePlan</td>
+                                                <td scope="row" class="">@item.ServiceId</td>
+                                                <td scope="row">@item.DateOfArrival?.ToString("dd-MMM-yy hh:mm tt")</td>
+                                                <td scope="row">@item.DateOfDepartment?.ToString("dd-MMM-yy hh:mm tt")</td>
+                                                <td scope="row" class="">@item.RoomTypeName</td>
+                                                <td scope="row" class="">@item.SaleSourceName</td>
+                                                <td scope="row" class="">@item.BrandAwarenessName</td>
+                                                <td scope="row" class="">@item.LeadSourceName</td>
+                                                @*<td scope="row" class=""></td>*@
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+@section Scripts {
+
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $("table").DataTable({
+            "order"  : []
+            });
+        });
+    </script>
+}
+
+

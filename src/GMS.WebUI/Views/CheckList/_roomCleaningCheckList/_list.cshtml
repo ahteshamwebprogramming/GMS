@@ -1,0 +1,47 @@
+﻿@model GMS.Infrastructure.ViewModels.Masters.CheckListViewModel
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Action Attributes</th>
+                <th scope="col">Score</th>
+                <th scope="col">Is Mandatory</th>
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.TblCheckListss != null)
+                {
+                    foreach (var item in Model.TblCheckListss)
+                    {
+                        <tr>
+                            <td scope="row">@item.Chklist</td>
+                            <td scope="row">@item.Score</td>
+                            <td scope="row">
+                                @{
+                                    if (item.IsMandatory)
+                                    {
+                                        <i style="color:green" class="fa-solid fa-check"></i>
+                                    }
+                                    else
+                                    {
+                                        <i style="color:red" class="fa-solid fa-xmark"></i>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <div class="actions_btns">
+                                    @{
+                                        <a href="#" class="trash" onclick="DeleteList('RoomCleaning',@item.ID)"><i class="bi bi-trash-fill"></i></a>
+                                        <a href="#" onclick="AddPartialView('RoomCleaning',@item.ID)" class="pencil ms-2"><i class="bi bi-pencil-fill"></i></a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

@@ -41,8 +41,11 @@ public class TaskMasterAPIController : ControllerBase
     {
         try
         {
-
-            string query = "Select tm.*,rm.RoleName from TaskMaster tm left Join EHRMS.dbo.RoleMaster rm on tm.Department=rm.RoleID where tm.IsDeleted=0";
+            string query = @"Select tm.*,rm.RoleName ,cm.Category,tm.Duration,tm.Rate,tm.Remarks,tm.DoctorAdviceRequired
+                            from TaskMaster tm 
+                            left Join EHRMS.dbo.RoleMaster rm on tm.Department=rm.RoleID 
+                            Left Join CategoryMaster cm on tm.CategoryId=cm.Id
+                            where tm.IsDeleted=0";
             var res = await _unitOfWork.TaskMaster.GetTableData<TaskMasterWithChild>(query);
             return Ok(res);
         }
@@ -182,6 +185,11 @@ public class TaskMasterAPIController : ControllerBase
                 {
                     taskMaster.TaskName = dto.TaskName;
                     taskMaster.Department = dto.Department;
+                    taskMaster.CategoryId = dto.CategoryId;
+                    taskMaster.Duration = dto.Duration;
+                    taskMaster.Rate = dto.Rate;
+                    taskMaster.DoctorAdviceRequired = dto.DoctorAdviceRequired;
+                    taskMaster.Remarks = dto.Remarks;
 
                     var updated = await _unitOfWork.TaskMaster.UpdateAsync(taskMaster);
                     if (updated)

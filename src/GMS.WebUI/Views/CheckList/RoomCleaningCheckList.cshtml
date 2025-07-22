@@ -1,0 +1,47 @@
+﻿@{
+    ViewData["Title"] = "Room Cleaning Check List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="admin_wrapper">
+    @Html.Partial("_masters/_leftNavigationMasters")
+
+    <!-- Modal -->
+    <div id="div_AddPartial">
+        @* @Html.Partial("_roomCleaningCheckList/_add") *@
+    </div>
+    <!-- Modal -->
+
+
+
+    <div class="right_container">
+
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Room Action List</h2>
+                    <div class="btn_add">
+                        <a href="#" class="addNew_btn" onclick="AddPartialView('RoomCleaning')">Add New</a>
+                    </div>
+                </div>
+
+                <div id="div_ListPartial">
+                    @* @Html.Partial("_roomCleaningCheckList/_list") *@
+                </div>
+
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+@section Scripts {
+    <script src="~/customjs/masters/RoomCleaningCheckList.js"></script>
+    <script>
+        $(document).ready(function () {
+            ListPartialView("RoomCleaning");
+        });
+    </script>
+}

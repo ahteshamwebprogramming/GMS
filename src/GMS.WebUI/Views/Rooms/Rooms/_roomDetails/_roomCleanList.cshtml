@@ -1,0 +1,115 @@
+﻿@* Modal Code  *@
+@model GMS.Infrastructure.ViewModels.Rooms.RoomStatusViewModel
+<style>
+    .roomCleanIngp {
+        display: flex;
+        gap: 15px;
+        justify-content: start;
+        align-items: center;
+        font-size: 14px;
+        border: #e2e2e2 solid 1px;
+        padding: 0 10px;
+        margin-bottom: 14px;
+        border-radius: 3px;
+        background: #f2f2f294;
+    }
+
+    .table thead th{color:#fff;}
+    label {
+        font-size: 14px;
+    }
+
+    textarea {
+        background: #f7f7f7 !important;
+    }
+
+
+
+    /* Even rows */
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    /* Odd rows */
+    tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+
+
+    .roomCleanIngp input{ color:dodgerblue; width:auto;}
+</style>
+<input type="button" id="btnCheckInListModal" style="display:none" data-bs-toggle="modal" data-bs-target="#CheckInListModal" value="button test" />
+<div class="modal fade" id="CheckInListModal" tabindex="-1" aria-labelledby="CheckListInModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog1 modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="CheckInListModalLabel">Room Cleaning Check-List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <table class="table table-bordered" id="GrvdCheckIn">
+                    <thead>
+                        <tr style="background-color: #b5a38b;">
+                            <th>
+                                <div class="checkbox">
+                                    <input type="checkbox" value="">
+                                </div>
+                            </th>
+                            <th>Action Items</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            if (Model != null && Model.RoomCleanCheckList != null)
+                            {
+                                foreach (var item in Model.RoomCleanCheckList)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="checkbox">
+                                                <input type="checkbox" id="ChkID_@item.ID" value="">
+                                            </div>
+                                        </td>
+                                        <td>@item.Chklist</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+                <div class="col-sm-12 mb-3 form-group txt-mag-inn">
+                    <input type="hidden" name="RID" value="@Model?.RoomCheckList?.RID" />
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="roomCleanIngp">
+                                <label>Attended By</label>
+                                <input type="text" class="form-control-plaintext" value="@Model?.RoomCheckList?.CheckedByName" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="roomCleanIngp">
+                            <label>Date & Time</label>
+                            <input type="text" class="form-control-plaintext" value="@Model?.RoomCheckList?.ChkDate?.ToString("dd-MMM-yyyy hh:mm tt ")" />
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <label>Reason</label>
+                            <textarea class="form-control" name="Reason"></textarea>
+                        </div>
+                        <div class="col-sm-12">
+                            <label>Comments</label>
+                            <textarea class="form-control" name="Comments"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Later</button>
+                <button type="button" class="btn btn-primary" onclick="SubmitRoomCheckList()">Complete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Code *@

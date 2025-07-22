@@ -13,4 +13,5 @@ public class RoomType
     public int? Status { get; set; }
 
     public int? RoomRank { get; set; }
+    public string? Remarks { get; set; }
 }

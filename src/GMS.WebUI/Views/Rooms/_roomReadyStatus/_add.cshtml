@@ -1,0 +1,126 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomLockingViewModel
+
+
+<div class="modal fade" id="ModalLock" tabindex="-1" aria-labelledby="exampleModalLock" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                    @{
+                        if (Model != null && Model.RoomLockDAO != null)
+                        {
+                            if (Model.RoomLockDAO.RoomLockHold == "Lock")
+                            {
+                                <span>Lock Room (#@Model.RoomLockDAO.RoomNo)</span>
+                            }
+                            else if (Model.RoomLockDAO.RoomLockHold == "Hold")
+                            {
+                                <span>Hold Room (#@Model.RoomLockDAO.RoomNo)</span>
+                            }
+                            else
+                            {
+                                <span>Manage Room (#@Model.RoomLockDAO.RoomNo)</span>
+                            }
+                        }
+                    }
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="general_form" id="RoomLockForm">
+
+                    <div class="row">
+                        <input type="hidden" name="Rooms" asp-for="RoomLockDAO.RoomNo" dbCol />
+                        <input type="hidden" name="Type" asp-for="RoomLockDAO.RoomLockHold" dbCol />
+                        @* <div class="col-md-12">
+                        <div class="mb-3">
+                        <label class="form-label">Rooms</label>
+                        <select class="form-control" name="Rooms" asp-for="RoomLock.Rooms" dbCol>
+                        <option value="0">Select Room No</option>
+                        @{
+                        if (Model != null && Model.RoomsList != null)
+                        {
+                        foreach (var item in Model.RoomsList)
+                        {
+                        <option value="@item.Rnumber">@item.Rnumber</option>
+                        }
+                        }
+                        }
+                        </select>
+                        </div>
+                        </div> *@
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">From Date</label>
+                                <input type="date" id="flatpickr-startdate" name="Fd" class="form-control dateonly" dateformat="DD-MMM-YYYY" asp-for="RoomLock.Fd" dbCol>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">To Date</label>
+                                <input type="date" id="flatpickr-enddate" class="form-control dateonly" name="Ed" asp-for="RoomLock.Ed" dbCol>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Remarks</label>
+                                <textarea id="" class="form-control" asp-for="RoomLock.Remarks" name="Remarks" dbCol></textarea>
+                            </div>
+                        </div>
+
+                        @* <div class="col-md-12"><input type="button" class="submit_btn" onclick="Submitdata()" value="Submit" /></div> *@
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeModalLock" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="Submitdata()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="top_heaer_form" style="display:none">
+    <form class="general_form" id="RoomLockForm1">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Rooms</label>
+                    <select class="form-control" name="Rooms" asp-for="RoomLock.Rooms" dbCol>
+                        <option value="0">Select Room No</option>
+                        @{
+                            if (Model != null && Model.RoomsList != null)
+                            {
+                                foreach (var item in Model.RoomsList)
+                                {
+                                    <option value="@item.Rnumber">@item.Rnumber</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">From Date</label>
+                    <input type="date" id="flatpickr-startdate" name="Fd" class="form-control dateonly" dateformat="DD-MMM-YYYY" asp-for="RoomLock.Fd" dbCol>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">To Date</label>
+                    <input type="date" id="flatpickr-enddate" class="form-control dateonly" name="Ed" asp-for="RoomLock.Ed" dbCol>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Remarks</label>
+                    <textarea id="" class="form-control" asp-for="RoomLock.Remarks" name="Remarks" dbCol></textarea>
+                </div>
+            </div>
+
+            <div class="col-md-12"><input type="button" class="submit_btn" onclick="Submitdata()" value="Submit" /></div>
+        </div>
+    </form>
+</div>

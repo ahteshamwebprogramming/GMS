@@ -1,0 +1,106 @@
+﻿@* @model GMS.Infrastructure.Models.Guests.MembersDetailsDTO *@
+@model GMS.Infrastructure.ViewModels.Guests.AddRoomPopupViewModel
+<style>
+    .no-border {
+        border-bottom-width: 0px !important
+    }
+</style>
+<input type="button" style="display:none" data-bs-toggle="modal" data-bs-target="#exampleModal" id="btnAddRoomModal" />
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog1 modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Change / Upgrade Room</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="resposive_table review_table" style="background:#98c1d9">
+                    <table class="table" style="margin-bottom:0px !important">
+                        <tbody style="color:#000">
+                            <tr>
+                                <td>CID <br /><strong> #@Model?.MembersDetails?.UHID</strong> </td>
+                                <td>Guest Name <br /><strong>@Model?.MembersDetails?.CustomerName</strong></td>
+                                <td>Mobile No <br /><strong> @Model?.MembersDetails?.MobileNo</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="no-border">Stay Dates <br /><strong>@Model?.MembersDetails?.DateOfArrival?.ToString("dd MMM yyyy") - @Model?.MembersDetails?.DateOfDepartment?.ToString("dd MMM yyyy")</strong></td>
+                                <td class="no-border">Room Type <br /><strong>PREMIUM ROOM</strong></td>
+                                <td class="no-border"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <form class="general_form">
+                    @* <div class="mb-3">
+                    <label class="form-label">Room Number</label>
+                    <input type="text" class="form-control">
+                    </div> *@
+                    <input type="hidden" value="@Model?.MembersDetails?.Id" name="GuestId" />
+                    <div class="mb-3">
+                        <label>Sharing</label>
+                        <select class="form-control" name="ddlAvailableRoomsSharedStatus">
+                            <option value="0">Select</option>
+                            @* <option value="1">Yes</option>
+                            <option value="2">No</option> *@
+                            @{
+                                if (Model != null && Model.RoomAllocationDetails != null)
+                                {
+                                    if (Model.RoomAllocationDetails.Shared != null)
+                                    {
+                                        if (Model.RoomAllocationDetails.Shared == 1)
+                                        {
+                                            <option selected value="1">Yes</option>
+                                            <option value="2">No</option>
+                                        }
+                                        else if (Model.RoomAllocationDetails.Shared == 2)
+                                        {
+                                            <option value="1">Yes</option>
+                                            <option selected value="2">No</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="1">Yes</option>
+                                            <option value="2">No</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <option value="1">Yes</option>
+                                        <option value="2">No</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="1">Yes</option>
+                                    <option value="2">No</option>
+                                }
+                            }
+
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Select Room</label>
+                        <select class="form-control" name="ddlAvailableRoomsShared">
+                            <option value="0">Select Room</option>
+                            @{
+                                if (Model != null && Model.AvailableRoomsForGuestAllocationList != null)
+                                {
+                                    foreach (var item in Model.AvailableRoomsForGuestAllocationList)
+                                    {
+                                        <option value="@item.RoomNo">@item.RoomNo @(String.IsNullOrEmpty(item.SharedWith) ? "" : "(" + @item.SharedWith + ")")</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="RoomSharingWith" value="@( (Model ==null && Model?.RoomPartnerName==null) ? "" : string.Join(",", Model?.RoomPartnerName?.Select(n => n.CustomerName)))" />
+                <input type="hidden" id="CurrentSharingStatus" value="@(Model?.isShared==true ? 1 : 0)" />
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AllocateRoom_New()">Allocate</button>
+            </div>
+        </div>
+    </div>
+</div>

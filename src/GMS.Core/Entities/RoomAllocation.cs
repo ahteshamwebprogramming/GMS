@@ -14,9 +14,9 @@ public class RoomAllocation
 
     public int? GuestId { get; set; }
 
-    public string? Fd { get; set; }
+    public DateTime? Fd { get; set; }
 
-    public string? Td { get; set; }
+    public DateTime? Td { get; set; }
 
     public DateTime? AsigndDate { get; set; }
 
@@ -34,5 +34,8 @@ public class RoomAllocation
     public DateTime? CheckInDate { get; set; }
     public DateTime? CheckOutDate { get; set; }
     public string? Reason { get; set; }
+
+    public bool? NoShow { get; set; }
+    public string? NoShowReason { get; set; }
 
 }

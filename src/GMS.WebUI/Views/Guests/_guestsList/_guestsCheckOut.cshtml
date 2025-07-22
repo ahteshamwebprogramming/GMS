@@ -11,10 +11,10 @@
                 <div class="col-sm-12 row mb-3 form-group txt-mag-inn">
                     <input type="hidden" name="CheckInModelGuestId" value="@Model?.MemberDetails?.Id" />
                     <div class="col-sm-3 text-center padding-txt">
-                        <label for="PH.NO>">Guest ID</label>
+                        <label for="PH.NO>">UHID</label>
                     </div>
                     <div class="col-sm-3 text-center padding-txt">
-                        <label for="PH.NO>" name="lblCheckInModelGuestCode">@(Model?.MemberDetails?.UniqueNo)</label>
+                        <label for="PH.NO>" name="lblCheckInModelGuestCode">@(Model?.MemberDetails?.UHID)</label>
                     </div>
                     <div class="col-sm-3 text-center padding-txt">
                         <label for="PH.NO>">Name</label>
@@ -44,7 +44,7 @@
                                     <tr>
                                         <td>
                                             <div class="checkbox">
-                                                <input type="checkbox" checked="checked" id="ChkID_@item.ID" value="">
+                                                <input type="checkbox" id="ChkID_@item.ID" value="">
                                             </div>
                                         </td>
                                         <td>@item.Chklist</td>

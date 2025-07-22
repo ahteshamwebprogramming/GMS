@@ -29,6 +29,7 @@ public class CheckListController : Controller
     {
         return View();
     }
+    
     public async Task<IActionResult> ListPartialView([FromBody] CheckListViewModel inputDTO)
     {
         CheckListViewModel dto = new CheckListViewModel();
@@ -113,4 +114,82 @@ public class CheckListController : Controller
         }
         return BadRequest("Unable to delete right now");
     }
+
+
+
+    #region RoomCheckList
+
+    public IActionResult RoomCleaningCheckList()
+    {
+        return View();
+    }
+    public async Task<IActionResult> RoomCleaningCheckListPartialView([FromBody] CheckListViewModel inputDTO)
+    {
+        CheckListViewModel dto = new CheckListViewModel();
+        if (inputDTO != null)
+        {
+            var res = await _checkListAPIController.CheckInList(inputDTO);
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                dto.TblCheckListss = (List<TblCheckListsDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+            }            
+        }
+        return PartialView("_roomCleaningCheckList/_list", dto);
+    }
+    public async Task<IActionResult> RoomCleaningCheckListAddPartialView([FromBody] TblCheckListsDTO inputDTO)
+    {
+        CheckListViewModel dto = new CheckListViewModel();
+        if (inputDTO != null)
+        {
+            if (inputDTO.ID > 0)
+            {
+                var res = await _checkListAPIController.CheckListById(inputDTO.ID);
+                if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+                {
+                    dto.TblCheckLists = (TblCheckListsDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                }
+            }            
+        }
+        return PartialView("_roomCleaningCheckList/_add", dto);
+    }
+    [HttpPost]
+    public async Task<IActionResult> RoomCleaningCheckListSave(TblCheckListsDTO dataVM)
+    {
+        if (dataVM != null)
+        {
+            if (dataVM.ID == 0)
+            {
+                dataVM.IsActive = true;
+                dataVM.Type = 0;
+                dataVM.ChkIn = 0;
+                dataVM.ChkOut = 0;
+                //dataVM.CreatedDate = DateTime.Now;
+                //dataVM.CreatedBy = Convert.ToInt32(User.FindFirstValue("Id"));
+                var res = await _checkListAPIController.Add(dataVM);
+                return res;
+            }
+            else
+            {
+                //dataVM.ModifiedDate = DateTime.Now;
+                //dataVM.ModifiedBy = Convert.ToInt32(User.FindFirstValue("Id"));
+                var res = await _checkListAPIController.Update(dataVM);
+                return res;
+            }
+        }
+        else
+        {
+            return BadRequest("Data is not valid");
+        }
+        return null;
+    }
+    public async Task<IActionResult> RoomCleaningCheckListDelete([FromBody] TblCheckListsDTO inputDTO)
+    {
+        if (inputDTO.ID > 0)
+        {
+            var res = await _checkListAPIController.Delete(inputDTO.ID);
+            return res;
+        }
+        return BadRequest("Unable to delete right now");
+    }
+    #endregion
 }

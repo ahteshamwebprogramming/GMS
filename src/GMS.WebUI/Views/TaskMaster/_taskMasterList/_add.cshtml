@@ -16,8 +16,8 @@
                     <div class="row">
                         <div class="mb-3 form-group">
                             <label class="form-label required">Department</label>
-                            <select type="text" class="form-control" name="Department" id="Department" dbCol>
-                                <option>Select Role</option>
+                            <select type="text" class="form-control" name="Department" id="Department" dbCol onchange="GetCategories()">
+                                <option value="0">Select Role</option>
                                 @{
                                     if (Model != null && Model.Roles != null)
                                     {
@@ -37,6 +37,30 @@
                             </select>
                         </div>
                         <div class="mb-3 form-group">
+                            <label class="form-label required">Category</label>
+                            <select type="text" class="form-control requiredInput" name="CategoryId" id="CategoryId" categoryvalue="@Model?.TaskMaster?.CategoryId" dbCol>
+                                <option value="0">Select Category</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 form-group">
+                            <label class="form-label required">Duration</label>
+                            @* <input type="text" class="form-control requiredInput" name="Duration" dbCol value="@Model?.TaskMaster?.Duration"> *@
+                            <input type="text" class="form-control requiredInput timeonly" dateformat="HH:mm" name="Duration" dbCol autocomplete="off" readonly value="@Model?.TaskMaster?.Duration?.ToString("HH:mm")">
+                        </div>
+                        <div class="mb-3 form-group">
+                            <label class="form-label required">Rate</label>
+                            <input type="number" class="form-control requiredInput" name="Rate" dbCol value="@Model?.TaskMaster?.Rate">
+                        </div>
+                        <div class="mb-3 form-group">
+                            <label class="form-label required">Doctor Advice</label>
+                            <select type="text" class="form-control" name="DoctorAdviceRequired" id="DoctorAdviceRequired" asp-for="TaskMaster.DoctorAdviceRequired" dbCol>
+                                <option value=false>No</option>
+                                <option value=true>Yes</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 form-group">
+                            <label class="form-label required">Remarks</label>
+                            <textarea class="form-control requiredInput" name="Remarks" dbCol>@Model?.TaskMaster?.Remarks</textarea>
                         </div>
                     </div>
                 </form>

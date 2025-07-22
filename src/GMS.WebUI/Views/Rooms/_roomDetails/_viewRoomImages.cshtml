@@ -1,0 +1,63 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomLockingViewModel
+
+<input type="button" id="btnModalViewRoomImages" style="display:none" data-bs-toggle="modal" data-bs-target="#ModalViewRoomImages" />
+
+<div class="modal fade" id="ModalViewRoomImages" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Room Images</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        @if (Model != null && Model.RoomImages != null && Model.RoomImages.Any())
+                        {
+                            foreach (var item in Model.RoomImages)
+                            {
+                                <div class="col-md-4 col-sm-6 mb-3 d-flex justify-content-center">
+                                    <img src="@($"/{item?.RoomPicturePath?.TrimEnd('/')}/{item?.AttachmentName}{item?.AttachmentExtension}")"
+                                         class="img-thumbnail shadow-lg"
+                                         alt="Room Image"
+                                         style="width: 100%; max-height: 250px; object-fit: cover; cursor: pointer;"
+                                         data-bs-toggle="modal" data-bs-target="#imagePreviewModal"
+                                         onclick="showImage('@($"/{item?.RoomPicturePath?.TrimEnd('/').Replace("\\", "/")}/{item?.AttachmentName}{item?.AttachmentExtension}")')">
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-center">No images available</p>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Enlarged Image -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewLabel">Image Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" class="img-fluid shadow-lg rounded" alt="Enlarged Image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showImage(imageSrc) {
+        //alert(imageSrc);
+        document.getElementById("previewImage").src = imageSrc;
+    }
+</script>

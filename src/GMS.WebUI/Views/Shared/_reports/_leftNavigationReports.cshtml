@@ -1,8 +1,75 @@
-﻿<div class="left_container" id="left_container">
-    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+﻿@using GMS.Infrastructure.Models.RoleMenuMapping
+@using Newtonsoft.Json
+<button class="hamburger">☰</button>
+<div class="left_container" id="left_container">
+    <div class="brand_logo"><img src="~/img/logo.png" /></div>
     <div class="top_menu">
         <ul>
-            <li>
+
+            @{
+
+                if (User.IsInRole("General Management") || User.IsInRole("Admin"))
+                {
+                    <li>
+                        <a href="/Home/Dashboard">
+                            <figure><i class="bi bi-eyeglasses"></i></figure>
+                            <h4>Sales & Revenue KPIs</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Reports/GuestExperienceKPIs">
+                            <figure><i class="bi bi-person-arms-up"></i></figure>
+                            <h4>Guest Experience KPIs</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Reports/MarketingAndDigitalKPIs">
+                            <figure><i class="bi bi-briefcase"></i></figure>
+                            <h4>Marketing & Digital KPIs</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Reports/OperationalKPIs">
+                            <figure><i class="bi bi-cpu"></i></figure>
+                            <h4>Operational KPIs</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Reports/FinancialKPIs">
+                            <figure><i class="bi bi-coin"></i></figure>
+                            <h4>Financial KPIs</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Reports/AdvanceAnalytics">
+                            <figure><i class="bi bi-graph-up-arrow"></i></figure>
+                            <h4>Advance Analytics (ai)</h4>
+                        </a>
+                    </li>
+                    }
+                    else
+                    {
+                    var strMenuList = Context.Session.GetString("MenuList");
+                    if (!String.IsNullOrEmpty(strMenuList))
+                    {
+                    var menuList = JsonConvert.DeserializeObject
+                    <List<MenuListDTO>>(strMenuList);
+                                                var menuListFilteredParent = menuList?.Where(x => x.MenuParentId == 7).ToList().OrderBy(x => x.SNo);
+                                                foreach (var menu in menuListFilteredParent)
+                                                {
+                                                    <li>
+                                                        <a href="@menu.MenuLink">
+                                @Html.Raw(menu.MenuIcon)
+                                                            <h4>@menu.MenuName</h4>
+                                                        </a>
+                                                    </li>
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                @*<li>
                 <a href="/Reports/SummaryReport">
                     <figure><i class="bi bi-house-fill"></i></figure>
                     <h4>Summary Report</h4>
@@ -25,8 +92,8 @@
                     <figure><i class="bi bi-plus-square-fill"></i></figure>
                     <h4>Room Booking Status</h4>
                 </a>
-            </li>
-        </ul>
-    </div>
+            </li> *@
+                </ul>
+            </div>
 
-</div>
+        </div>

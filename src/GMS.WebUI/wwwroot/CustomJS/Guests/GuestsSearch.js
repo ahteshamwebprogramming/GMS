@@ -48,6 +48,7 @@ function SearchGuestDetailsByPhoneNumber(phoneNumber) {
 function SelectGuestForForm(Id) {
     var inputDTO = {};
     inputDTO.Id = Id;
+    inputDTO.GroupId = $("#AddGuestForm").find("[name='MemberDetail.GroupId']").val();
     //BlockUI();
     $.ajax({
         type: "POST",
@@ -61,8 +62,13 @@ function SelectGuestForForm(Id) {
             $('#div_GuestsFormDetailsPartialView').html(data);
             initDates();
             getOnLoadAddGuests();
+            initValidateRoomsAvailability();
             $("[name='MemberDetail.Id']").val(0);
-            $("[name='MemberDetail.GroupId']").val(0);            
+            //$("[name='MemberDetail.GroupId']").val(0);
+
+            $("select").chosen({
+                width: '100%'
+            });
         },
         error: function (result) {
             //    UnblockUI();

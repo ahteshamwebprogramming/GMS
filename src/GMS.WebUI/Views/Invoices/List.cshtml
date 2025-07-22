@@ -1,0 +1,116 @@
+﻿@{
+    ViewData["Title"] = "Invoices";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .fc-parent {
+        padding: 3px .5rem !important;
+    }
+
+    .form-control-c {
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        display: block;
+        padding: 3.375px 0.75rem !important;
+        appearance: none;
+        border-radius: .375rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    table tbody tr td {
+        white-space: nowrap;
+    }
+</style>
+<div class="admin_wrapper">
+    @Html.Partial("_accounting/_leftNavigationAccounting")
+    <!-- Modal -->
+    <input type="button" id="btnOpenAddServicesPopup" style="display:none" data-bs-toggle="modal" data-bs-target="#addServicesPopup" />
+    <div id="div_AddPartial">
+        @* @Html.Partial("_packageMasterList/_add") *@
+    </div>
+    <!-- Modal -->
+
+    <div class="right_container">
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Invoices </h2>
+                    <div class="btn_add">
+                        @* <a href="#" class="addNew_btn" onclick="AddPartialView(0)">Add Packages</a> *@
+                    </div>
+                </div>
+                @* Filter Area *@
+                <style>
+                    .filterArea {
+                        display: flex;
+                        justify-content: space-around;
+                        align-items: center;
+                        gap: 15px;
+                        background: #F2EAE0;
+                        padding: 20px;
+                        border-radius: 13px;
+                        margin-bottom: 15px;
+                    }
+                </style>
+                <div class="filterArea">
+                    <div class="row" style="width:45%">
+                        <div class="col-md-6">
+                            <label for="month" class="form-label">Select Month</label>
+                            <select class="form-select" id="month"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="year" class="form-label">Select Year</label>
+                            <select class="form-select" id="year"></select>
+                        </div>
+                    </div>
+
+                </div>
+                @* Filter Area *@
+                <ul class="nav nav-tabs" style="display:none" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#pendingRec" type="button" role="tab" aria-controls="home" aria-selected="true">Pending</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#approvedRec" type="button" role="tab" aria-controls="profile" aria-selected="false">Approved</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#allRec" type="button" role="tab" aria-controls="contact" aria-selected="false">All</button>
+                    </li>
+                </ul>
+                <div class="tab-content" style="display:none" id="myTabContent">
+                    <div class="tab-pane fade show active" id="pendingRec" role="tabpanel" aria-labelledby="home-tab">
+                    </div>
+                    <div class="tab-pane fade" id="approvedRec" role="tabpanel" aria-labelledby="profile-tab">
+                        <div id="div_ListPartialApproved">
+                            @* @Html.Partial("_list/_invoicesApproved") *@
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="allRec" role="tabpanel" aria-labelledby="contact-tab">
+                    </div>
+                </div>
+
+                <div id="div_ListPartial">
+                    @* @Html.Partial("_list/_invoices")*@
+                </div>
+
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+@section Scripts {
+    <script src="~/customjs/Accounting/Invoices.js"></script>
+    <script src="~/customjs/validation.js"></script>
+    <script>
+        $(document).ready(function () {
+
+        });
+    </script>
+}

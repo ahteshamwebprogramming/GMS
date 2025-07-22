@@ -1,0 +1,311 @@
+﻿@{
+    ViewData["Title"] = "Invoices";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .card-gradient {
+        border: none;
+        border-radius: 1rem;
+        color: white;
+        padding: 30px;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        color: #000;
+        border: #c4dfdc solid 1px;
+    }
+
+
+    .revenue-card {
+        background: #e9f5f4;
+    }
+
+    .collection-card {
+        background: #e9f5f4;
+    }
+
+    .small-text {
+        font-size: 14px;
+        opacity: 0.8;
+    }
+
+    .value-text {
+        font-size: 32px;
+        font-weight: bold;
+    }
+
+    .change-positive {
+        color: #28a745;
+        font-size: 14px;
+    }
+
+    .change-negative {
+        color: #dc3545;
+        font-size: 14px;
+    }
+
+    .rCards {
+        display: flex;
+        margin-bottom: 20px;
+        justify-content: space-around;
+        align-items: center;
+        gap: 15px;
+    }
+
+        .rCards .rCard1 {
+            width: 100%;
+        }
+
+        .rCards .rCard2 {
+            width: 100%;
+        }
+
+        .rCards .rCard3 {
+            width: 100%;
+        }
+
+        .rCards .rCard4 {
+            width: 100%;
+        }
+
+    .filterArea {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 15px;
+        background: #F2EAE0;
+        padding: 20px;
+        border-radius: 13px;
+        margin-bottom: 15px;
+    }
+</style>
+<div class="admin_wrapper">
+    @Html.Partial("_accounting/_leftNavigationAccounting")
+    <div class="right_container">
+
+        <h2 class="mb-4">Revenue Dashboard</h2>
+
+        @* <div class="filterArea">
+            <div class="col-md-4 ">
+                <label for="month" class="form-label">Select Month</label>
+                <select class="form-select" id="month">
+                    <option>April</option>
+                    <option>March</option>
+                    <option>February</option>
+                    <option>January</option>
+                </select>
+            </div>
+            <div class="col-md-4 ">
+                <label for="year" class="form-label">Select Year</label>
+                <select class="form-select" id="year">
+                    <option>2024</option>
+                    <option>2023</option>
+                    <option>2022</option>
+                </select>
+            </div>
+            <div class="col-md-4 ">
+                <button class="btn btn-primary mt-4">Apply Filter</button>
+            </div>
+        </div> *@
+        <div class="filterArea">
+            <div class="row" style="width:45%">
+                <div class="col-md-6">
+                    <label for="month" class="form-label">Select Month</label>
+                    <select class="form-select" id="month"></select>
+                </div>
+                <div class="col-md-6">
+                    <label for="year" class="form-label">Select Year</label>
+                    <select class="form-select" id="year"></select>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="rCards">
+            <div class="rCard1">
+                <div class="card-gradient revenue-card">
+                    <div class="small-text mb-2">Total Revenue</div>
+                    <div class="value-text mb-2">$xx,xxx</div>
+                    <div class="change-positive">↑ xx.x% from last month</div>
+                </div>
+            </div>
+            <div class="rCard2">
+                <div class="card-gradient collection-card">
+                    <div class="small-text mb-2">Total Collection</div>
+                    <div class="value-text mb-2">$xx,xxx</div>
+                    <div class="change-negative">↓ x.x% from last month</div>
+                </div>
+            </div>
+            <div class="rCard3">
+                <div class="card-gradient collection-card">
+                    <div class="small-text mb-2">Outstanding</div>
+                    <div class="value-text mb-2">$xx,xxx</div>
+                    <div class="change-negative">↓ x.x% from last month</div>
+                </div>
+            </div>
+            <div class="rCard4">
+                <div class="card-gradient collection-card">
+                    <div class="small-text mb-2">Advances</div>
+                    <div class="value-text mb-2">$xx,xxx</div>
+                    <div class="change-negative">↓ x.x% from last month</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-4" style="margin-bottom:130px;">
+            <h4 id="chartTitle">Revenue vs Collection - <span id="currentMonthLabel"></span></h4>
+            <!-- You can place a chart here later -->
+            <div id="revenueChart">
+            </div>
+        </div>
+
+    </div>
+    <!-- Bootstrap JS Bundle with Popper -->
+    @Html.Partial("_bottomNavigation1")
+</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="~/customjs/Accounting/SalesReport.js"></script>
+    <script src="~/customjs/validation.js"></script>
+    <script>
+        $(document).ready(function () {
+        //      GetSettlementData();
+
+        //     const sampleData = {
+        //     2023: {
+        //         1: { // January
+        //             invoices: [4200, 3800, 4500, 4000],
+        //             payments: [3200, 3000, 3500, 3800]
+        //         },
+        //         6: { // June
+        //             invoices: [6500, 5900, 8000, 8100],
+        //             payments: [5200, 4800, 6000, 7500]
+        //         },
+        //         12: { // December
+        //             invoices: [7200, 6800, 7500, 8000],
+        //             payments: [6500, 6200, 7000, 7200]
+        //         }
+        //     },
+        //     2024: {
+        //         1: { // January
+        //             invoices: [4500, 4200, 4800, 4600],
+        //             payments: [3600, 3400, 4000, 4200]
+        //         },
+        //         6: { // June
+        //             invoices: [7200, 6800, 8500, 8800],
+        //             payments: [6200, 5800, 7000, 8000]
+        //         },
+        //         12: { // December
+        //             invoices: [8000, 7500, 8200, 8500],
+        //             payments: [7200, 7000, 7800, 8000]
+        //         }
+        //     },
+        //     2025: {
+        //         1: { // January
+        //             invoices: [4800, 4500, 5000, 5200],
+        //             payments: [4000, 3800, 4500, 4800]
+        //         },
+        //         6: { // June
+        //             invoices: [8000, 7500, 9000, 9500],
+        //             payments: [7000, 6800, 8000, 8500]
+        //         }
+        //     }
+        // };
+
+        // // Function to get data - prefers sample data, generates if not available
+        // function getSimulatedData(month, year) {
+        //     // Try to get sample data first
+        //     if (sampleData[year] && sampleData[year][month]) {
+        //         return sampleData[year][month];
+        //     }
+
+        //     // If no sample data, generate basic data
+        //     const baseValue = 5000 * (year - 2022); // Increase base value by year
+        //     const monthFactor = 0.8 + (month / 12); // Seasonal variation
+        //     const weekVariation = [0.9, 1.0, 1.1, 1.05]; // Weekly fluctuations
+
+        //     return {
+        //         invoices: weekVariation.map(v => Math.round(baseValue * monthFactor * v)),
+        //         payments: weekVariation.map(v => Math.round(baseValue * monthFactor * v * 0.85))
+        //     };
+        // }
+
+
+
+        //     // Initialize ApexChart
+
+
+        //     // Filter functionality
+        //     document.getElementById('applyFilter').addEventListener('click', function() {
+        //         const month = document.getElementById('monthFilter').value;
+        //         const year = document.getElementById('yearFilter').value;
+        //         const monthNames = ["January", "February", "March", "April", "May", "June", "July",
+        //                           "August", "September", "October", "November", "December"];
+        //         document.querySelector('.chart-container h4').textContent =
+        //             `Revenue vs Collection - ${monthNames[month-1]} ${year}`;
+
+        //         // Simulate data change
+        //         const newData = getSimulatedData(month, year);
+
+        //         chart.updateSeries([{
+        //             name: 'Invoice Amount',
+        //             data: newData.invoices
+        //         }, {
+        //             name: 'Payment Collected',
+        //             data: newData.payments
+        //         }]);
+
+        //         updateMetrics(month, year);
+        //     });
+
+        //     // Rest of the existing script remains the same...
+        //     function getSimulatedData(month, year) {
+        //         // Existing implementation...
+        //     }
+        // function updateMetrics(month, year) {
+        //             const data = getSimulatedData(month, year);
+        //             const totalRevenue = data.invoices.reduce((a, b) => a + b, 0);
+        //             const totalCollection = data.payments.reduce((a, b) => a + b, 0);
+
+        //             // Get previous month data
+        //             let prevMonth = month - 1;
+        //             let prevYear = year;
+        //             if (prevMonth < 1) {
+        //                 prevMonth = 12;
+        //                 prevYear = year - 1;
+        //             }
+
+        //             const prevData = getSimulatedData(prevMonth, prevYear);
+        //             const prevRevenue = prevData.invoices.reduce((a, b) => a + b, 0);
+        //             const prevCollection = prevData.payments.reduce((a, b) => a + b, 0);
+
+        //             // Calculate changes
+        //             const revenueChange = prevRevenue !== 0
+        //                 ? ((totalRevenue - prevRevenue) / prevRevenue * 100).toFixed(1)
+        //                 : 0;
+        //             const collectionChange = prevCollection !== 0
+        //                 ? ((totalCollection - prevCollection) / prevCollection * 100).toFixed(1)
+        //                 : 0;
+
+        //             // Update DOM elements
+        //             document.querySelector('.revenue-card .metric-value').textContent =
+        //                 '$' + totalRevenue.toLocaleString();
+        //             document.querySelector('.collection-card .metric-value').textContent =
+        //                 '$' + totalCollection.toLocaleString();
+
+        //             updateChangeElement(document.querySelector('.revenue-card .metric-change'), revenueChange);
+        //             updateChangeElement(document.querySelector('.collection-card .metric-change'), collectionChange);
+        //         }
+        //     function updateChangeElement(element, change) {
+        //         // Existing implementation...
+        //     }
+
+        //     // Initialize with current month
+        //     const currentMonth = new Date().getMonth() + 1;
+        //     document.getElementById('monthFilter').value = currentMonth;
+        //     document.getElementById('applyFilter').click();
+        });
+    </script>
+}

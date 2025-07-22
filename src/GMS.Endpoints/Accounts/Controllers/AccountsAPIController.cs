@@ -2,6 +2,7 @@
 using GMS.Core.Repository;
 using GMS.Infrastructure.Helper;
 using GMS.Infrastructure.Models.EHRMSLogin;
+using GMS.Infrastructure.Models.RoleMenuMapping;
 using GMS.Infrastructure.ViewModels.EHRMSLogin;
 
 using Microsoft.AspNetCore.Http;
@@ -43,10 +44,26 @@ public class AccountsAPIController : ControllerBase
     {
         try
         {
-            string query = "Select el.*,wm.WorkerName from EHRMSLogin el Join WorkerMaster wm on el.WorkerID=wm.WorkerID where el.WorkerCode=@WorkerCode and el.UserPassword=@UserPassword";
+            string query = "Select el.*,wm.WorkerName,wm.RoleId,rm.RoleName from EHRMSLogin el Join WorkerMaster wm on el.WorkerID=wm.WorkerID Left Join RoleMaster rm on wm.RoleID=rm.RoleID where el.WorkerCode=@WorkerCode and el.UserPassword=@UserPassword";
             var parameters = new { WorkerCode = inputDTO.WorkerCode, UserPassword = inputDTO.UserPassword };
             var res = await _unitOfWork.EHRMSLogin.GetEntityData<EHRMSLoginWithChild>(query, parameters);
             return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Login Detail {nameof(GetLoginDetail)}");
+            throw;
+        }
+    }
+    [HttpPost]
+    public async Task<List<MenuListDTO>> GetMenuDetails(int RoleId)
+    {
+        try
+        {
+            string query = "Select ml.* from RoleMenuMapping rmm Left Join MenuList ml on rmm.MenuId = ml.Id where RoleId=@RoleId and DefaultMenu=0 order by SNo";
+            var parameters = new { @RoleId = RoleId };
+            var res = await _unitOfWork.MenuList.GetTableData<MenuListDTO>(query, parameters);
+            return res;
         }
         catch (Exception ex)
         {

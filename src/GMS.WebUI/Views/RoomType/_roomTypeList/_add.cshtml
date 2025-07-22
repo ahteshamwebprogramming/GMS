@@ -16,7 +16,11 @@
                     <div class="mb-3 form-group">
                         <label class="form-label required">Rank</label>
                         <input type="number" class="form-control requiredInput" name="RoomRank" dbCol value="@Model?.RoomType?.RoomRank">
-                    </div>                    
+                    </div>
+                    <div class="mb-3 form-group">
+                        <label class="form-label required">Remarks</label>
+                        <textarea class="form-control requiredInput" name="Remarks" dbCol>@Model?.RoomType?.Remarks</textarea>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">

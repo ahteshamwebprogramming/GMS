@@ -1,0 +1,493 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+@using GMS.Infrastructure.Helper
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            color: #333;
+            background: #FFF2EB;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .invoice-header {
+            background-color: #005670;
+            color: #fff;
+            padding: 20px;
+            position: relative;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+            .invoice-header h1 {
+                margin: 33px 0 0 0;
+                font-size: 22px;
+            }
+
+        .company-info {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+            .company-info span {
+                display: block;
+            }
+
+        .section {
+            padding: 15px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .info-table td {
+            padding: 4px 8px;
+            vertical-align: top;
+        }
+
+        .payment-details {
+            color: #ffcc00;
+            font-size: 18px;
+        }
+
+
+            .payment-details span {
+                color: #ffcc00;
+            }
+
+        .data-table th {
+            background-color: #005670;
+            color: #fff;
+            padding: 8px;
+            border: 1px solid #ccc;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .data-table td {
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .totals td {
+            padding: 8px;
+            font-weight: bold;
+        }
+
+        .footer {
+            background-color: #005670;
+            color: #ffcc00;
+            text-align: center;
+            padding: 0px 20px 20px 20px;
+            font-size: 18px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .section td {
+            padding: 20px;
+        }
+
+        /* PAID Ribbon */
+        .paid-ribbon {
+            position: absolute;
+            top: 10px;
+            right: -50px;
+            background: #28a745;
+            color: white;
+            padding: 12px 58px;
+            font-size: 28px;
+            font-weight: bold;
+            transform: rotate(45deg);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            z-index: 999;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* PAID Ribbon */
+        .unpaid-ribbon {
+            position: absolute;
+            top: 10px;
+            right: -50px;
+            background: red;
+            color: white;
+            padding: 12px 58px;
+            font-size: 28px;
+            font-weight: bold;
+            transform: rotate(45deg);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            z-index: 999;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .priceAliment {
+            text-align: right;
+        }
+
+        .centerAliment {
+            text-align: center;
+        }
+
+        .naad_logo {
+            width: 160px;
+            margin-right: 40px;
+        }
+
+
+
+
+        .separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            font-weight: 600;
+            font-size: 17px;
+        }
+
+            .separator::before,
+            .separator::after {
+                content: '';
+                flex: 1;
+                border-bottom: groove;
+            }
+
+            .separator:not(:empty)::before {
+                margin-right: 1.25em;
+            }
+
+            .separator:not(:empty)::after {
+                margin-left: 1.25em;
+            }
+    </style>
+</head>
+<body>
+
+    <div style="position: relative;">
+        <div class="paid-ribbon">PAID</div>
+        <table>
+            <tr>
+                <td class="invoice-header logo-header">
+                    <img src="~/assets/img/naad-1.png" class="naad_logo" />
+                    <p style="margin-top: 5px;font-size: 10px;"><i>An NABH Accredited Ayurveda & Naturecure Hospital</i></p>
+                    <h3 style="margin-bottom: 0px;">Invoice-cum-Bill of Supply</h3>
+                </td>
+
+                <td class="invoice-header">
+                    <div class="company-info">
+                        <span style="font-size:19px;">Naad Wellness Private Limited</span>
+                        <span style="font-style: italic;">(An Ayush Rajat recognised by Government of Haryana)</span>
+                        <span>Naad Marg, Ansal Sushant City,<br> Sector-63, Kundli, Sonipat - 131028, Haryana, India</span>
+                        <span style="color: #ffcc00;">+91 82229 59641 / +91 124 6030 400</span>
+                        <span>CIN# U85100DL2011PTC214132</span>
+                        <span>GSTIN# 06AADCV5495N2ZL</span>
+                    </div>
+                </td>
+
+            </tr>
+        </table>
+    </div>
+
+    <!-- Remaining content unchanged -->
+    <table class="section">
+        <tr>
+            <td width="50%">
+                <strong>To:</strong> @(Model?.MembersWithAttributes?.CustomerName)<br>
+                <strong>Mobile No:</strong> @(Model?.MembersWithAttributes?.MobileNo)<br>
+                <strong>Email:</strong> @(Model?.MembersWithAttributes?.Email)<br>
+                <strong>GSTIN#</strong>
+            </td>
+            <td>
+                <strong>Date:</strong>
+
+                @{
+                    if (Model?.SettlementDTO?.CreatedDate != null)
+                    {
+                        <span>@Model?.SettlementDTO?.CreatedDate?.ToString("dd-MMM-yyyy hh:mm tt")</span>
+                    }
+                    else
+                    {
+                        <span>@Model?.MembersWithAttributes?.DateOfArrival?.ToString("dd-MMM-yyyy hh:mm tt")</span>
+                    }
+                }
+
+                <br>
+                <strong>Invoice #:</strong> 54167<br>
+                <strong>Admission Date :</strong> @Model?.MembersWithAttributes?.DateOfArrival?.ToString("dd-MMM-yyyy hh:mm tt") <br>
+                <strong>Discharge Date :</strong> @Model?.MembersWithAttributes?.DateOfDepartment?.ToString("dd-MMM-yyyy hh:mm tt") <br>
+                @* <strong>Customer UHID:</strong> @(Model?.MembersWithAttributes?.UHID) *@
+            </td>
+        </tr>
+    </table>
+
+    <table class="section">
+        <tr>
+            <td width="50%">
+                <div class="section-title">Address:</div>
+                @(Model?.MembersWithAttributes?.Address1)
+                <br />
+                @(Model?.MembersWithAttributes?.Address2)
+            </td>
+
+        </tr>
+    </table>
+
+
+
+    <table class="data-table">
+        <tr>
+            <th>Perticulars</th>
+            <th>Guest Name</th>
+            <th>UHID</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>HSN/SAC Code</th>
+            <th>Amount</th>
+        </tr>
+        <tr>
+            <td><strong>RoomCharges</strong></td>
+            <td colspan="6"></td>
+        </tr>
+        <tr>
+            <td><i> @Model?.MembersWithAttributes?.RoomTypeName (Room No.-@Model?.MembersWithAttributes?.RoomNumber) </i></td>
+            <td>
+                @(Model?.MemberDetailsWithChildren != null
+                    ? string.Join(" / ", Model.MemberDetailsWithChildren.Select(g => g.CustomerName))
+                    : "")
+            </td>
+            <td>
+                @(Model?.MemberDetailsWithChildren != null
+                    ? string.Join(" / ", Model.MemberDetailsWithChildren.Select(g => g.UHID))
+                    : "")
+            </td>
+            <td class="priceAliment">
+                @{
+                    var billingDataForRooms = Model?.BillingDataList?.Where(x => x.ServiceType == "RoomCharges" && x.IsActive == true);
+                    double amount = billingDataForRooms?.Select(a => a.TotalAmount).Sum() ?? 0;
+                    double count = billingDataForRooms?.Select(a => a.Count).Max() ?? 0;
+                    double price = amount / count;
+                    <span>@price.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</span>
+                }
+            </td>
+            <td class="centerAliment">@count</td>
+            <td class="centerAliment">999311</td>
+            <td class="priceAliment">@amount.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+        </tr>
+        <tr>
+            <td><strong>Treatment Charges</strong></td>
+            <td colspan="6"></td>
+        </tr>
+        @{
+            if (Model != null && Model.BillingDataList != null)
+            {
+                var billingDataList = Model.BillingDataList.Where(a => a.ServiceType == "PackageSystem" || a.ServiceType == "Package" || a.ServiceType == "Service").ToList();
+                foreach (var billingData in billingDataList)
+                {
+                    var guestData = Model?.MemberDetailsWithChildren?.Where(b => b.Id == billingData.GuestId).FirstOrDefault();
+                    <tr>
+                        <td><i>@billingData.ServiceName</i></td>
+                        <td>@guestData?.CustomerName</td>
+                        <td>@guestData?.UHID</td>
+                        <td class="priceAliment">@((billingData.TotalAmount / billingData.Count)?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN")))</td>
+                        <td class="centerAliment">@billingData.Count</td>
+                        <td class="centerAliment">999319</td>
+                        <td class="priceAliment">@billingData?.TotalAmount?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+                    </tr>
+                }
+            }
+        }
+        <tr>
+            <td colspan="6" style="text-align:right">Total</td>
+            <td class="priceAliment">
+                @{
+                    var grossAmountRow = Model?.BillingDataList?.Where(a => a.ServiceType == "GrossAmount").FirstOrDefault();
+                    <span>@grossAmountRow?.Price?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</span>
+                }
+            </td>
+        </tr>
+    </table>
+
+    <br>
+    <table class="data-table" style="display:none">
+        <tr>
+            <th>Perticulars</th>
+            <th>Guest Name</th>
+            <th>UHID</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>HSN/SAC Code</th>
+            <th>Amount</th>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+    <br />
+    <table>
+        <tr>
+            <td>
+                <table class="totals">
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:right;">Total Amount (In Words)</td>
+                        <td style="text-align:left;" class="priceAliment"><strong>Indian Rupee @AmountConverter.ConvertAmountToWords((decimal)(grossAmountRow?.TotalAmount ?? 0))</strong></td>
+                    </tr>
+
+                </table>
+            </td>
+            <td>
+                <table class="totals" style="width: 40%; float: right;">
+                    <tr>
+                        <td>Discount</td>
+                        <td class="priceAliment">@grossAmountRow?.Discount?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+                    </tr>
+                    <tr>
+                        <td>GST</td>
+                        <td class="priceAliment">
+                            @{
+                                double tax = (@grossAmountRow?.CGST ?? 0) + (@grossAmountRow?.SGST ?? 0) + (@grossAmountRow?.IGST ?? 0);
+                            }
+                            <span>@tax.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td class="priceAliment"><strong>@grossAmountRow?.TotalAmount?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="priceAliment" style="font-weight: 400;"><i>E. & O.E</i></td>
+                    </tr>
+                </table>
+            </td>
+
+    </table>
+
+    <br />
+    <table class="data-table">
+        <tr>
+            <th>HSN/SAC</th>
+            <th>Rate</th>
+            <th>Taxable Value</th>
+            <th>SGST</th>
+            <th>CGST</th>
+            <th>IGST</th>
+            <th>Total Tax Amount</th>
+        </tr>
+        @{
+            var taxdetails = Model?.BillingDataList?.Where(x => x.ServiceType == "GrossAmount").FirstOrDefault();
+            var roomCharges = Model?.BillingDataList?.Where(x => x.ServiceType == "RoomCharges").Sum(x => x.TotalAmount);
+            var treatmentCharges = taxdetails?.Price - roomCharges;
+            <tr>
+                <td class="centerAliment">999311</td>
+                <td class="centerAliment">5%</td>
+                <td class="priceAliment">@roomCharges?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+                <td class="priceAliment">@taxdetails?.SGST?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+                <td class="priceAliment">@taxdetails?.CGST?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+                <td class="priceAliment">@taxdetails?.IGST?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+                <td class="priceAliment">@((taxdetails?.SGST + taxdetails?.CGST + taxdetails?.IGST)?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN")))</td>
+            </tr>
+            <tr>
+                <td class="centerAliment">999319</td>
+                <td class="centerAliment">0%</td>
+                <td class="priceAliment">@treatmentCharges?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+                <td class="priceAliment">₹0.00</td>
+                <td class="priceAliment">₹0.00</td>
+                <td class="priceAliment">₹0.00</td>
+                <td class="priceAliment">₹0.00</td>
+            </tr>
+
+        }
+
+
+    </table>
+    <br />
+    <div class="separator">Payment Details</div>
+    <br />
+    <table class="data-table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Payment Mode</th>
+                <th scope="col" class="text-right">Amount</th>
+                <th scope="col">Payment Date</th>
+                <th scope="col">Reference/UTR Number</th>
+                <th scope="col">Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.PaymentsWithAttr != null)
+                {
+                    foreach (var item in Model.PaymentsWithAttr)
+                    {
+                        <tr class="">
+                            <td class="">@item.PaymentMethodName</td>
+                            <td class="priceAliment">@item.Amount?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</td>
+                            <td class="">@item?.DateOfPayment?.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td class="">@item.ReferenceNumber</td>
+                            <td class="">@item.Comments</td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+    <br style="clear: both;">
+    <table>
+        <tr>
+            <td class="footer">
+
+                <div>
+                    <p class="payment-details">
+                        Make all checks payable to  "<strong>Naad Wellness Private Limited</strong> "<br>
+                        <span><strong>Wire Transfers:</strong></span>
+                        <span>Account No: 4203 1350 0000 6875</span>
+                        <span>IFSC Code: KVBL0004203</span>
+                        <span>Bank Name: Karur Vysya Bank</span>
+                        <span>Account Type: Current</span>
+                    </p>
+                </div>
+                <span style="color:white">For a sound you</span>
+                <br />
+                Thank you for your visit!
+
+            </td>
+        </tr>
+    </table>
+
+
+
+</body>
+</html>

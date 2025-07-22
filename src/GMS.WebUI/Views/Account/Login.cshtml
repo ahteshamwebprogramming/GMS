@@ -16,7 +16,7 @@
         }
 
         body {
-            background: #f3e0e2;
+            background: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -53,8 +53,8 @@
         button {
             border-radius: 100px;
             background: #6d5107;
-            background: -webkit-linear-gradient(to right, #d9a928, #6d5107);
-            background: linear-gradient(to right, #d9a928, #6d5107);
+            background: -webkit-linear-gradient(to right, #d9a928, #9f6712);
+            background: linear-gradient(to right, #d9a928, #9f6712);
             color: #ffffff;
             font-size: 12px;
             font-weight: bold;
@@ -116,10 +116,12 @@
         }
 
         .overlay {
-            background: #6d5107;
+         
+            /* background: #6d5107;
             background: -webkit-linear-gradient(to right, #d9a928, #6d5107);
-            background: linear-gradient(to right, #d9a928, #6d5107);
+            background: linear-gradient(to right, #d9a928, #6d5107); */
             background-repeat: no-repeat;
+            background-image: url('../assets/img/bglogo.png');
             background-size: cover;
             background-position: 0 0;
             color: #ffffff;
@@ -169,6 +171,29 @@
                 list-style: none;
                 font-size: 13px;
             }
+
+        .designby {
+            position: relative;
+            width: 100%;
+            float: left;
+            margin: 80px auto 40px auto;
+            text-align: center;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .brand-logo img{width:190px; margin-bottom:70px;}
+
+        .brand-logo {
+            position: absolute;
+            top: 48px;
+        }
+        .parent-logo {display:block; }
+        .parent-logo img {
+            margin-top:10px;
+            width: 160px;
+          
+        }
     </style>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
@@ -179,7 +204,7 @@
         <div class="form-container log-in-container">
             <form method="post" asp-controller="Account" asp-action="Login">
                 <h1>Login</h1>
-                <span>or use your account</span>
+                @* <span>or use your account</span> *@
                 <input type="text" placeholder="Email" asp-for="WorkerCode" />
                 <input type="password" placeholder="Password" asp-for="UserPassword" />
                 <a href="#">Forgot your password?</a>
@@ -190,11 +215,17 @@
         <div class="overlay-container">
             <div class="overlay">
                 <div class="overlay-panel overlay-right">
+                    <div class="brand-logo">
+                        <img src="~/assets/img/naad-1.png" />
+                    </div>
+
                     <h1>Welcome to GMS!</h1>
 
                 </div>
             </div>
         </div>
+
     </div>
+    <div class="designby">© A Product of <a href="https://www.08consultings.com/" target="_blank"><span class="parent-logo"> <img src="~/assets/img/08-consultings.svg" /> </span></a></div>
 </body>
 </html>

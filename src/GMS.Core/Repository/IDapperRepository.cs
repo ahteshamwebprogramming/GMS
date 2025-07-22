@@ -9,7 +9,7 @@ public interface IDapperRepository<T> where T : class
 {
     Task<List<T>> FindAllAsync();
     Task<T> FindByIdAsync(int id);
-    object UpdateFields<TS>(T param, IDbConnection connection, IDbTransaction transaction = null, int? commandTimeOut = null);
+    object UpdateFields<TS>(T param);
     Task<int> ExecuteStoredProcedureAsync(string procedureName, object parameters = null);
     Task<IEnumerable<T>> ExecuteStoredProcedureAsync<T>(string procedureName, object parameters = null);
     Task<List<T>> GetTableData<T>(IDbConnection connection, IDbTransaction trns, string sWhere = "", string sOrderBy = "");

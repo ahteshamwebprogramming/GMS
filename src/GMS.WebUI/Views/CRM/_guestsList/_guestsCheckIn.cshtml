@@ -1,0 +1,63 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsCheckListViewModel
+<input type="button" id="btnCheckInListModal" style="display:none" data-bs-toggle="modal" data-bs-target="#CheckInListModal" />
+<div class="modal fade" id="CheckInListModal" tabindex="-1" aria-labelledby="CheckListInModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog1 modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="CheckInListModalLabel">Guest Check-in Checklist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="col-sm-12 row mb-3 form-group txt-mag-inn">
+                    <input type="hidden" name="CheckInModelGuestId" value="@Model?.MemberDetails?.Id" />
+                    <div class="col-sm-3 text-center padding-txt">
+                        <label for="PH.NO>">CID</label>
+                    </div>
+                    <div class="col-sm-3 text-center padding-txt">
+                        <label for="PH.NO>" name="lblCheckInModelGuestCode">@(Model?.MemberDetails?.UHID)</label>
+                    </div>
+                    <div class="col-sm-3 text-center padding-txt">
+                        <label for="PH.NO>">Name</label>
+                    </div>
+                    <div class="col-sm-3 text-center padding-txt">
+                        <label for="PH.NO" name="lblCheckInModelGuestName">@(Model?.MemberDetails?.CustomerName)</label>
+                    </div>
+                </div>
+                <table class="table table-bordered" id="GrvdCheckIn">
+                    <thead>
+                        <tr style="background-color: #b5a38b;">
+                            <th>
+                                <div class="checkbox">
+                                    <input type="checkbox" value="">
+                                </div>
+                            </th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            if (Model != null && Model.CheckListOut != null)
+                            {
+                                foreach (var item in Model.CheckListOut)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="checkbox">
+                                                <input type="checkbox" id="ChkID_@item.ID" value="">
+                                            </div>
+                                        </td>
+                                        <td>@item.Chklist</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="SubmitCheckInlist()">Check-In</button>
+            </div>
+        </div>
+    </div>
+</div>

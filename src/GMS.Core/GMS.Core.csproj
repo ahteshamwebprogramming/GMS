@@ -15,4 +15,8 @@
     <PackageReference Include="Z.Dapper.Plus" Version="7.5.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GMS.Infrastruture\GMS.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

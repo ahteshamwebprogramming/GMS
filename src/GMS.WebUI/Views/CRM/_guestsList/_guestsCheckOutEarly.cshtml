@@ -1,0 +1,39 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsCheckListViewModel
+<input type="button" id="btnCheckOutEarlyModal" style="display:none" data-bs-toggle="modal" data-bs-target="#CheckOutEarlyModal" />
+<div class="modal fade" id="CheckOutEarlyModal" tabindex="-1" aria-labelledby="CheckOutEarlyModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog1 modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="CheckOutListModalLabel">Guest Check-out</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="col-sm-12 row mb-3 form-group txt-mag-inn">
+                    <input type="hidden" name="CheckInModelGuestId" value="@Model?.MemberDetails?.Id" />
+                    <div class="col-sm-3 text-center padding-txt">
+                        <label for="PH.NO>">CID</label>
+                    </div>
+                    <div class="col-sm-3 text-center padding-txt">
+                        <label for="PH.NO>" name="lblCheckInModelGuestCode">@(Model?.MemberDetails?.UHID)</label>
+                    </div>
+                    <div class="col-sm-3 text-center padding-txt">
+                        <label for="PH.NO>">Name</label>
+                    </div>
+                    <div class="col-sm-3 text-center padding-txt">
+                        <label for="PH.NO" name="lblCheckInModelGuestName">@(Model?.MemberDetails?.CustomerName)</label>
+                    </div>
+                </div>
+                <div class="col-sm-12 row mb-3 form-group txt-mag-inn">
+                    <label>Reason</label>
+                    <textarea class="form-control">
+
+                    </textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="SubmitCheckOutList()">Check-Out</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,106 @@
+﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomStatusViewModel
+
+
+<div class="resposive_table room-table-container" style="overflow-x:scroll">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col" width="200">Actions</th> @* Only Clean Button <i class="bi bi-check-all"></i> *@
+                <th scope="col">Room No</th>
+                <th scope="col">Room Category</th>
+                <th scope="col">Room Size</th>
+                <th scope="col">Bed Type</th>
+                <th scope="col">Last Attended</th> @* Date and Time *@
+                <th scope="col">Last Attended By</th>
+                <th scope="col">Reason</th>
+                <th scope="col">Status</th>
+                <th scope="col">Comments</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.RoomWithAttribute != null)
+                {
+                    <tr>
+                        @{
+                            if (Model.RoomWithAttribute.CleanStatus)
+                            {
+                                <td></td>
+                            }
+                            else
+                            {
+                                <td onclick="OpenCheckList(@Model.RoomWithAttribute.Id)" style="padding: 1px 0px 0px .5rem;"><i style="font-size: 20px;" class="bi bi-check-all"></i></td>
+                            }
+                        }                        
+                        <td>@(Model.RoomWithAttribute.Rnumber)</td>
+                        <td>@(Model.RoomWithAttribute.Rtype)</td>
+                        <td>@(Model.RoomWithAttribute.Rsize)</td>
+                        <td>@(Model.RoomWithAttribute.BedSize)</td>
+                        <td>@(Model.RoomWithAttribute.AttendedDate?.ToString("dd-MMM-yyyy hh:mm tt"))</td>
+                        <td>@(Model.RoomWithAttribute.AttendedByName)</td>
+                        <td>@(Model.RoomWithAttribute.Reason)</td>
+                        <td>
+                            @{
+                                if (Model.RoomWithAttribute.CleanStatus)
+                                {
+                                    <span class="cleaned"><em class="cleanPointer"></em> Ready</span>
+                                }
+                                else
+                                {
+                                    <span style="color:red" class="uncleaned"><em class="notcleanPointer"></em> Untidy</span>
+                                }
+                            }
+                        </td>
+                        <td>@(Model.RoomWithAttribute.Comments)</td>
+                    </tr>
+                    @*<tr>
+                        <td></td>
+                        //
+                        <th scope="row">@item.Rnumber</th>
+                        //
+                        <td>@item.Rtype</td>
+                        //
+                        <td>@item.Rsize</td>
+                        //
+                        <td>@item.BedSize</td>
+                        //
+                        <td>
+                            //     @{
+                                //         if (item.RoomStatus == "Available")
+                                //         {
+                                //             <div class="actions_btns">
+                                //                 <a href="javascript:void(0)" class="pencil"><span>@item.RoomStatus</span></a>
+                                //             </div>
+                                //         }
+                                //         else
+                                //         {
+                                //             <span class="cleaned">@item.RoomStatus</span>
+                                //         }
+                                //     }
+                                // </td>
+                                // <td style="white-space:nowrap">
+                                //     <div class="actions_btns">
+                                //         @{
+                                //             if (item.RoomStatus == "Available")
+                                //             {
+                                //                 <a href="javascript:void(0)" onclick="LockRoom(@item.Id,'@item.Rnumber')" class="trash ms-2"><i class="bi bi-lock-fill"></i></a>
+                                //                 <a href="javascript:void(0)" onclick="HoldRoom(@item.Id,'@item.Rnumber')" class="trash ms-2"><i class="bi bi-pause-circle"></i></a>
+                                //             }
+                                //             else if (item.RoomStatus == "Locked")
+                                //             {
+                                //                 <a href="javascript:void(0)" onclick="UnlockRoom(@item.Id,'@item.Rnumber')" class="pencil ms-2"><i class="bi bi-unlock-fill"></i></a>
+                                //             }
+                                //             else if (item.RoomStatus == "Hold")
+                                //             {
+                                //                 <a href="javascript:void(0)" onclick="UnholdRoom(@item.Id)" class="pencil"><span>Unhold</span></a>
+                                //             }
+                                //         }
+                                //     </div>
+                                // </td>
+                        </tr>*@
+
+                }
+            }
+        </tbody>
+    </table>
+</div>

@@ -36,5 +36,6 @@ namespace GMS.Core.Entities
         public string? Img5 { get; set; }
 
         public string? DocName { get; set; }
+        public bool RoomClean { get; set; }
     }
 }

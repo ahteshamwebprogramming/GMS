@@ -2,7 +2,7 @@
 
 public class TblStateDTO
 {
-    public double? Id { get; set; }
+    public int? Id { get; set; }
 
-    public string? State { get; set; }
+    public string? name { get; set; }
 }

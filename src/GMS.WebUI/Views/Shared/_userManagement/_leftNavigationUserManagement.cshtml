@@ -1,0 +1,75 @@
+﻿@using GMS.Infrastructure.Models.RoleMenuMapping
+@using Newtonsoft.Json
+<button class="hamburger">☰</button>
+<div class="left_container" id="left_container">
+    <div class="brand_logo"><img src="~/img/logo.png" /></div>
+    <div class="top_menu">
+        <ul>
+
+            @{
+
+                if (User.IsInRole("General Management") || User.IsInRole("Admin"))
+                {
+                    <li>
+                        <a href="/SalesReport/List">
+                            <figure><i class="bi bi-speedometer"></i></figure>
+                            <h4>User's List</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Payment/List">
+                            <figure><i class="bi bi-speedometer"></i></figure>
+                            <h4>Add User</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/UserManagement/RoleMenuMapping">
+                            <figure><i class="bi bi-speedometer"></i></figure>
+                            <h4>Role Menu Mapping</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Invoices/List">
+                            <figure><i class="bi bi-speedometer"></i></figure>
+                            <h4>Departments</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/RunAudit/Index">
+                            <figure><i class="bi bi-speedometer"></i></figure>
+                            <h4>Designations</h4>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/AuditReport/List">
+                            <figure><i class="bi bi-speedometer"></i></figure>
+                            <h4>Roles</h4>
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    var strMenuList = Context.Session.GetString("MenuList");
+                    if (!String.IsNullOrEmpty(strMenuList))
+                    {
+                        var menuList = JsonConvert.DeserializeObject<List<MenuListDTO>>(strMenuList);
+                        var menuListFilteredParent = menuList?.Where(x => x.MenuParentId == 48).ToList().OrderBy(x => x.SNo);
+                        foreach (var menu in menuListFilteredParent)
+                        {
+                            <li>
+                                <a href="@menu.MenuLink">
+                                    @Html.Raw(menu.MenuIcon)
+                                    <h4>@menu.MenuName</h4>
+                                </a>
+                            </li>
+                        }
+                    }
+                }
+
+
+            }
+
+
+        </ul>
+    </div>
+</div>

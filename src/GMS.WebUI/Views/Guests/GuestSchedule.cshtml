@@ -50,8 +50,9 @@
     <input style="display:none" type="button" id="btnOpenAddMasterSchedilePopup" data-bs-toggle="modal" data-bs-target="#addMasterSchedulePopup" value="Button Modal Test" />
 
     <div class="admin_wrapper">
+        @* <button class="hamburger">☰</button> *@
         <div class="left_container" id="left_container">
-            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
             <div class="top_menu">
                 <ul>
                     <li>
@@ -119,7 +120,7 @@
             </div>
         </div>
         <div class="right_container">
-            <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
 
             <!-- filtered rooms Start-->
             <div class="filtered_rooms_container">
@@ -128,6 +129,8 @@
                         <h2> @Model.UniqueNo </h2>
                         <h3>@Model.CustomerName</h3>
                         <h3>@Model?.DateOfArrival?.ToString("dd/MMM/yyyy")-@Model?.DateOfDepartment?.ToString("dd/MMM/yyyy")</h3>
+                        <input type="hidden" id="guestCheckinDate" value="@Model?.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")" />
+                        <input type="hidden" id="guestCheckoutDate" value="@Model?.DateOfDepartment?.ToString("yyyy-MM-dd HH:mm")" />
                     </div>
                     <div class="promotional">@Model?.RoomTypeName</div>
                     <div class="cal_box">
@@ -152,66 +155,78 @@
         <div class="modal-dialog modal-dialog-centered  modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add Schedule</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Add Service</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form class="form-horizontal" asp-action="CreateEvent" asp-controller="Calendar"  method="post" enctype="multipart/form-data" id="AddSchedule">
-
-                        <div class="row">
-                            <div class="col-sm-6 col-lg-4">
-                                <label>Start Date</label>
-                                <div class="form-group position-relative dateCalWrapper">
-                                    <input type="date" class="form-control time" id="StartDate" name="StartDate" placeholder="Begin Time" />
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-lg-4">
-                                <label>Start Time</label>
-                                <div class="form-group position-relative dateCalWrapper">
-                                    <input type="time" class="form-control time" id="begintime" name="StartTime" placeholder="Begin Time" />
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-lg-4">
-                                <label>Duration</label>
-                                <input id="durationPicker" type="text" placeholder="Select duration" class="form-control" name="Duration">
-                                <input type="hidden" id="selectedDuration" />
-                            </div>
-                            <div class="col-sm-6 col-lg-4">
-                                <label>End Date</label>
-                                <div class="form-group position-relative dateCalWrapper">
-                                    <input type="text" class="form-control time" id="EndDate" name="EndDate" placeholder="" readonly />
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-lg-4">
-                                <label>End Time</label>
-                                <div class="form-group">
-                                    <input type="time" class="form-control time" id="endtime" name="EndTime" placeholder="End Time" readonly />
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="row" id="eventTitle">
-
-                            <div class="col-lg-4">
+                            <div class="col-4">
                                 <label>Task Name</label>
                                 <select class="form-control" name="TaskId" placeholder="Task Name" onchange="GetEmployeeByTaskId(this)">
-                                    <option value="0">Select Task</option>
-                                </select>
-                            </div>
-                            <div class="col-lg-4">
-                                <label>Employee Name</label>
-                                <select class="form-control" name="EmployeeId">
-                                    <option value="0">Select Employee</option>
+                                    <option value="0"></option>
                                 </select>
                             </div>
                             <div class="col-4">
                                 <label>Resource</label>
                                 <select class="form-control" name="ResourceId">
-                                    <option value="0">Select Resource</option>
+                                    <option value="0"></option>
                                 </select>
                             </div>
-
                         </div>
+                        <div class="row">
+                            <div class="col-4 mt-3">
+                                <label>Therapist 1</label>
+                                <select class="form-control" name="EmployeeId1">
+                                    <option value="0"></option>
+                                </select>
+                            </div>
+                            <div class="col-4 mt-3">
+                                <label>Therapist 2</label>
+                                <select class="form-control" name="EmployeeId2">
+                                    <option value="0"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>Start Date</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="date" class="form-control time" id="StartDate" name="StartDate" placeholder="" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>Start Time</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="time" class="form-control time" id="begintime" name="StartTime" placeholder="" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>Duration</label>
+                                <input id="durationPicker" type="text" placeholder="Select duration" class="form-control" name="Duration">
+                                <input type="hidden" id="selectedDuration" />
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>End Date</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="text" class="form-control time" id="EndDate" name="EndDate" placeholder="" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>End Time</label>
+                                <div class="form-group">
+                                    <input type="time" class="form-control time" id="endtime" name="EndTime" placeholder="End Time" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>X</label>
+                                <div class="form-group">
+                                    <input type="number" class="form-control" id="NoOfDays" name="NoOfDays" placeholder="" value="1" min="1" max="1" />
+                                </div>
+                            </div>
+                        </div>
+
+
 
                         <input type="hidden" value="" name="ScheduleId" />
                         @* <div class="row footer-wrapper" style="margin-top:10px;">
@@ -226,7 +241,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="btnadd" onclick="CreateEvent()">Add Schedule</button>
+                    <button type="button" class="btn btn-primary" id="btnadd" onclick="CreateEvent()">Confirm</button>
                 </div>
             </div>
         </div>
@@ -258,6 +273,10 @@
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/customjs/common.js"></script>
+    <script src="~/customjs/logout.js"></script>
     <script src="~/assets/calender/calendar.js"></script>
     <script src="~/customjs/guests/guestschedule.js"></script>
     @* <script src="~/assets/app/daypilot-all.min.js"></script> *@

@@ -1,0 +1,80 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<div class="resposive_table" style="overflow-x:scroll">
+    <table class="table" id="ListOfPayment">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Room No</th>
+                <th scope="col">Guest Name</th>
+                <th scope="col">Checkin</th>
+                <th scope="col">Checkout</th>
+                @* <th scope="col">Activity Name</th>
+                <th scope="col">Activity Time</th> *@
+                <th scope="col">Status</th>
+                <th scope="col" width="300">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.MemberDetailsWithChildren != null)
+                {
+                    foreach (var item in Model.MemberDetailsWithChildren)
+                    {
+                        <tr class="">
+                            <td scope="row" class="">@item.RoomNumber</td>
+                            <td scope="row" class="">@item.CustomerName</td>
+                            <td scope="row">@item.DateOfArrival?.ToString("dd-MMM-yy hh:mm tt")</td>
+                            <td scope="row">@item.DateOfDepartment?.ToString("dd-MMM-yy hh:mm tt")</td>
+                            @*@{
+                                if (item.CheckInStatus == 1)
+                                {
+                                    <td scope="row">@item.GuestTask</td>
+                                }
+                                else if (item.CheckInStatus == 2)
+                                {
+                                    <td scope="row">@item.GuestTask</td>
+                                }
+                                else if (item.CheckInStatus == 3)
+                                {
+                                    <td scope="row">@item.GuestTask</td>
+                                }
+                                else if (item.CheckInStatus == 4)
+                                {
+                                    <td scope="row"></td>
+                                }
+                                else
+                                {
+                                    <td scope="row">@item.GuestTask</td>
+                                }
+                            }
+                            <td scope="row" class="">@item.ActivityStartTime?.ToString("dd-MMM hh:mm tt")</td>
+                            @{
+                                if (item.ActivityStartTime != null)
+                                {
+                                    if (item.ActivityStartTime > System.DateTime.Now)
+                                    {
+                                        <td scope="row">Upcoming</td>
+                                    }
+                                    else if (item.ActivityStartTime < System.DateTime.Now && item.ActivityEndTime > System.DateTime.Now)
+                                    {
+                                        <td scope="row">Ongoing</td>
+                                    }
+                                    else
+                                    {
+                                        <td scope="row">Completed</td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td scope="row"></td>
+                                }
+
+                            }*@
+                            <td scope="row" class="">Inhouse</td>
+                            <td scope="row" class=""></td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>

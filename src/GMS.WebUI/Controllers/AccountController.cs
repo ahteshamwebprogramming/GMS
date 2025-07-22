@@ -8,6 +8,7 @@ using System.Security.Claims;
 using GMS.Infrastructure.Models.EHRMSLogin;
 using GMS.Infrastructure.ViewModels.Guests;
 using GMS.Infrastructure.ViewModels.EHRMSLogin;
+using GMS.Infrastructure.Models.RoleMenuMapping;
 
 namespace GMS.WebUI.Controllers;
 
@@ -42,9 +43,15 @@ public class AccountController : Controller
             outputDTO = (EHRMSLoginWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
             if (outputDTO != null)
             {
+                List<MenuListDTO> menuListDTOs = await _accountsAPIController.GetMenuDetails(outputDTO.RoleId ?? 0);
+
+                HttpContext.Session.SetString("MenuList", JsonConvert.SerializeObject(menuListDTOs));
+
                 HttpContext.Session.SetString("User", JsonConvert.SerializeObject(outputDTO));
+
                 var claims = new List<Claim>      {
                 new Claim(ClaimTypes.Name,outputDTO.WorkerName),
+                new Claim(ClaimTypes.Role,outputDTO.RoleName),
                 new Claim("WorkerId", outputDTO?.WorkerId?.ToString()),
                 new Claim("Id", outputDTO?.WorkerId?.ToString()),
                 
@@ -85,5 +92,12 @@ public class AccountController : Controller
 
         // Redirect to the login page
         return RedirectToAction("Login", "Account");
+
+
+    }
+    [HttpPost]
+    public IActionResult KeepAlive()
+    {
+        return Ok();
     }
 }

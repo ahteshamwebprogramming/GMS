@@ -15,4 +15,7 @@ public class EHRMSLoginWithChild
 
     public int? LogintCount { get; set; }
     public string? WorkerName { get; set; }
+
+    public int? RoleId { get; set; }
+    public string? RoleName { get; set; }
 }

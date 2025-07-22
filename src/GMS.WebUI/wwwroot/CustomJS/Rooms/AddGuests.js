@@ -33,6 +33,14 @@ function AddGuestsPartialView(GroupId = '', PAXSno = 1) {
             initDates();
             getOnLoadAddGuests();
             $("[name='RoomAllocation.RNumber']").val($("#HiddenFields").find("[name='RoomNumber']").val());
+            //initValidateRoomsAvailability();
+
+            $("[name='MemberDetail.CountryId']").change();
+            $("[name='MemberDetail.CatId']").change();
+
+            $("select.form-control").chosen({
+                width: '100%'
+            });
         },
         error: function (result) {
             UnblockUI();
@@ -89,7 +97,7 @@ function initDates() {
         FetchDepartureDate($(this).val(), "AD");
     });
     $('[name="MemberDetail.ServiceId"]').change(function () {
-        FetchDepartureDate($('[name="MemberDetail.DateOfArrival"]').val(), "AD");
+        FetchDepartureDate($('[name="MemberDetail.DateOfArrival"]').val(), "NN");
     });
     $('[name="MemberDetail.PickUpDrop"]').change(function () {
         if ($(this).val() == 1) {
@@ -153,26 +161,98 @@ function initDates() {
         }
     });
     $('#ddlWantToSharePhoto').change(function () {
-        if ($(this).val() == 0)
+        if ($(this).val() == "false")
             $('#divUploadPhoto').hide();
-        else if ($(this).val() == 1)
+        else if ($(this).val() == "true")
             $('#divUploadPhoto').show();
-        else if ($(this).val() == 2)
+        else if ($(this).val() == "false")
             $('#divUploadPhoto').hide();
     });
 
     $('[name="MemberDetail.Idproof"]').on("propertychange change keyup paste input", function () {
-        if ($('[name="MemberDetail.Idproof"]').val().length > 3)
-            $('#divUploadProof').show();
+        if ($('[name="MemberDetail.Idproof"]').val().length > 0)
+            $('#divUploadIdProofDetails').show();
         else
-            $('#divUploadProof').hide();
+            $('#divUploadIdProofDetails').hide();
     });
     $('[name="MemberDetail.PassportNo"]').on("propertychange change keyup paste input", function () {
-        if ($('[name="MemberDetail.PassportNo"]').val().length > 3)
-            $('#divUploadVisa').show();
+        if ($('[name="MemberDetail.PassportNo"]').val().length > 0)
+            $('#divUploadPassportDetails').show();
         else
-            $('#divUploadVisa').hide();
+            $('#divUploadPassportDetails').hide();
     });
+    $('[name="MemberDetail.VisaDetails"]').on("propertychange change keyup paste input", function () {
+        if ($('[name="MemberDetail.VisaDetails"]').val().length > 0)
+            $('#divUploadVisaDetails').show();
+        else
+            $('#divUploadVisaDetails').hide();
+    });
+
+    $("#AddGuestForm").find(".IssueDate").datetimepicker({
+        format: 'd-m-Y',
+        timepicker: false,
+    });
+    $("#AddGuestForm").find(".ExpiryDate").datetimepicker({
+        format: 'd-m-Y',
+        timepicker: false,
+    });
+
+    $('[name="MemberDetail.NationalityId"]').change(function () {
+        let nationality = $("[name='MemberDetail.NationalityId'] option:selected").text();
+
+        if (nationality == "Indian") {
+            $("[name='MemberDetail.Idproof']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.Idproof']").addClass('requiredInput');
+            $("[name='MemberDetail.IdProofIssueDate']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.IdProofIssueDate']").addClass('requiredInput');
+            $("[name='MemberDetail.IdProofExpiryDate']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.IdProofExpiryDate']").addClass('requiredInput');
+
+
+            $("[name='MemberDetail.PassportNo']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.PassportNo']").removeClass('requiredInput');
+            $("[name='MemberDetail.PassportIssueDate']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.PassportIssueDate']").removeClass('requiredInput');
+            $("[name='MemberDetail.PassportExpiryDate']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.PassportExpiryDate']").removeClass('requiredInput');
+
+            $("[name='MemberDetail.VisaDetails']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.VisaDetails']").removeClass('requiredInput');
+            $("[name='MemberDetail.VisaIssueDate']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.VisaIssueDate']").removeClass('requiredInput');
+            $("[name='MemberDetail.VisaExpiryDate']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.VisaExpiryDate']").removeClass('requiredInput');
+        }
+        else {
+            $("[name='MemberDetail.Idproof']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.Idproof']").removeClass('requiredInput');
+            $("[name='MemberDetail.IdProofIssueDate']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.IdProofIssueDate']").removeClass('requiredInput');
+            $("[name='MemberDetail.IdProofExpiryDate']").parent().find('label').removeClass('required');
+            $("[name='MemberDetail.IdProofExpiryDate']").removeClass('requiredInput');
+
+            $("[name='MemberDetail.PassportNo']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.PassportNo']").addClass('requiredInput');
+            $("[name='MemberDetail.PassportIssueDate']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.PassportIssueDate']").addClass('requiredInput');
+            $("[name='MemberDetail.PassportExpiryDate']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.PassportExpiryDate']").addClass('requiredInput');
+
+            $("[name='MemberDetail.VisaDetails']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.VisaDetails']").addClass('requiredInput');
+            $("[name='MemberDetail.VisaIssueDate']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.VisaIssueDate']").addClass('requiredInput');
+            $("[name='MemberDetail.VisaExpiryDate']").parent().find('label').addClass('required');
+            $("[name='MemberDetail.VisaExpiryDate']").addClass('requiredInput');
+        }
+
+    });
+
+    $('#ddlWantToSharePhoto').change();
+    $('[name="MemberDetail.Idproof"]').change();
+    $('[name="MemberDetail.PassportNo"]').change();
+    $('[name="MemberDetail.VisaDetails"]').change();
+    $('[name="MemberDetail.NationalityId"]').change();
 }
 function InitialiseMobileFields() {
     var txtmobile = document.querySelector("#MemberDetail_MobileNo");
@@ -198,7 +278,8 @@ function getOnLoadAddGuests() {
     $('[name="MemberDetail.GuarenteeCode"]').change();
     $('[name="MemberDetail.PaymentStatus"]').change();
 
-    GetServices();
+    //GetServices();
+    GetServices_New();
 
 }
 function CalculateAge() {
@@ -216,6 +297,27 @@ function CalculateAge() {
         daydiff = Math.round(daydiff);
         $("#AddGuestForm").find("[name='MemberDetail.Age']").val(ageDate);
     }
+}
+function GetServices_New(serviceId) {
+    let minNight = $("[name='MemberDetail.CatId'] option:selected").attr('minNight');
+    let maxNight = $("[name='MemberDetail.CatId'] option:selected").attr('maxNight');
+    let price = $("[name='MemberDetail.CatId'] option:selected").attr('price');
+
+    let $noOfNights = $("[name='MemberDetail.ServiceId']");
+    $noOfNights.empty();
+    if (minNight != null && minNight !== undefined && maxNight != null && maxNight !== undefined) {
+        minNight = parseInt(minNight);
+        maxNight = parseInt(maxNight);
+        for (var i = minNight; i <= maxNight; i++) {
+            if (serviceId == i) {
+                $noOfNights.append('<option selected="selected" value="' + i + '">' + i + ' Nights </option>');
+            }
+            else {
+                $noOfNights.append('<option value="' + i + '">' + i + ' Nights </option>');
+            }
+        }
+    }
+    $noOfNights.trigger("chosen:updated");
 }
 function GetServices() {
     let serviceId = $("#hfddlservices").val();
@@ -252,7 +354,7 @@ function GetServices() {
     });
 }
 
-function FetchDepartureDate(ArrivalDate, Source) {
+function FetchDepartureDate1(ArrivalDate, Source) {
     if (ArrivalDate == "") {
         return;
     }
@@ -264,6 +366,15 @@ function FetchDepartureDate(ArrivalDate, Source) {
             return false;
         }
     }
+    if ($('[name="MemberDetail.ServiceId"]').val() == "" || $('[name="MemberDetail.ServiceId"]').val() == null || $('[name="MemberDetail.ServiceId"]').val() == undefined || $('[name="MemberDetail.ServiceId"]').val() == "0") {
+        $erroralert("Package not found!", 'Please select select package first!');
+        //alert("Please select select services first", "error");
+        $('[name="MemberDetail.ServiceId"]').focus();
+        $('[name="MemberDetail.DateOfArrival"]').val('');
+        return false;
+    }
+
+
     if ($('[name="MemberDetail.ServiceId"]').val() == "" || $('[name="MemberDetail.ServiceId"]').val() == null || $('[name="MemberDetail.ServiceId"]').val() == undefined || $('[name="MemberDetail.ServiceId"]').val() == "0") {
         alert("Please select select services first", "error");
         $('[name="MemberDetail.ServiceId"]').focus();
@@ -305,6 +416,78 @@ function FetchDepartureDate(ArrivalDate, Source) {
 
 }
 
+function FetchDepartureDate(ArrivalDate, Source) {
+    if (ArrivalDate == "") {
+        return;
+    }
+    var AdditionalNights = 0;
+    if (Source == "AD") {
+        if (ArrivalDate == "" || ArrivalDate == null || ArrivalDate == undefined || ArrivalDate == "0") {
+            $erroralert("Invalid Date!", 'Please select valid date!');
+            //alert("Please select valid date", "error");
+            $('[name="MemberDetail.DateOfArrival"]').val('');
+            return false;
+        }
+    }
+    if ($('[name="MemberDetail.ServiceId"]').val() == "" || $('[name="MemberDetail.ServiceId"]').val() == null || $('[name="MemberDetail.ServiceId"]').val() == undefined || $('[name="MemberDetail.ServiceId"]').val() == "0") {
+        $erroralert("Package not found!", 'Please select select package first!');
+        //alert("Please select select services first", "error");
+        $('[name="MemberDetail.ServiceId"]').focus();
+        $('[name="MemberDetail.DateOfArrival"]').val('');
+        return false;
+    }
+    if ($('[name="MemberDetail.AdditionalNights"]').val() == "" || $('[name="MemberDetail.AdditionalNights"]').val() == null || $('[name="MemberDetail.AdditionalNights"]').val() == undefined || $('[name="MemberDetail.AdditionalNights"]').val() == "0") {
+        AdditionalNights = 0;
+    }
+    else
+        AdditionalNights = $('[name="MemberDetail.AdditionalNights"]').val();
+
+    let NoOfNights = $('[name="MemberDetail.ServiceId"]').val();
+
+    if (NoOfNights == null || NoOfNights === undefined || isNaN(NoOfNights)) {
+        $erroralert("Error!", 'Please select number of nights');
+    }
+
+    NoOfNights = parseInt(NoOfNights);
+
+    let NoOfTotalNights = NoOfNights + parseInt(AdditionalNights);
+
+    let departureDate = moment(ArrivalDate, "DD/MM/YYYY").add(NoOfTotalNights, 'days');
+    $('[name="MemberDetail.DateOfDepartment"]').val(departureDate.format("DD-MM-YYYY"));
+    $('[name="TimeOfDepartment"]').val("11:00")
+    //var inputDTO = {};
+
+    //inputDTO["DateOfArrival"] = moment(ArrivalDate, "DD/MM/YYYY").format("YYYY-MM-DD");
+    ////inputDTO["DateOfDepartment"] = "";
+    //inputDTO["CatId"] = $('[name="MemberDetail.ServiceId"]').val();
+    //inputDTO["AdditionalNights"] = AdditionalNights;
+
+
+
+    //PostRequest("MemberRegistration.aspx/FetchDepartmentDate", JSON.stringify({ formData }), ManageFetchDepartureDateServerResponse, "POST");
+
+    //$.ajax({
+    //    type: "POST",
+    //    url: "/Guests/FetchDepartmentDate",
+    //    contentType: 'application/json',
+    //    data: JSON.stringify(inputDTO),
+    //    success: function (data) {
+    //        /*$successalert("", "Transaction Successful!");*/
+    //        UnblockUI();
+    //        let dapartDate = moment(data, "YYYY-MM-DD").format("DD-MM-YYYY");
+    //        $('[name="MemberDetail.DateOfDepartment"]').val(dapartDate)
+    //        $('[name="TimeOfDepartment"]').val("11:00")
+    //        /*$('#departure-time').val('11:00');*/
+    //    },
+    //    error: function (error) {
+    //        /* $erroralert("Transaction Failed!", error.responseText + '!');*/
+    //        UnblockUI();
+    //    }
+    //});
+
+}
+
+
 function FetchPaymentStatus(Id) {
     $('[name="MemberDetail.PaymentStatus"]').empty();
     if (Id == 8 || Id == 2 || Id == 5 || Id == 6 || Id == 1) {
@@ -333,108 +516,422 @@ function FetchPaymentStatus(Id) {
     if (paymentStatus > 0) {
         $('[name="MemberDetail.PaymentStatus"]').val(paymentStatus);
     }
-
+    $("[name='MemberDetail.PaymentStatus']").trigger('chosen:updated');
 }
 
+function _isValidateForm(formId) {
+
+    $('.requiredInputCstmFile').on('click change paste keyup', function () {
+        var element = $(this);
+        element.removeClass('error');
+        element.parent().find('.error-mandatory').remove();
+    });
+
+
+    let res = isValidateForm(formId);
+
+    var photoFromInput = jQuery("#attachmentPhoto")[0].files;
+    var photoFromDB = $("#attachmentPhoto").parent().find("[name^=attachmentTag_]");
+    if ($("#ddlWantToSharePhoto").val() == "true" && !(photoFromInput != null && photoFromInput != undefined && photoFromInput.length != 0) && (photoFromDB.length == 0)) {
+        let element = jQuery("#attachmentPhoto");
+        element.removeClass('error');
+        element.parent().find('.error-mandatory').remove();
+        element.addClass('error');
+        element.parent().append('<p class="error-mandatory">This field is mandatory</p>');
+        res = false;
+    }
+
+    let nationality = $("[name='MemberDetail.NationalityId'] option:selected").text();
+    var idProofFromInput = jQuery("#attachmentIdProof")[0].files;
+    var idProofFromDB = $("#attachmentIdProof").parent().find("[name^=attachmentTag_]");
+    if (nationality == "Indian" && !(idProofFromInput != null && idProofFromInput != undefined && idProofFromInput.length != 0) && (idProofFromDB.length == 0)) {
+        let element = jQuery("#attachmentIdProof");
+        element.removeClass('error');
+        element.parent().find('.error-mandatory').remove();
+        element.addClass('error');
+        element.parent().append('<p class="error-mandatory">This field is mandatory</p>');
+        res = false;
+    }
+
+
+    var passportFromInput = jQuery("#attachmentPassport")[0].files;
+    var passportFromDB = $("#attachmentPassport").parent().find("[name^=attachmentTag_]");
+    if (nationality != "Indian" && !(passportFromInput != null && passportFromInput != undefined && passportFromInput.length != 0) && (passportFromDB.length == 0)) {
+        let element = jQuery("#attachmentPassport");
+        element.removeClass('error');
+        element.parent().find('.error-mandatory').remove();
+        element.addClass('error');
+        element.parent().append('<p class="error-mandatory">This field is mandatory</p>');
+        res = false;
+    }
+
+
+    var visaFromInput = jQuery("#attachmentVisaDetails")[0].files;
+    var visaFromDB = $("#attachmentVisaDetails").parent().find("[name^=attachmentTag_]");
+    if (nationality != "Indian" && !(visaFromInput != null && visaFromInput != undefined && visaFromInput.length != 0) && (visaFromDB.length == 0)) {
+        let element = jQuery("#attachmentVisaDetails");
+        element.removeClass('error');
+        element.parent().find('.error-mandatory').remove();
+        element.addClass('error');
+        element.parent().append('<p class="error-mandatory">This field is mandatory</p>');
+        res = false;
+    }
+
+
+
+    return res;
+}
 function AddGuests() {
 
-    if (!isValidateForm("AddGuestForm")) {
+    if (!_isValidateForm("AddGuestForm")) {
         return;
     }
-    //alert("Success");
-    //return;
 
-    let GuestForm = $("#AddGuestForm").find("[dbCol]");
+    ValidateRoomsAvailability().then((d) => {
+        let GuestForm = $("#AddGuestForm").find("[dbCol]");
 
-    let dataVM = new FormData();
+        let dataVM = new FormData();
 
-    var photoAttachment = jQuery("#fldphoto")[0].files;
-    var idProofAttachment = jQuery("#fuIdProof")[0].files;
-    var passportAttachment = jQuery("#txtpassupload")[0].files;
-    for (var i = 0; i < photoAttachment.length; i++) {
-        dataVM.append("PhotoAttachment", photoAttachment[i]);
-    }
-    for (var i = 0; i < idProofAttachment.length; i++) {
-        dataVM.append("IdProofAttachment", idProofAttachment[i]);
-    }
-    for (var i = 0; i < passportAttachment.length; i++) {
-        dataVM.append("PassportAttachment", passportAttachment[i]);
-    }
-
-    GuestForm.each((i, v) => {
-        let currObj = $(v);
-        let value = currObj.val();
-        let id = currObj.attr("id");
-        let name = currObj.attr("name");
-        if (value != null && value != undefined && value !== "") {
-            //value = value.toUpperCase();
+        var photoAttachment = jQuery("#attachmentPhoto")[0].files;
+        var idProofAttachment = jQuery("#attachmentIdProof")[0].files;
+        var passportAttachment = jQuery("#attachmentPassport")[0].files;
+        var visaAttachment = jQuery("#attachmentVisaDetails")[0].files;
+        for (var i = 0; i < photoAttachment.length; i++) {
+            dataVM.append("PhotoAttachment", photoAttachment[i]);
+        }
+        for (var i = 0; i < idProofAttachment.length; i++) {
+            dataVM.append("IdProofAttachment", idProofAttachment[i]);
+        }
+        for (var i = 0; i < passportAttachment.length; i++) {
+            dataVM.append("PassportAttachment", passportAttachment[i]);
+        }
+        for (var i = 0; i < visaAttachment.length; i++) {
+            dataVM.append("VisaAttachment", visaAttachment[i]);
         }
 
-        if (currObj.hasClass('contactno') && value != "") {
-            value = value.replace(/\s/g, "");
-        }
-        if (currObj.hasClass('dateonly') && value != "") {
-            try {
-                let dateformat = currObj.attr("dateformat");
-                let currentDateFormat = "DD-MM-YYYY";
-                let sourceDateFormat = (dateformat != undefined || dateformat != null || dateformat != "") ? dateformat : "YYYY-MM-DD";
-                //value = moment(moment(value).format("DD-MM-YYYY")).format(dateformat);
-                value = moment(value, currentDateFormat).format(sourceDateFormat);
+        GuestForm.each((i, v) => {
+            let currObj = $(v);
+            let value = currObj.val();
+            let id = currObj.attr("id");
+            let name = currObj.attr("name");
+            if (value != null && value != undefined && value !== "") {
+                //value = value.toUpperCase();
             }
-            catch {
-                value = "";
+
+            if (currObj.hasClass('contactno') && value != "") {
+                value = value.replace(/\s/g, "");
             }
-        }
-        if (currObj.hasClass('datetimeonly') && value != "") {
+            if (currObj.hasClass('dateonly') && value != "") {
+                try {
+                    let dateformat = currObj.attr("dateformat");
+                    let currentDateFormat = "DD-MM-YYYY";
+                    let sourceDateFormat = (dateformat != undefined || dateformat != null || dateformat != "") ? dateformat : "YYYY-MM-DD";
+                    //value = moment(moment(value).format("DD-MM-YYYY")).format(dateformat);
+                    value = moment(value, currentDateFormat).format(sourceDateFormat);
+                }
+                catch {
+                    value = "";
+                }
+            }
+            if (currObj.hasClass('datetimeonly') && value != "") {
+                try {
+                    let dateformat = currObj.attr("dateformat");
+                    let currentDateFormat = "DD-MM-YYYY HH:mm";
+                    let sourceDateFormat = (dateformat != undefined || dateformat != null || dateformat != "") ? dateformat : "YYYY-MM-DD HH:mm";
+                    value = moment(value, currentDateFormat).format(sourceDateFormat);
+                }
+                catch {
+                    value = "";
+                }
+            }
+
+            if (name == "MemberDetail.DateOfDepartment") {
+                value += " " + $("[name='TimeOfDepartment']").val();
+            }
+
+            dataVM.append(currObj.attr("name"), value);
+        });
+        dataVM.append("MemberDetail.PAXSno", $("[name='MemberDetail.PAXSno']").val());
+        dataVM.append("Source", "RoomAvailability");
+        //dataVM.append("RoomAllocation.RNumber", "RoomAvailability");
+
+        BlockUI();
+        $.ajax({
+            url: '/Guests/SaveMemberDetails',
+            data: dataVM,
+            //dataType: "json",
+            async: false,
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $("#addGuestPopup").find(".btn-close").click();
+                if (response != null) {
+                    if (response.paxSno < response.pax) {
+                        //$("[name='MemberDetail.PAXSno']").val(parseInt(response?.pAXSno) + 1);
+                        AddGuestsPartialView(response.groupId, parseInt(response?.paxSno) + 1);
+                    }
+                    else {
+                        window.location.href = "/Guests/GuestRegistrationSuccessfull/" + response.groupId;
+                    }
+                }
+
+                UnblockUI();
+            },
+            error: function (xhr, ajaxOptions, error) {
+                UnblockUI();
+                alert(xhr.responseText);
+                //responseText
+            }
+        });
+    }).catch((d) => {
+        $erroralert("Validation Failed!", d + '!');
+    });
+}
+
+function initValidateRoomsAvailability() {
+    //CheckInputs();
+
+    $("#AddGuestForm").find('[name="MemberDetail.DateOfArrival"]').change(function () {
+        ValidateRoomsAvailability().then((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "green");
+
+        }).catch((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "red");
+        });
+    });
+    $("#AddGuestForm").find('[name="MemberDetail.DateOfDepartment"]').change(function () {
+        ValidateRoomsAvailability().then((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "green");
+
+        }).catch((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "red");
+        });
+    });
+    $("#AddGuestForm").find('[name="TimeOfDepartment"]').change(function () {
+        ValidateRoomsAvailability().then((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "green");
+
+        }).catch((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "red");
+        });
+    });
+    $("#AddGuestForm").find('[name="MemberDetail.RoomType"]').change(function () {
+        ValidateRoomsAvailability().then((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "green");
+
+        }).catch((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "red");
+        });
+    });
+    $("#AddGuestForm").find('[name="MemberDetail.Pax"]').change(function () {
+        ValidateRoomsAvailability().then((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "green");
+
+        }).catch((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "red");
+        });
+    });
+    $("#AddGuestForm").find('[name="MemberDetail.NoOfRooms"]').change(function () {
+        ValidateRoomsAvailability().then((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "green");
+
+        }).catch((d) => {
+            $("#AddGuestForm").find('[name="RoomsAvailabilityInformation"]').text(d).css("color", "red");
+        });
+    });
+}
+function ValidateRoomsAvailability() {
+    return new Promise((resolve, reject) => {
+        let sourceDateFormat = "YYYY-MM-DDTHH:mm";
+        let DateOfArrivalObj = $("#AddGuestForm").find('[name="MemberDetail.DateOfArrival"]');
+        let DateOfArrival = $("#AddGuestForm").find('[name="MemberDetail.DateOfArrival"]').val();
+        if (DateOfArrivalObj.hasClass('datetimeonly') && DateOfArrival != "") {
             try {
-                let dateformat = currObj.attr("dateformat");
+                let dateformat = DateOfArrivalObj.attr("dateformat");
                 let currentDateFormat = "DD-MM-YYYY HH:mm";
-                let sourceDateFormat = (dateformat != undefined || dateformat != null || dateformat != "") ? dateformat : "YYYY-MM-DD HH:mm";
-                value = moment(value, currentDateFormat).format(sourceDateFormat);
+                //sourceDateFormat = (dateformat != undefined || dateformat != null || dateformat != "") ? dateformat : "YYYY-MM-DD HH:mm";
+                DateOfArrival = moment(DateOfArrival, currentDateFormat).format(sourceDateFormat);
             }
             catch {
-                value = "";
+                DateOfArrival = "";
+            }
+        }
+        let DateOfDepartmentObj = $("#AddGuestForm").find('[name="MemberDetail.DateOfDepartment"]');
+        let DateOfDepartment = $("#AddGuestForm").find('[name="MemberDetail.DateOfDepartment"]').val();
+        if (DateOfDepartmentObj.hasClass('dateonly') && DateOfDepartment != "") {
+            try {
+                let dateformat = DateOfDepartmentObj.attr("dateformat");
+                let currentDateFormat = "DD-MM-YYYY";
+                //sourceDateFormat = (dateformat != undefined || dateformat != null || dateformat != "") ? dateformat : "YYYY-MM-DD";
+                sourceDateFormat = "YYYY-MM-DD";
+                DateOfDepartment = moment(DateOfDepartment, currentDateFormat).format(sourceDateFormat);
+            }
+            catch {
+                DateOfDepartment = "";
             }
         }
 
-        if (name == "MemberDetail.DateOfDepartment") {
-            value += " " + $("[name='TimeOfDepartment']").val();
+
+
+        let TimeOfDepartment = $("#AddGuestForm").find('[name="TimeOfDepartment"]').val();
+        let RoomType = $("#AddGuestForm").find('[name="MemberDetail.RoomType"]').val();
+        let Pax = $("#AddGuestForm").find('[name="MemberDetail.Pax"]').val();
+        let NoOfRooms = $("#AddGuestForm").find('[name="MemberDetail.NoOfRooms"]').val();
+
+        if (DateOfArrival == null || DateOfArrival == undefined || DateOfArrival == "") {
+            return reject("Date Of Arrival is empty or invalid");
+        }
+        if (DateOfDepartment == null || DateOfDepartment == undefined || DateOfDepartment == "") {
+            return reject("Date Of Department is empty or invalid");
+        }
+        if (TimeOfDepartment == null || TimeOfDepartment == undefined || TimeOfDepartment == "") {
+            return reject("Time Of Department is empty or invalid");
+        }
+        if (RoomType == null || RoomType == undefined || RoomType == "" || RoomType == 0) {
+            return reject("Room Type is empty or invalid");
+        }
+        if (Pax == null || Pax == undefined || Pax == "" || Pax == 0) {
+            return reject("Pax is empty or invalid");
+        }
+        if (NoOfRooms == null || NoOfRooms == undefined || NoOfRooms == "" || NoOfRooms == 0) {
+            return reject("No Of Rooms is empty or invalid");
         }
 
-        dataVM.append(currObj.attr("name"), value);
-    });
-    dataVM.append("MemberDetail.PAXSno", $("[name='MemberDetail.PAXSno']").val());
-    dataVM.append("Source", "RoomAvailability");
-    //dataVM.append("RoomAllocation.RNumber", "RoomAvailability");
+        let inputDTO = {};
 
-    BlockUI();
+        inputDTO["DateOfArrival"] = DateOfArrival;
+        inputDTO["DateOfDepartment"] = DateOfDepartment + "T" + TimeOfDepartment;
+        inputDTO["RoomType"] = RoomType;
+        inputDTO["Pax"] = Pax;
+        inputDTO["NoOfRooms"] = NoOfRooms;
+        $.ajax({
+            type: "POST",
+            url: "/Guests/ValidateRoomsAvailability",
+            contentType: 'application/json',
+            data: JSON.stringify(inputDTO),
+            success: function (data) {
+                resolve(data);
+            },
+            error: function (error) {
+                reject(error.responseText);
+            }
+        });
+    })
+}
+
+
+
+function fetchState(CountryId, StateId) {
+    let inputDTO = {};
+    inputDTO.Id = CountryId;
     $.ajax({
-        url: '/Guests/SaveMemberDetails',
-        data: dataVM,
-        //dataType: "json",
-        async: false,
-        type: 'POST',
-        processData: false,
-        contentType: false,
-        success: function (response) {
-            $("#addGuestPopup").find(".btn-close").click();
-            if (response != null) {
-                if (response.paxSno < response.pax) {
-                    //$("[name='MemberDetail.PAXSno']").val(parseInt(response?.pAXSno) + 1);
-                    AddGuestsPartialView(response.groupId, parseInt(response?.paxSno) + 1);
-                }
-                else {
-                    window.location.href = "/Guests/GuestRegistrationSuccessfull/" + response.groupId;
+        type: "POST",
+        url: "/Guests/FetchState",
+        contentType: 'application/json',
+        data: JSON.stringify(inputDTO),
+        success: function (data) {
+            UnblockUI();
+            $("[name='MemberDetail.StateId']").empty();
+            $("[name='MemberDetail.StateId']").append('<option selected="selected" value="0">Select State</option>');
+            if (data != null) {
+                for (var i = 0; i < data.length; i++) {
+                    if (StateId == data[i].id) {
+                        $("[name='MemberDetail.StateId']").append('<option selected="selected" value="' + data[i].id + '">' + data[i].name + '</option>');
+                    }
+                    else {
+                        $("[name='MemberDetail.StateId']").append('<option  value="' + data[i].id + '">' + data[i].name + '</option>');
+                    }
                 }
             }
-
-            UnblockUI();
+            $("[name='MemberDetail.StateId']").trigger('chosen:updated');
+            $("[name='MemberDetail.NationalityId']").val(CountryId).trigger("chosen:updated");
+            $("[name='MemberDetail.NationalityId']").change();
+            $("[name='MemberDetail.StateId']").change();
         },
-        error: function (xhr, ajaxOptions, error) {
-            UnblockUI();
-            alert(xhr.responseText);
-            //responseText
+        error: function (error) {
+
         }
     });
+}
+function fetchCity(stateId, cityId) {
+    let inputDTO = {};
+    inputDTO.Id = stateId;
+    $.ajax({
+        type: "POST",
+        url: "/Guests/FetchCity",
+        contentType: 'application/json',
+        data: JSON.stringify(inputDTO),
+        success: function (data) {
+            UnblockUI();
+            $("[name='MemberDetail.CityId']").empty();
+            $("[name='MemberDetail.CityId']").append('<option selected="selected" value="0"></option>');
+            if (data != null) {
+                for (var i = 0; i < data.length; i++) {
+                    if (cityId == data[i].id) {
+                        $("[name='MemberDetail.CityId']").append('<option selected="selected" value="' + data[i].id + '">' + data[i].name + '</option>');
+                    }
+                    else {
+                        $("[name='MemberDetail.CityId']").append('<option  value="' + data[i].id + '">' + data[i].name + '</option>');
+                    }
+                }
+            }
+            $("[name='MemberDetail.CityId']").trigger('chosen:updated');
+        },
+        error: function (error) {
 
+        }
+    });
+}
+
+
+function deleteUploadedFile(Id) {
+    Swal.fire({ title: 'Are you sure?', text: "This will get deleted permanently!", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, delete it!', customClass: { confirmButton: 'btn btn-primary me-3', cancelButton: 'btn btn-label-secondary' }, buttonsStyling: false }).then(function (result) {
+        if (result.value) {
+            BlockUI();
+            var inputDTO = {
+                "Id": Id
+            };
+            $.ajax({
+                type: "POST",
+                url: "/Guests/DeleteUploadedFile",
+                contentType: 'application/json',
+                data: JSON.stringify(inputDTO),
+                success: function (data) {
+                    $successalert("", "Deleted Successful!");
+                    $("[name='attachmentTag_" + Id + "']").remove();
+                    UnblockUI();
+                },
+                error: function (error) {
+                    $erroralert("Transaction Failed!", error.responseText + '!');
+                    UnblockUI();
+                }
+            });
+        }
+    });
+}
+function downloadAttachment(fileId, filename) {
+    // AJAX request to download the file
+    $.ajax({
+        url: '/Guests/DownloadFile/' + fileId,
+        method: 'GET',
+        xhrFields: {
+            responseType: 'blob' // Set the response type to blob
+        },
+        success: function (data) {
+            // Create a temporary anchor element to trigger the download
+            var a = document.createElement('a');
+            var url = window.URL.createObjectURL(data);
+            a.href = url;
+            a.download = filename; // Set the filename for download
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            //$successalert("Success!", "Downloaded succesfully.");
+        },
+        error: function (xhr, status, error) {
+            $erroralert("Oops!", 'Error downloading file:' + xhr.responseText);
+        }
+    });
 }

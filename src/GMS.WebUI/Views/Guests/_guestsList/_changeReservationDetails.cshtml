@@ -1,0 +1,159 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+
+<style>
+    .add_user_form .form-control {
+        background: #eaeaeaa3 !important;
+    }
+</style>
+<input type="button" id="btnChangeReservationDetailsModal" data-bs-target="#ChangeReservationDetailsModal" data-bs-toggle="modal" value="Change" />
+<div class="modal fade" id="ChangeReservationDetailsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-addGuestPopup modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Guest Registration Form</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+
+                <div class="add_user_form" id="ChangeGuestDetailsForm">
+                    <input type="hidden" asp-for="MemberDetail.Id" dbCol />
+                    <input type="hidden" asp-for="MemberDetail.GroupId" dbCol />
+                    <input type="hidden" asp-for="MemberDetail.UHID" dbCol />
+                    <input type="hidden" asp-for="MemberDetail.UniqueNo" dbCol />
+                    <input type="hidden" name="MemberDetail.PAXSno" />
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <!-- Stay Information -->
+                                        <div class="formBlock" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+                                            <div class="col-sm-12 formTitle"><b>STAY INFORMATION</b></div>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <span style="font-size:12px;" name="RoomsAvailabilityInformation"></span>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="form-group col-sm-4 col-xs-4">
+                                                    <label class="required">Rate Plan</label>
+                                                    @{
+                                                        if (Model?.MemberDetail?.PAXSno > 1)
+                                                        {
+                                                            <select asp-for="MemberDetail.CatId" class="contact_name form-control requiredInput" onchange="GetServicesByFormId(@(Model?.MemberDetail?.ServiceId??"0"),'ChangeGuestDetailsForm')" readonly disabled dbCol>
+                                                                <option value="0"></option>
+                                                                @{
+                                                                    if (Model != null && Model.Services != null)
+                                                                    {
+                                                                        foreach (var item in Model.Services)
+                                                                        {
+                                                                            <option value="@item.Id" minNight="@item.MinimumNight" maxNight="@item.MaximumNight" price="@item.Price">@item.Service</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </select>
+                                                        }
+                                                        else
+                                                        {
+                                                            <select asp-for="MemberDetail.CatId" class="contact_name form-control requiredInput" onchange="GetServicesByFormId(@(Model?.MemberDetail?.ServiceId??"0"),'ChangeGuestDetailsForm')" dbCol>
+                                                                <option value="0">--Primary Services *--</option>
+                                                                @{
+                                                                    if (Model != null && Model.Services != null)
+                                                                    {
+                                                                        foreach (var item in Model.Services)
+                                                                        {
+                                                                            <option value="@item.Id" minNight="@item.MinimumNight" maxNight="@item.MaximumNight" price="@item.Price">@item.Service</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </select>
+                                                        }
+                                                    }
+                                                    <input type="hidden" id="hfddlpservices" value="0">
+                                                </div>
+                                                <div class="form-group col-sm-4 col-xs-4">
+                                                    <label class="required">No Of Nights</label>
+                                                    <select asp-for="MemberDetail.ServiceId" class="contact_name form-control requiredInput" dbCol>
+                                                        <option value="0">--Select No Of Nights *--</option>
+                                                    </select>
+                                                    <input type="hidden" id="hfddlservices" value="@Model?.MemberDetail?.ServiceId">
+                                                </div>
+                                                <div class="form-group col-sm-4 col-xs-4 d-none">
+                                                    <label>Additional Nights</label>
+                                                    <input asp-for="MemberDetail.AdditionalNights" type="number" value="@(Model?.MemberDetail?.AdditionalNights)" class="contact_name form-control" placeholder="" dbCol>
+                                                </div>
+                                                <div class="form-group col-sm-4 col-xs-4 ">
+                                                    <label class="required">Arrival Date</label>
+                                                    <input asp-for="MemberDetail.DateOfArrival" value="@Model?.MemberDetail?.DateOfArrival?.ToString("dd-MM-yyyy HH:mm")" type="text" class="contact_name form-control datetimeonly requiredInput" dateformat="YYYY-MM-DD HH:mm" autocomplete="off" placeholder="" dbCol>
+                                                </div>
+                                                <div class="form-group col-sm-4 col-xs-4 ">
+                                                    <label class="required">Departure Date</label>
+
+                                                    <input asp-for="MemberDetail.DateOfDepartment" value="@Model?.MemberDetail?.DateOfDepartment?.ToString("dd-MM-yyyy")" type="text" class="contact_name form-control dateonly requiredInput" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" readonly dbCol style="margin-right: 0px;width: 60%;display: inline-block;border-bottom-right-radius: 0px;border-top-right-radius: 0px;">
+                                                    <input id="departure-time" name="TimeOfDepartment" value="@Model?.MemberDetail?.DateOfDepartment?.ToString("HH:mm")" type="text" class="form-control timepicker requiredInput" style="margin-left: -5px; border-left: 0px;width: 40%; display: inline-block; border-bottom-left-radius: 0px; border-top-left-radius: 0px;">
+                                                </div>
+
+                                                <div class="form-group col-sm-4 col-xs-4 ">
+                                                    <label class="required">Type of Rooms</label>
+                                                    <select asp-for="MemberDetail.RoomType" class="contact_name form-control requiredInput" dbCol>
+                                                        <option value="0">-- Type of Room *--</option>
+                                                        @{
+                                                            if (Model != null && Model.RoomTypes != null)
+                                                            {
+                                                                foreach (var item in Model.RoomTypes)
+                                                                {
+                                                                    <option value="@item.Id">@item.Rtype</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    </select>
+                                                    <input type="hidden" id="hfRoomType" value="0">
+                                                </div>
+                                                <input type="hidden" asp-for="MemberDetail.Pax" />
+                                                <input type="hidden" asp-for="MemberDetail.NoOfRooms" />
+                                                @* <div class="form-group col-sm-4 col-xs-4">
+                                                    <label class="required">Pax</label>
+                                                    <input asp-for="MemberDetail.Pax" type="number" class="contact_name form-control requiredInput" placeholder="Pax" dbCol>
+                                                </div>
+                                                <div class="form-group col-sm-4 col-xs-4 ">
+                                                    <label class="required">No Of Rooms</label>
+                                                    <input asp-for="MemberDetail.NoOfRooms" type="number" class="contact_name form-control requiredInput" placeholder="No of Rooms" dbCol>
+                                                </div> *@
+
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                    <div class="col-md-5">
+
+                                        <div class="formBlock" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+                                            <div class="col-sm-12 formTitle"><b>Charges</b></div>
+
+                                            <div class="col-md-12" name="div_RatePlanPartial">
+                                                @* @Html.Partial("_guestsList/_ratePlan", Model) *@
+                                            </div>
+
+                                            <div class="clearfix"></div>
+                                        </div>
+                                        <!-- ------- -->
+                                        <!-- box dd -->
+                                        <!-- ------- -->
+                                    </div>
+                                </div>
+
+                                <input type="hidden" asp-for="MemberDetail.RegistrationNumber" dbCol />
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btnCloseAddGuestForm">Cancel</button>
+                <input type="button" class="btn btn-primary" onclick="UpdateGuestReservationDetails('ChangeGuestDetailsForm')" value="Update Details" />
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,68 @@
+﻿@model GMS.Infrastructure.ViewModels.ResourceAllocation.ResourceAllocationViewModel
+<div class="resposive_table">
+    <table class="table">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">Task Name</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Start DateTime</th>
+                <th scope="col">End DateTime</th>
+                <th scope="col">Resources</th>
+                <th scope="col">Therapist1</th>
+                <th scope="col">Therapist2</th>
+                <th scope="col">Therapist3</th>
+                <th scope="col">Guest Name</th>
+                <th scope="col">Room No</th>
+                <th scope="col">In Package</th>
+                <th scope="col">Remarks</th>
+                <th scope="col" width="300">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                if (Model != null && Model.ScheduleWithAttributeList != null)
+                {
+                    foreach (var item in Model.ScheduleWithAttributeList)
+                    {
+                        <tr>
+                            <td scope="row" class="taskname">
+                                <select class="selectchosen">
+                                    @{
+                                        if (Model.Tasks != null)
+                                        {
+                                            <option value="0"></option>
+                                            foreach (var tasks in Model.Tasks)
+                                            {
+                                                if (tasks.Id == item.TaskId)
+                                                {
+                                                    <option selected="selected" value="@tasks.Id">@tasks.TaskName</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@tasks.Id">@tasks.TaskName</option>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </select>
+                            </td>
+                            <td scope="row" class="duration">@item.Duration</td>
+                            <td scope="row">@item.StartDateTime</td>
+                            <td scope="row">@item.EndDateTime</td>
+                            <td scope="row">@item.ResourceName</td>
+                            <td scope="row"></td>
+                            <td scope="row"></td>
+                            <td scope="row"></td>
+                            <td scope="row"></td>
+                            <td scope="row"></td>
+                            <td scope="row"></td>
+                            <td scope="row"></td>
+                            <td scope="row"></td>
+
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>
