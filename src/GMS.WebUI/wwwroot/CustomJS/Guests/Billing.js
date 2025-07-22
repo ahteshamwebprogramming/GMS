@@ -255,6 +255,32 @@ function GetServicesForBilling(Id) {
     });
 }
 
+function ValidateDiscountOnBilling() {
+    var $table = $("#tblBillingAttributes");
+    var $discountInput = $table.find('.finaldiscount input');
+    var $discountCodeInput = $table.find('.finaldiscountcode input');
+    var discountValue = parseFloat($discountInput.val()) || 0;
+    var discountCode = $discountCodeInput.val().trim();
+
+    // Remove existing error if any (within the table)
+    $table.find('.finaldiscountcode .error-message').remove();
+
+    // Bind input event to remove error when typing starts
+    $discountCodeInput.off('input.validateDiscount').on('input.validateDiscount', function () {
+        $table.find('.finaldiscountcode .error-message').remove();
+    });
+
+    if (discountValue > 0 && discountCode === '') {
+        $table.find('.finaldiscountcode').append('<div class="error-message">Please enter a discount code.</div>');
+        $discountCodeInput.focus();
+        return false;
+    }
+
+    return true;
+}
+
+
+
 function SaveBillingData() {
     return new Promise((resolve, reject) => {
         let gGuestId = $("#BillingModal").find("[name='GuestId']").val()
@@ -322,6 +348,10 @@ function SaveBillingData() {
             SGST: parseFloat($("#tblBillingAttributes").find("tbody").find(".taxes_SGST").text().trim()) || 0,
             TotalAmount: $("#tblBillingAttributes").find("tbody").find(".finaltotal").text().trim() || 0
         });
+
+        if (ValidateDiscountOnBilling() == false) {
+            return false;
+        }
 
         const inputDTO = {
             BillingDTOs: billingList

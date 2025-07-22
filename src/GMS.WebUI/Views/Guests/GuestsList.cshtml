@@ -179,7 +179,20 @@
                         <input type="hidden" id="GuestsListType" />
                     </div>
                     <div class="btn_add btn_add2">
-                        @* <input type="search" oncancel="GuestsListPartialView()" onchange="GuestsListPartialView()" placeholder="Search..." class="txt" name="GuestsSearchKeyword" id="GuestsSearchKeyword"> *@
+                        @*  <div class="search-container">
+                            <input type="search" oncancel="GuestsListPartialView()" onchange="GuestsListPartialView()" class="search-input" placeholder="Search..." name="GuestsSearchKeyword" id="GuestsSearchKeyword">
+                            <button class="search-icon"><i class="bi bi-search"></i></button>
+                        </div> *@
+
+                       @*  <button class="btn btn-primary" onclick="document.getElementById('btnModelAddGuests').click()"
+                                style="background-color: #61a39f; border-color: #61a39f; margin-right: 10px;">
+                            <i class="bi bi-plus-circle"></i> Add Guest
+                        </button>
+                        <a href="/Reservation/GuestReservation" class="btn btn-primary"
+                           style="background-color: #61a39f; border-color: #61a39f; margin-right: 10px; text-decoration: none;">
+                            <i class="bi bi-plus-circle"></i> Add Guest
+                        </a> *@
+
                         <div class="search-container">
                             <input type="search" oncancel="GuestsListPartialView()" onchange="GuestsListPartialView()" class="search-input" placeholder="Search..." name="GuestsSearchKeyword" id="GuestsSearchKeyword">
                             <button class="search-icon"><i class="bi bi-search"></i></button>

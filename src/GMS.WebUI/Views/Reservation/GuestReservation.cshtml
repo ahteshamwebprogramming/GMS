@@ -1,7 +1,110 @@
-﻿
-@{
-    ViewData["Title"] = "GuestReservation";
+﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Guest Registration";
 }
 
+<link href="~/customcss/common.css" rel="stylesheet" />
 
+<div class="admin_wrapper">
+    <div class="right_container full-page-form">
+        <div class="modal-content standalone-form">
+            <div class="modal-header">
+                <h5 class="modal-title">Guest Registration Form</h5>
+            </div>
+            <div class="modal-body">
+                <div class="add_user_form" id="AddGuestForm">
+                    <!-- All your existing form content goes here -->
+                    <!-- Copy everything from the modal-body div (including all hidden inputs and form blocks) -->
+                    <!-- This includes all the PERSONAL INFORMATION, CONTACT INFORMATION, etc. sections -->
+                    <!-- Make sure to keep all the existing IDs and classes -->
+                    <!-- Example of one section (you should include ALL sections from your modal): -->
+                    <input type="hidden" dbcol="" data-val="true" data-val-required="The Id field is required." id="MemberDetail_Id" name="MemberDetail.Id" value="">
+                    <input type="hidden" dbcol="" data-val="true" data-val-required="The GroupId field is required." id="MemberDetail_GroupId" name="MemberDetail.GroupId" value="">
+                    <!-- Continue with all other hidden inputs -->
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12" id="div_GuestsSearchPartial">
+                                <!-- Keep the search table content -->
+                            </div>
+                        </div>
+                        <!-- Include all other rows and form sections -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/Reservation/GuestsList" class="btn btn-secondary">Cancel</a>
+                <input type="button" class="btn btn-primary" onclick="AddGuests()" value="Save and Continue">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .full-page-form {
+            padding: 20px;
+            width: 100%;
+        }
+
+        .standalone-form {
+            border: none;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        .modal-header {
+            background: #61a39f;
+            color: white;
+            border-radius: 8px 8px 0 0;
+            padding: 15px 20px;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        .formBlock {
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #61a39f;
+        }
+
+        .formTitle {
+            color: #61a39f;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/customjs/guests/addguest.js"></script>
+    <!-- Include any other necessary scripts that were used in the modal -->
+
+    <script>
+        // Initialize any datepickers, select2, etc.
+        $(document).ready(function() {
+            // Initialize date pickers
+            $('.dateonly').datepicker({
+                format: 'dd-mm-yyyy',
+                autoclose: true
+            });
+
+            $('.datetimeonly').datetimepicker({
+                format: 'DD-MM-YYYY HH:mm'
+            });
+
+            // Initialize other plugins as needed
+        });
+
+        // Keep your existing AddGuests function
+        function AddGuests() {
+            // Your existing save logic
+        }
+    </script>
+}
