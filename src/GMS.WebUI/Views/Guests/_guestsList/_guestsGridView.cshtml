@@ -22,7 +22,7 @@
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                                     <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddGuestsPartialView('@item.GroupId')"><i class="bi bi-pencil-fill"></i> Edit</a></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeReservationDetailsPartialView('@item.Id')"><i class="bi bi-pencil-fill"></i> Modify Stay </a></li>
+                                    @*<li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeReservationDetailsPartialView('@item.Id')"><i class="bi bi-pencil-fill"></i> Modify Stay </a></li>*@
                                     <li><a class="dropdown-item" href="/Guests/ReviewMemberDetails/@item.Id" target="_blank"><i class="bi bi-eye-fill"></i> Review</a></li>
                                     <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change Room</a></li>
                                     <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddServicesPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Add Services</a></li>

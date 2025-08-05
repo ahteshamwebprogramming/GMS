@@ -1,0 +1,26 @@
+﻿ @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<div class="formBlock">
+
+    <div class="col-sm-12 formTitle"><b>IN CASE OF EMERGENCY</b></div>
+    <div class="row">
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Emergency Contact Name</label>
+            <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.RelativeName" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Relationship to Guest</label>
+            <input type="text" asp-for="MemberDetail.Relations" class="contact_name form-control" placeholder="" dbCol>
+
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Mobile phone no</label>
+            <input asp-for="MemberDetail.RelativeNumber" type="text" class="contact_name form-control" placeholder="" onblur="return fixedlength(this, event, 12);" onkeypress="return fixedlength(this, event, 12);" onkeyup="return fixedlength(this, event, 12);" dbCol>
+
+        </div>
+        <div class="clearfix"></div>
+        <div class="form-group col-sm-12 col-xs-12">
+            <label>Remarks</label>
+            <textarea asp-for="MemberDetail.Remarks" rows="3" cols="20" class="contact_name form-control" placeholder=" " dbCol></textarea>
+        </div>
+    </div>
+</div>

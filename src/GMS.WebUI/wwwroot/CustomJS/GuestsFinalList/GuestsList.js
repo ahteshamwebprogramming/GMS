@@ -12,7 +12,7 @@ function initDates() {
         format: 'd-m-Y H:i',
         timepicker: true,
         defaultTime: '14:00'
-    });    
+    });
     $("#AddGuestForm").find("[name='TimeOfDepartment']").datetimepicker({
         datepicker: false,
         format: 'H:i',
@@ -254,8 +254,16 @@ function setActive(type) {
     $("#GuestsListType").val(type);
     GuestsListPartialView();
 }
+function RoutetoAddReservation(groupId, paxSno) {
+    let obj = { GroupId: groupId, PAXSno: paxSno, PageSource: "EditGuestDetails" };
+    let json = JSON.stringify(obj);
+    let encoded = encodeURIComponent(json);
 
+    window.location.href = `/Reservation/GuestReservation/${encoded}`;
+}
 function AddGuestsPartialView(GroupId = '', PAXSno = 1) {
+
+    RoutetoAddReservation(GroupId, 1);
 
     let inputDTO = {};
     inputDTO.GroupId = GroupId;
@@ -1223,27 +1231,33 @@ function downloadAttachment(fileId, filename) {
 }
 
 function BillingPartialView(Id) {
-    let inputDTO = {}
-    inputDTO.Id = Id;
-    BlockUI();
-    $.ajax({
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        url: '/Guests/BillingPartialView',
-        data: JSON.stringify(inputDTO),
-        cache: false,
-        dataType: "html",
-        success: function (data, textStatus, jqXHR) {
-            UnblockUI();
-            $('#div_BillingPartial').html(data);
-            $("#btnBillingModal").click();
-            PaymentPartialView(Id, "payment");
-            initBillingAttributes();
-        },
-        error: function (result) {
-            //UnblockUI();
-            $erroralert("Transaction Failed!", result.responseText);
-        }
+
+    return new Promise((resolve, reject) => {
+
+        let inputDTO = {}
+        inputDTO.Id = Id;
+        BlockUI();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: '/Guests/BillingPartialView',
+            data: JSON.stringify(inputDTO),
+            cache: false,
+            dataType: "html",
+            success: function (data, textStatus, jqXHR) {
+                UnblockUI();
+                $('#div_BillingPartial').html(data);
+                $("#btnBillingModal").click();
+                PaymentPartialView(Id, "payment");
+                initBillingAttributes();
+                resolve(Id);
+            },
+            error: function (result) {
+                //UnblockUI();
+                $erroralert("Transaction Failed!", result.responseText);
+                reject(Id);
+            }
+        });
     });
 }
 function SettlementPartialView(Id, GuestIdPaxSN1) {

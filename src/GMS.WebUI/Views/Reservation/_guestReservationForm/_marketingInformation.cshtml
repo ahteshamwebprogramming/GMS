@@ -1,0 +1,72 @@
+﻿ @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<div class="formBlock" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+    <div class="col-sm-12 formTitle"><b>MARKETING INFORMATION</b></div>
+    <div class="row">
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label>Brand Awareness</label>
+            <select asp-for="MemberDetail.AboutUs" class="contact_name form-control" dbCol>
+                <option value="0">--Brand Awareness--</option>
+                @{
+                    if (Model != null && Model.BrandAwarenesses != null)
+                    {
+                        foreach (var item in Model.BrandAwarenesses)
+                        {
+                            <option value="@item.Id">@item.Awareness</option>
+                        }
+                    }
+                }
+            </select>
+            <input type="hidden" value="0" id="hfddlBrandAwareness">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label>Lead Source</label>
+            <select asp-for="MemberDetail.LeadSource" class="contact_name form-control" dbCol>
+                <option value="0">--Lead Source--</option>
+                @{
+                    if (Model != null && Model.LeadSources != null)
+                    {
+                        foreach (var item in Model.LeadSources)
+                        {
+                            <option value="@item.Id">@item.LeadSource</option>
+                        }
+                    }
+                }
+            </select>
+            <input type="hidden" value="0" id="hfddlLeadSource">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label class="required">Channel Code</label>
+            <select asp-for="MemberDetail.ChannelCode" class="contact_name form-control  requiredInput" dbCol>
+                <option value="0">--Channel Code *--</option>
+                @{
+                    if (Model != null && Model.ChannelCodes != null)
+                    {
+                        foreach (var item in Model.ChannelCodes)
+                        {
+                            <option value="@item.Id">@item.Code</option>
+                        }
+                    }
+                }
+            </select>
+            <input type="hidden" value="0" id="hfddlChannelCode">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Preferred contact method</label>
+            <select asp-for="MemberDetail.ReferContact" class="contact_name form-control" dbCol>
+                <option value="0">--Preferred contact method-- </option>
+                <option value="E">Email </option>
+                <option value="H">Phone</option>
+                <option value="M">Post phone</option>
+
+            </select>
+        </div>
+        <div class="form-group col-sm-8 col-xs-12">
+            <label>Subscribe your email to NAAD monthly Newsletter blog</label>
+            <select class="contact_name form-control" asp-for="MemberDetail.IsMonthlynewsletter" dbCol>
+                <option value="0">--Subscribe your email to NAAD monthly Newsletter blog--</option>
+                <option value="N">No</option>
+                <option value="Y">Yes</option>
+            </select>
+        </div>
+    </div>
+</div>

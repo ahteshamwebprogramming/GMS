@@ -336,6 +336,7 @@ public class GuestsController : Controller
     [HttpPost]
     public async Task<IActionResult> SaveMemberDetails(GuestsListViewModel dataVM)
     {
+        //return Ok("");
         try
         {
             if (dataVM != null && dataVM.MemberDetail != null)

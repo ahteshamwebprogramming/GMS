@@ -1,0 +1,96 @@
+﻿ @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<div class="formBlock">
+    <div class="col-sm-12 formTitle"><b>PERSONAL INFORMATION</b></div>
+    <div class="row">
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">First Name</label>
+            <input type="text" class="contact_name form-control requiredInput" placeholder="" asp-for="MemberDetail.Fname" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Middle Name</label>
+            <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.Mname" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">Last Name</label>
+            <input type="text" class="contact_name form-control requiredInput" placeholder="" asp-for="MemberDetail.Lname" dbCol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="">Date of Birth</label>
+            <input type="text" class="contact_name form-control dateonly" dateformat="DD-MM-YYYY" autocomplete="off" placeholder="" asp-for="MemberDetail.Dob" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="">Age</label>
+            <input type="text" class="contact_name form-control" placeholder="" autocomplete="off" onblur="return fixedlength(this, event, 3);" onkeypress="return fixedlength(this, event, 3);" onkeyup="return fixedlength(this, event, 3);" asp-for="MemberDetail.Age" dbCol>
+        </div>
+        <div class="checkbox form-group col-sm-4 col-xs-4">
+            <label class="required">Gender</label>
+            <select class="contact_name form-control requiredInput" asp-for="MemberDetail.Gender" dbCol>
+                <option value="0"></option>
+                @{
+                    if (Model != null && Model.Genders != null)
+                    {
+                        foreach (var item in Model.Genders)
+                        {
+                            <option value="@item.Id">@item.Gender</option>
+                        }
+                    }
+                }
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Marital Status</label>
+            <select class="contact_name form-control" asp-for="MemberDetail.MarStatus" dbCol>
+                <option value="0"></option>
+                <option value="S">Single </option>
+                <option value="M">Married</option>
+                <option value="Se">Separated </option>
+                <option value="D">Divorce</option>
+                <option value="O">Others</option>
+                <option value="O">Not Mentioned</option>
+
+            </select>
+        </div>
+
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Blood Group</label>
+            <select class="contact_name form-control" asp-for="MemberDetail.BloodGroup" dbCol>
+                <option value="0" selected="selected"></option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="Not Known">Not Known</option>
+            </select>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Occupation</label>
+            <input type="text" asp-for="MemberDetail.Occupation" class="contact_name form-control" placeholder="" dbCol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">Mobile Number</label>
+            <input type="text" class="contact_name form-control requiredInput" placeholder="" asp-for="MemberDetail.MobileNo" style="padding-left:45px !important" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Home Phone Number</label>
+            <input type="text" class="contact_name form-control" placeholder="" onblur="return fixedlength(this, event, 15);" onkeypress="return fixedlength(this, event, 15);" onkeyup="return fixedlength(this, event, 15);" asp-for="MemberDetail.EmergencyNo" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label>Email</label>
+            <input type="text" class="contact_name form-control" placeholder="" asp-for="MemberDetail.Email" dbCol>
+        </div>
+        <div class="form-group col-sm-12 col-md-12">
+            <label>Any Specific Health Issues</label>
+            <textarea class="form-control" rows="7" asp-for="MemberDetail.HealthIssues" dbCol></textarea>
+        </div>
+    </div>
+</div>

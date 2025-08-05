@@ -784,7 +784,8 @@ public class GuestsAPIController : ControllerBase
             if (inputDTO != null && inputDTO.MobileNo != null && String.IsNullOrEmpty(inputDTO.RegistrationNumber))
             {
                 string sQuery = "Select * from MembersDetails where mobileno=@mobileno";
-                var sParam = new { @mobileno = inputDTO.MobileNo };
+                inputDTO.MobileNo = Regex.Replace(inputDTO.MobileNo, @"\s+", "");
+                var sParam = new { @mobileno = inputDTO.MobileNo.Trim() };
                 var memberDetails = await _unitOfWork.MembersDetails.GetEntityData<MembersDetailsDTO>(sQuery, sParam);
                 if (memberDetails != null && !String.IsNullOrEmpty(memberDetails.RegistrationNumber))
                 {
@@ -811,25 +812,39 @@ public class GuestsAPIController : ControllerBase
     {
         try
         {
-            string RegistrationNo1 = DateTime.Now.ToString("yyyy") + DateTime.Now.ToString("MM") + "NW";
-            int RegistrationNo2 = 0000099;
-            string RegistrationNo = "";
-            bool isExits = false;
+            string prefix = DateTime.Now.ToString("yyyyMM") + "NW";
+            string query = $@"
+            SELECT ISNULL(MAX(CAST(SUBSTRING(RegistrationNumber, LEN(@prefix) + 1, LEN(RegistrationNumber)) AS INT)), 99)
+            FROM MembersDetails
+            WHERE RegistrationNumber LIKE @prefix + '%'";
+
+            // Get the current max number from DB
+            int registrationNo2 = await _unitOfWork.MembersDetails.GetEntityData<int>(query, new { prefix });
+
+            string registrationNo;
+            bool exists;
+
             do
             {
-                RegistrationNo2 = RegistrationNo2 + 1;
-                RegistrationNo = RegistrationNo1 + (RegistrationNo2).ToString().PadLeft(7, '0');
-                isExits = await _unitOfWork.MembersDetails.IsExists($"Select RegistrationNumber from MembersDetails where RegistrationNumber='{RegistrationNo}'", null);
+                registrationNo2++;
+                registrationNo = prefix + registrationNo2.ToString().PadLeft(7, '0');
+
+                exists = await _unitOfWork.MembersDetails.IsExists(
+                    "SELECT 1 FROM MembersDetails WHERE RegistrationNumber = @regNo",
+                    new { regNo = registrationNo }
+                );
             }
-            while (isExits);
-            return RegistrationNo;
+            while (exists);
+
+            return registrationNo;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            _logger.LogError(ex, $"Error generating registration number in {nameof(GenerateRegistrationNumberAndValidate)}");
             throw;
         }
     }
+
 
     public async Task<string> GetUHIDFromMobileNo(string mobileno)
     {
@@ -997,7 +1012,7 @@ public class GuestsAPIController : ControllerBase
                                                               WHERE r.RTypeID = @RTypeID
                                                                 AND r.Status = @Status
                                                                 AND r.RNumber NOT IN (
-                                                                  SELECT ra.RNumber
+                                                                  SELECT isnull(ra.RNumber,'')
                                                                   FROM RoomAllocation ra
                                                                   WHERE ra.IsActive = 1
                                                                     --AND (
@@ -1059,7 +1074,7 @@ Select @StartDate = (Case when md.DateOfArrival > getdate() then md.DateOfArriva
                                                               WHERE r.RTypeID = @RTypeID
                                                                 AND r.Status = @Status
                                                                 AND r.RNumber NOT IN (
-                                                                  SELECT ra.RNumber
+                                                                  SELECT isnull(ra.RNumber,'')
                                                                   FROM RoomAllocation ra
                                                                   WHERE ra.IsActive = 1 and ra.Shared=2
                                                                     --AND (
@@ -1099,7 +1114,7 @@ Select @StartDate = (Case when md.DateOfArrival > getdate() then md.DateOfArriva
 Select ar.RNumber RoomNo,
 	isnull((STUFF((
 	Select '-' + md.CustomerName from RoomAllocation ra Left Join MembersDetails md on ra.GuestID = md.Id where ra.RNumber= ar.RNumber and ar.Rnumber in (
-                                                                  SELECT ra1.RNumber
+                                                                  SELECT isnull(ra1.RNumber,'')
                                                                   FROM RoomAllocation ra1																  
                                                                   WHERE ra1.IsActive = 1
                                                                     AND (
@@ -1118,7 +1133,7 @@ Select ar.RNumber RoomNo,
                                                                 )
 	FOR XML PATH(''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 1, '' )),'') as SharedWith
 																
-from AvailableRooms ar where ar.RNumber not in (Select ral.RNumber from RoomAllocation ral where ral.GuestID=@GuestId)";
+from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') from RoomAllocation ral where ral.GuestID=@GuestId)";
             var sParameters = new { @GuestId = GuestId };
             var res = await _unitOfWork.GenOperations.GetTableData<AvailableRoomsForGuestAllocation>(sQuery, sParameters);
             return Ok(res);
@@ -1313,7 +1328,7 @@ from AvailableRooms ar where ar.RNumber not in (Select ral.RNumber from RoomAllo
                                 WHERE r.RTypeID = @RTypeID
                                 AND r.Status = @Status
                                 AND r.RNumber NOT IN (
-                                SELECT ra.RNumber
+                                SELECT isnull(ra.RNumber,'')
                                 FROM RoomAllocation ra
                                 WHERE ra.IsActive = 1 and ra.GuestID not in (SELECT GuestID FROM ExcludedGuestIDs)
                                 AND (
@@ -1799,7 +1814,7 @@ from AvailableRooms ar where ar.RNumber not in (Select ral.RNumber from RoomAllo
                 return StatusCode(432, "Early check-in is not permitted. Please adjust your check-in time to proceed.");
             }
 
-            string eQuery = "Select * from roomallocation where GuestID=@GuestID";
+            string eQuery = "Select * from roomallocation where GuestID=@GuestID and IsActive=1";
             var eParam = new { @GuestID = inputDTO.ID };
 
             var eCheckInExists = await _unitOfWork.GenOperations.IsExists(eQuery, eParam);
@@ -1909,7 +1924,7 @@ from AvailableRooms ar where ar.RNumber not in (Select ral.RNumber from RoomAllo
     {
         try
         {
-            string eQuery = "Select * from roomallocation where GuestID=@GuestID";
+            string eQuery = "Select * from roomallocation where GuestID=@GuestID and IsActive=1";
             var eParam = new { @GuestID = inputDTO.ID };
 
             var eCheckInExists = await _unitOfWork.GenOperations.IsExists(eQuery, eParam);
@@ -3449,7 +3464,7 @@ OPTION (MAXRECURSION 100);";
                             Left join RoomType rt on  md.RoomType = rt.ID  
                             Left Join RoomAllocation ra on ra.GuestID=md.Id
                             Left Join Services ss on md.CatID=ss.ID
-                            where md.Status=1 and md.Id
+                            where md.Status=1 and ra.IsActive=1 and md.Id
 							in
 							(SELECT GuestID 
                                 FROM RoomAllocation 

@@ -1,0 +1,187 @@
+﻿ @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<div class="formBlock">
+
+    <div class="col-sm-12 formTitle"><b>DOCUMENTS</b></div>
+    <div class="row">
+        <div class="form-group col-sm-12 col-xs-12">
+            <label class="required">Photo</label>
+            <select class="contact_name form-control requiredInput" id="ddlWantToSharePhoto" asp-for="MemberDetail.PhotoShared" dbCol>
+                <option value=false>No, do not want to share photo</option>
+                <option value=true>Do you want to share photo.</option>
+            </select>
+        </div>
+        <div class="form-group col-sm-12 col-xs-12" id="divUploadPhoto" style="display: none;margin-bottom: 22px;">
+            <label class="required">Upload</label>
+            <div class="col-sm-12">
+                <input type="file" name="attachmentPhoto" id="attachmentPhoto" class="contact_name form-control requiredInputCstmFile" accept="image/*">
+            </div>
+            <div class="col-md-12">
+                @{
+                    if (Model != null)
+                    {
+                        if (Model.GuestAttachments != null)
+                        {
+                            foreach (var item in Model.GuestAttachments)
+                            {
+                                if (item.AttachmentType == "GuestPhoto")
+                                {
+                                    <tags class="tagify tagify-email-list" tabindex="-1" name="attachmentTag_@item.Id">
+                                        <tag title="@item.AttachmentName" contenteditable="false" spellcheck="false" tabindex="-1" class="tagify__tag tagify--noAnim" value="@item.AttachmentName ">
+                                            <x title="" class="tagify__tag__removeBtn" role="button" aria-label="remove tag" style="display:inherit" onclick="deleteUploadedFile(@item.Id)"></x>
+                                            <div onclick="downloadAttachment('@item.eId','@item.AttachmentName')">
+                                                <span class="tagify__tag-text">@item.AttachmentName</span>
+                                            </div>
+                                        </tag>
+                                        <span contenteditable="" tabindex="0" data-placeholder="​" aria-placeholder="" class="tagify__input" role="textbox" aria-autocomplete="both" aria-multiline="false">
+                                        </span>
+                                    </tags>
+                                }
+                            }
+                        }
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-12 col-xs-12">
+            <label>ID No. (PAN/Driving License)</label>
+            <input asp-for="MemberDetail.Idproof" type="text" class="contact_name form-control" placeholder="" dbCol>
+        </div>
+        <div class="form-group col-sm-12 col-xs-12" style="display: none; margin-bottom: 22px;" id="divUploadIdProofDetails">
+            <div class="row">
+                <div class="col-sm-4">
+                    <label class="required">Upload File</label>
+                    <input type="file" ID="attachmentIdProof" class="contact_name form-control requiredInputCstmFile" multiple="">
+                </div>
+                <div class="col-sm-4 form-group">
+                    <label>Issue Date</label>
+                    <input type="text" class="contact_name form-control dateonly IssueDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.IdProofIssueDate" value="@Model?.MemberDetail?.IdProofIssueDate?.ToString("dd-MM-yyyy")" dbCol>
+                </div>
+                <div class="col-sm-4 form-group">
+                    <label>Expiry Date</label>
+                    <input type="text" class="contact_name form-control dateonly ExpiryDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.IdProofExpiryDate" value="@Model?.MemberDetail?.IdProofExpiryDate?.ToString("dd-MM-yyyy")" dbCol>
+                </div>
+                <div class="col-md-12">
+                    @{
+                        if (Model != null)
+                        {
+                            if (Model.GuestAttachments != null)
+                            {
+                                foreach (var item in Model.GuestAttachments)
+                                {
+                                    if (item.AttachmentType == "GuestIdProof")
+                                    {
+                                        <tags class="tagify tagify-email-list" tabindex="-1" name="attachmentTag_@item.Id">
+                                            <tag title="@item.AttachmentName" contenteditable="false" spellcheck="false" tabindex="-1" class="tagify__tag tagify--noAnim" value="@item.AttachmentName ">
+                                                <x title="" class="tagify__tag__removeBtn" role="button" aria-label="remove tag" style="display:inherit" onclick="deleteUploadedFile(@item.Id)"></x>
+                                                <div onclick="downloadAttachment('@item.eId','@item.AttachmentName')">
+                                                    <span class="tagify__tag-text">@item.AttachmentName</span>
+                                                </div>
+                                            </tag>
+                                            <span contenteditable="" tabindex="0" data-placeholder="​" aria-placeholder="" class="tagify__input" role="textbox" aria-autocomplete="both" aria-multiline="false">
+                                            </span>
+                                        </tags>
+                                    }
+                                }
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-12 col-xs-12">
+            <label>Passport No</label>
+            <input asp-for="MemberDetail.PassportNo" type="text" class="contact_name form-control" placeholder="" dbCol>
+        </div>
+        <div class="form-group col-sm-12 col-xs-12" style="display: none; margin-bottom: 22px;" id="divUploadPassportDetails">
+            <div class="row">
+                <div class="col-sm-4">
+                    <label class="required">Upload File</label>
+                    <input type="file" ID="attachmentPassport" class="contact_name form-control requiredInputCstmFile" multiple="">
+                </div>
+                <div class="col-sm-4 form-group">
+                    <label>Issue Date</label>
+                    <input type="text" class="contact_name form-control dateonly IssueDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.PassportIssueDate" value="@Model?.MemberDetail?.PassportIssueDate?.ToString("dd-MM-yyyy")" dbCol>
+                </div>
+                <div class="col-sm-4 form-group">
+                    <label>Expiry Date</label>
+                    <input type="text" class="contact_name form-control dateonly ExpiryDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.PassportExpiryDate" value="@Model?.MemberDetail?.PassportExpiryDate?.ToString("dd-MM-yyyy")" dbCol>
+                </div>
+                <div class="col-md-12">
+                    @{
+                        if (Model != null)
+                        {
+                            if (Model.GuestAttachments != null)
+                            {
+                                foreach (var item in Model.GuestAttachments)
+                                {
+                                    if (item.AttachmentType == "GuestPassport")
+                                    {
+                                        <tags class="tagify tagify-email-list" tabindex="-1" name="attachmentTag_@item.Id">
+                                            <tag title="@item.AttachmentName" contenteditable="false" spellcheck="false" tabindex="-1" class="tagify__tag tagify--noAnim" value="@item.AttachmentName ">
+                                                <x title="" class="tagify__tag__removeBtn" role="button" aria-label="remove tag" style="display:inherit" onclick="deleteUploadedFile(@item.Id)"></x>
+                                                <div onclick="downloadAttachment('@item.eId','@item.AttachmentName')">
+                                                    <span class="tagify__tag-text">@item.AttachmentName</span>
+                                                </div>
+                                            </tag>
+                                            <span contenteditable="" tabindex="0" data-placeholder="​" aria-placeholder="" class="tagify__input" role="textbox" aria-autocomplete="both" aria-multiline="false">
+                                            </span>
+                                        </tags>
+                                    }
+                                }
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="form-group col-sm-12 col-xs-12">
+            <label>Visa Details</label>
+            <input asp-for="MemberDetail.VisaDetails" type="text" class="contact_name form-control" placeholder="" dbCol>
+        </div>
+        <div class="form-group col-sm-12 col-xs-12" style="display: none; margin-bottom: 22px;" id="divUploadVisaDetails">
+            <div class="row">
+                <div class="col-sm-4">
+                    <label class="required">Upload File</label>
+                    <input type="file" ID="attachmentVisaDetails" class="contact_name form-control requiredInputCstmFile" multiple="">
+                </div>
+                <div class="col-sm-4 form-group">
+                    <label>Issue Date</label>
+                    <input type="text" class="contact_name form-control dateonly IssueDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.VisaIssueDate" value="@Model?.MemberDetail?.VisaIssueDate?.ToString("dd-MM-yyyy")" dbCol>
+                </div>
+                <div class="col-sm-4 form-group">
+                    <label>Expiry Date</label>
+                    <input type="text" class="contact_name form-control dateonly ExpiryDate" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" asp-for="MemberDetail.VisaExpiryDate" value="@Model?.MemberDetail?.VisaExpiryDate?.ToString("dd-MM-yyyy")" dbCol>
+                </div>
+                <div class="col-md-12">
+                    @{
+                        if (Model != null)
+                        {
+                            if (Model.GuestAttachments != null)
+                            {
+                                foreach (var item in Model.GuestAttachments)
+                                {
+                                    if (item.AttachmentType == "GuestVisa")
+                                    {
+                                        <tags class="tagify tagify-email-list" tabindex="-1" name="attachmentTag_@item.Id">
+                                            <tag title="@item.AttachmentName" contenteditable="false" spellcheck="false" tabindex="-1" class="tagify__tag tagify--noAnim" value="@item.AttachmentName ">
+                                                <x title="" class="tagify__tag__removeBtn" role="button" aria-label="remove tag" style="display:inherit" onclick="deleteUploadedFile(@item.Id)"></x>
+                                                <div onclick="downloadAttachment('@item.eId','@item.AttachmentName')">
+                                                    <span class="tagify__tag-text">@item.AttachmentName</span>
+                                                </div>
+                                            </tag>
+                                            <span contenteditable="" tabindex="0" data-placeholder="​" aria-placeholder="" class="tagify__input" role="textbox" aria-autocomplete="both" aria-multiline="false">
+                                            </span>
+                                        </tags>
+                                    }
+                                }
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

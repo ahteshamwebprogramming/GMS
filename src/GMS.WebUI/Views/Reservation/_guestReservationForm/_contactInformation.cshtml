@@ -1,0 +1,90 @@
+﻿ @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<div class="formBlock">
+
+    <div class="col-sm-12 formTitle"><b>CONTACT INFORMATION</b></div>
+    <div class="row">
+        <div class="form-group col-sm-4 col-xs-4 txt-margn">
+            <label class="required">Address</label>
+            <textarea rows="2" cols="20" asp-for="MemberDetail.Address1" class="contact_name form-control requiredInput" placeholder="" dbCol></textarea>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">Country</label>
+            <select asp-for="MemberDetail.CountryId" class="contact_name form-control requiredInput" dbCol onchange="fetchState(this.value,@(Model?.MemberDetail?.StateId??0))">
+                <option selected="selected" value="0"></option>
+                @{
+                    if (Model != null && Model.Countries != null)
+                    {
+                        foreach (var item in Model.Countries)
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    }
+                }
+            </select>
+            <input type="hidden" id="hfCountry" value="0">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">State</label>
+            <select asp-for="MemberDetail.StateId" class="contact_name form-control requiredInput" placeholder="" dbCol onchange="fetchCity(this.value,@(Model?.MemberDetail?.CityId??0))">
+            </select>
+            <input type="hidden" id="hfState" value="0">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">City</label>
+            <select class="contact_name form-control requiredInput" asp-for="MemberDetail.CityId" dbCol>
+                <option selected="selected" value="0"></option>
+                @{
+                    if (Model != null && Model.Cities != null)
+                    {
+                        foreach (var item in Model.Cities)
+                        {
+                            <option value="@item.Id">@item.name</option>
+                        }
+                    }
+                }
+            </select>
+            <input type="hidden" id="hfCity" value="0">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">Pin Code</label>
+            <input asp-for="MemberDetail.Pincode" type="text" class="contact_name form-control requiredInput" placeholder="" dbCol>
+        </div>
+
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">Nationality</label>
+            <input type="hidden" id="hfNationality" value="0">
+            <select asp-for="MemberDetail.NationalityId" class="contact_name form-control requiredInput" dbCol>
+                <option value="0">--Nationality *--</option>
+                <option selected="selected" value="0"></option>
+                @{
+                    if (Model != null && Model.Countries != null)
+                    {
+                        foreach (var item in Model.Countries)
+                        {
+                            <option value="@item.Id">@item.Nationality</option>
+                        }
+                    }
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="clearfix">
+        <div class="form-group col-sm-4 col-xs-4" style="display: none">
+            <select asp-for="MemberDetail.AboutUs" class="contact_name form-control">
+                <option value="0">--How did you hear about us?-- </option>
+                <option value="1">Google search </option>
+                <option value="2">Recommended by a doctor</option>
+                <option value="3">Friend </option>
+                <option value="4">Newsletter</option>
+                <option value="5">Event</option>
+                <option value="6">Family</option>
+                <option value="7">Magazine/newspaper advertisments</option>
+                <option value="8">Others</option>
+
+            </select>
+        </div>
+    </div>
+
+
+</div>

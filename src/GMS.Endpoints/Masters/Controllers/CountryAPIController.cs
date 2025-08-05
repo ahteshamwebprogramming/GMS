@@ -22,7 +22,7 @@ public class CountryAPIController : Controller
         try
         {
             
-            string query = "Select * from countries order by name asc";
+            string query = "Select id,name,iso3,numeric_code,iso2,phonecode,nationality from countries order by name asc";
             var res = await _unitOfWork.TblCountries.GetTableData<TblCountriesDTO>(query);
             return Ok(res);
         }

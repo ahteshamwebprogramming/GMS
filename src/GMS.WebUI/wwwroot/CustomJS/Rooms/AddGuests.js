@@ -8,7 +8,19 @@ function AddGuestInRoomsEmpty(RNumber) {
     AddGuestsPartialView();
 }
 
+function RoutetoAddReservation(groupId, paxSno) {
+    let roomNumber = $("#HiddenFields").find("[name='RoomNumber']").val()
+    let obj = { GroupId: groupId, PAXSno: paxSno, PageSource: "RoomAvailability", RoomNumber: roomNumber };
+    let json = JSON.stringify(obj);
+    let encoded = encodeURIComponent(json);
+
+    //window.location.href = `/Reservation/GuestReservation/${encoded}`;
+    window.open(`/Reservation/GuestReservation/${encoded}`, '_blank');
+}
+
 function AddGuestsPartialView(GroupId = '', PAXSno = 1) {
+
+    RoutetoAddReservation(GroupId, PAXSno);
 
     let inputDTO = {};
     inputDTO.GroupId = GroupId;

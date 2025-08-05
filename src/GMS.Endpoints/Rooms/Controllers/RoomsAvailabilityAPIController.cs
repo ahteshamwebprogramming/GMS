@@ -27,7 +27,7 @@ public class RoomsAvailabilityAPIController : ControllerBase
             {
                 dates = new RoomsAvailabilityViewModel();
                 dates.StartDate = DateTime.Now.Date;
-                dates.EndDate = DateTime.Now.Date;
+                dates.EndDate = DateTime.Now.Date.AddDays(7);
             }
 
             //string query = "Select * from GMSFinalGuest order by id desc";

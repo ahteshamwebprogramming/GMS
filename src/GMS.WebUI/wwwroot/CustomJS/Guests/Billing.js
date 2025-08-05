@@ -124,13 +124,15 @@ function CalculateAmountBilling() {
         let roomCharges = (price - discount) * count;
 
         if (roomRate >= 5000) {
-            if (state == "haryana") {
-                SGST = SGST + (parseFloat(roomCharges) * (2.5 / 100));
-                CGST = CGST + (parseFloat(roomCharges) * (2.5 / 100));
-            }
-            else {
-                IGST = IGST + (parseFloat(roomCharges) * (5 / 100));
-            }
+            SGST = SGST + (parseFloat(roomCharges) * (2.5 / 100));
+            CGST = CGST + (parseFloat(roomCharges) * (2.5 / 100));
+            //if (state == "haryana") {
+            //    SGST = SGST + (parseFloat(roomCharges) * (2.5 / 100));
+            //    CGST = CGST + (parseFloat(roomCharges) * (2.5 / 100));
+            //}
+            //else {
+            //    IGST = IGST + (parseFloat(roomCharges) * (5 / 100));
+            //}
         }
     });
 
@@ -366,8 +368,11 @@ function SaveBillingData() {
                 UnblockUI();
                 $successalert("", "Saved Successfully!");
                 $("#BillingModal").find(".btn-close").click();
-                BillingPartialView(gGuestId);
-                resolve(gGuestId);
+                BillingPartialView(gGuestId).then((d) => {
+                    resolve(gGuestId);
+                });
+                //BillingPartialView(gGuestId);
+                //resolve(gGuestId);
             },
             error: function (error) {
                 $erroralert("Transaction Failed!", error.responseText + '!');

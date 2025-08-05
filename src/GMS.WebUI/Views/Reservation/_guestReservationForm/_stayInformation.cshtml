@@ -1,0 +1,144 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<div class="formBlock" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+    <div class="col-sm-12 formTitle"><b>STAY INFORMATION</b></div>
+    <div class="row">
+        <div class="col-md-12">
+            <span style="font-size:12px;" name="RoomsAvailabilityInformation"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">Packages</label>
+            @{
+
+                
+
+                if (Model?.MemberDetail?.PAXSno > 1)
+                {
+                    <select asp-for="MemberDetail.CatId" class="contact_name form-control requiredInput" onchange="GetServicesByFormId(@(Model?.MemberDetail?.ServiceId??"0"),'AddGuestForm')" readonly disabled dbCol>
+                        <option value="0">--Primary Services *--</option>
+                        @{
+                            if (Model != null && Model.Services != null)
+                            {
+                                foreach (var item in Model.Services)
+                                {
+                                    <option value="@item.Id" minNight="@item.MinimumNight" maxNight="@item.MaximumNight" price="@item.Price">@item.Service</option>
+                                }
+                            }
+                        }
+                    </select>
+                }
+                else
+                {
+                    <select asp-for="MemberDetail.CatId" class="contact_name form-control requiredInput" onchange="GetServicesByFormId(@(Model?.MemberDetail?.ServiceId??"0"),'AddGuestForm')" dbCol>
+                        <option value="0">--Primary Services *--</option>
+                        @{
+                            if (Model != null && Model.Services != null)
+                            {
+                                foreach (var item in Model.Services)
+                                {
+                                    <option value="@item.Id" minNight="@item.MinimumNight" maxNight="@item.MaximumNight" price="@item.Price">@item.Service</option>
+                                }
+                            }
+                        }
+                    </select>
+                }
+            }
+            <input type="hidden" id="hfddlpservices" value="0">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4">
+            <label class="required">No Of Nights</label>
+            <select asp-for="MemberDetail.ServiceId" class="contact_name form-control requiredInput" dbCol>
+                <option value="0">--Select No Of Nights *--</option>
+            </select>
+            <input type="hidden" id="hfddlservices" value="@Model?.MemberDetail?.ServiceId">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label>Additional Nights</label>
+            <input asp-for="MemberDetail.AdditionalNights" type="number" value="@(Model?.MemberDetail?.AdditionalNights)" class="contact_name form-control" placeholder="" dbCol>
+        </div>
+
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label class="required">Arrival Date</label>
+            <input asp-for="MemberDetail.DateOfArrival" value="@Model?.MemberDetail?.DateOfArrival?.ToString("dd-MM-yyyy HH:mm")" type="text" class="contact_name form-control datetimeonly requiredInput" dateformat="YYYY-MM-DD HH:mm" autocomplete="off" placeholder="" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label class="required">Departure Date</label>
+
+            <input asp-for="MemberDetail.DateOfDepartment" value="@Model?.MemberDetail?.DateOfDepartment?.ToString("dd-MM-yyyy")" type="text" class="contact_name form-control dateonly requiredInput" dateformat="YYYY-MM-DD" autocomplete="off" placeholder="" readonly dbCol style="margin-right: 0px;width: 60%;display: inline-block;border-bottom-right-radius: 0px;border-top-right-radius: 0px;">
+            <input id="departure-time" name="TimeOfDepartment" value="@Model?.MemberDetail?.DateOfDepartment?.ToString("HH:mm")" type="text" class="form-control timepicker requiredInput" style="margin-left: -5px; border-left: 0px;width: 40%; display: inline-block; border-bottom-left-radius: 0px; border-top-left-radius: 0px;">
+        </div>
+
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label class="required">Type of Rooms</label>
+            <select asp-for="MemberDetail.RoomType" class="contact_name form-control requiredInput" dbCol>
+                <option value="0">-- Type of Room *--</option>
+                @{
+                    if (Model != null && Model.RoomTypes != null)
+                    {
+                        foreach (var item in Model.RoomTypes)
+                        {
+                            <option value="@item.Id">@item.Rtype</option>
+                        }
+                    }
+                }
+            </select>
+            <input type="hidden" id="hfRoomType" value="0">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label class="required">Pax</label>
+            <input asp-for="MemberDetail.Pax" type="number" class="contact_name form-control requiredInput" placeholder="Pax" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label class="required">No Of Rooms</label>
+            <input asp-for="MemberDetail.NoOfRooms" type="number" class="contact_name form-control requiredInput" placeholder="No of Rooms" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 ">
+            <label class="required">Transport Services</label>
+            <select asp-for="MemberDetail.PickUpDrop" class="contact_name form-control requiredInput" dbCol>
+                <option value="0">--Pick Up Drop--</option>
+                <option value="1">Yes</option>
+                <option value="2">No</option>
+
+            </select>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4" id="divddlPickUp" style="display: none">
+            <label>Pick Up Location</label>
+            <select asp-for="MemberDetail.PickUpType" class="contact_name form-control" dbCol>
+                <option value="0">Pick-Up</option>
+                <option value="1">Airport Transfer</option>
+                <option value="2">Others</option>
+
+            </select>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 " id="divddlCarType" style="display: none">
+            <label>Car Type</label>
+            <select asp-for="MemberDetail.CarType" class="contact_name form-control" dbCol>
+                <option value="0">--Select Car Type--</option>
+                @{
+                    if (Model != null && Model.CarTypes != null)
+                    {
+                        foreach (var item in Model.CarTypes)
+                        {
+                            <option value="@item.Id">@item.Type</option>
+                        }
+                    }
+                }
+            </select>
+            <input type="hidden" id="hfddlCarType" value="0">
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 " id="divtxtPickUpLocation" style="display: none">
+            <label>Pick Up Destination</label>
+            <input asp-for="MemberDetail.PickUpLoaction" type="text" class="contact_name form-control" placeholder="" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 " id="divFlightArrivalDateAndTime" style="display: none">
+            <label>Flight Arrival DateTime</label>
+            <input asp-for="MemberDetail.FlightArrivalDateAndDateTime" autocomplete="off" type="text" class="contact_name form-control datetimeonly" dateformat="DD-MM-YYYY HH:mm" placeholder="" dbCol>
+        </div>
+        <div class="form-group col-sm-4 col-xs-4 " id="divFlightDepartureDateAndTime" style="display: none">
+            <label>Flight Departure DateTime</label>
+            <input asp-for="MemberDetail.FlightDepartureDateAndDateTime" autocomplete="off" type="text" class="contact_name form-control datetimeonly" dateformat="DD-MM-YYYY HH:mm" placeholder="" dbCol>
+        </div>
+
+    </div>
+</div>

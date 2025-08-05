@@ -27,7 +27,7 @@ namespace GMS.Services
             if (connection.State == ConnectionState.Closed)
             { connection.Open(); }
 
-            
+
 
             using var transaction = connection.BeginTransaction();
 
@@ -118,7 +118,7 @@ namespace GMS.Services
             }
         }
 
-        public async Task UpdateBulkInventoryAsync(int channelId, DateTime fromDate, DateTime toDate, List<RoomInventoryBulkUpdate> inventory)
+        public async Task UpdateBulkInventoryAsync(BulkUpdateViewModel model)
         {
             IDbConnection connection = DbConnection;
 
@@ -131,18 +131,21 @@ namespace GMS.Services
             {
                 var query = @"
                 MERGE INTO RoomInventory AS target
-                USING (SELECT @RtypeID AS RtypeID, @Date AS Date, @TotalRoomForSale AS TotalRoomForSale) 
+                USING (SELECT @RtypeID AS RtypeID, @Date AS Date, @TotalRoomForSale AS TotalRoomForSale,@PlanId as PlanId) 
                   AS source
-                ON target.RtypeID = source.RtypeID 
+                ON target.RtypeID = source.RtypeID
+                   AND target.PlanId=source.PlanId
                    AND target.Date = source.Date
                 WHEN MATCHED THEN
                     UPDATE SET TotalRoomForSale = source.TotalRoomForSale
                 WHEN NOT MATCHED THEN
-                    INSERT (RtypeID, Date, TotalRoomForSale)
-                    VALUES (source.RtypeID, source.Date, source.TotalRoomForSale);";
+                    INSERT (RtypeID, Date, TotalRoomForSale,PlanId)
+                    VALUES (source.RtypeID, source.Date, source.TotalRoomForSale,source.PlanId);";
 
-                var selectedInventory = inventory.Where(r => r.IsSelected).ToList();
+
+                var selectedInventory = model.Inventory.Where(r => r.IsSelected).ToList();
                 Console.WriteLine($"Processing {selectedInventory.Count} selected inventory items");
+                var selectedDays = model.SelectedDaysList?.Split(',')?.ToList() ?? new List<string>();
 
                 foreach (var room in selectedInventory)
                 {
@@ -164,13 +167,25 @@ namespace GMS.Services
                     }
 
 
-                    for (var date = fromDate; date <= toDate; date = date.AddDays(1))
+                    for (var date = model.FromDate; date <= model.ToDate; date = date.AddDays(1))
                     {
+                        // Skip dates that don't match selected days (unless "All" is selected)
+                        if (selectedDays.Any() && !selectedDays.Contains("All"))
+                        {
+                            var dayName = date.DayOfWeek.ToString();
+                            if (!selectedDays.Contains(dayName))
+                            {
+                                continue;
+                            }
+                        }
+
+
                         var rowsAffected = await connection.ExecuteAsync(query, new
                         {
                             RtypeID = room.RoomTypeId,
                             Date = date,
-                            TotalRoomForSale = room.RoomsOpen ?? 0
+                            TotalRoomForSale = room.RoomsOpen ?? 0,
+                            PlanId = model.ChannelId
                         }, transaction);
                         Console.WriteLine($"Rows affected for {room.RoomTypeId} on {date}: {rowsAffected}");
                     }
@@ -223,6 +238,85 @@ namespace GMS.Services
                 {
                     for (var date = fromDate; date <= toDate; date = date.AddDays(1))
                     {
+                        rateData.Add(new
+                        {
+                            RoomTypeId = rate.RoomTypeId,
+                            Date = date,
+                            Price = rate.SaleRate,
+                            MinRate = rate.MinimumRate,
+                            MaxRate = rate.MaximumRate,
+                            PlanId = channelId
+                        });
+                    }
+                }
+
+
+                const int batchSize = 1000;
+                for (int i = 0; i < rateData.Count; i += batchSize)
+                {
+                    var batch = rateData.Skip(i).Take(batchSize);
+                    await connection.ExecuteAsync(query, batch, transaction);
+                }
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw new Exception("Error updating bulk rates", ex);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+        public async Task UpdateBulkRatesAsyncPackages(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates, string selectedDaysList)
+        {
+            //using var connection = _connectionFactory.CreateConnection();
+            //connection.Open();
+
+            IDbConnection connection = DbConnection;
+
+            //using var connection = _connectionFactory.CreateConnection();
+            if (connection.State == ConnectionState.Closed)
+            { connection.Open(); }
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                const string query = @"
+            MERGE INTO Rates AS target
+            USING (VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate, @PlanId)) 
+                  AS source (RoomTypeId, Date, Price, MinRate, MaxRate,PlanId)
+            ON target.RoomTypeId = source.RoomTypeId 
+               AND target.PlanId = source.PlanId 
+               AND target.Date = source.Date 
+            WHEN MATCHED THEN
+                UPDATE SET Price = source.Price,
+                           MinRate = source.MinRate,
+                           MaxRate = source.MaxRate,
+                           PlanId = source.PlanId
+            WHEN NOT MATCHED THEN
+                INSERT (RoomTypeId, Date, Price, MinRate, MaxRate,PlanId)
+                VALUES (source.RoomTypeId, source.Date, source.Price, source.MinRate, source.MaxRate, source.PlanId);";
+
+
+                var rateData = new List<object>();
+                var selectedDays = selectedDaysList?.Split(',')?.ToList() ?? new List<string>();
+                //var days = (toDate - fromDate).Days + 1;
+                foreach (var rate in rates)
+                {
+                    for (var date = fromDate; date <= toDate; date = date.AddDays(1))
+                    {
+                        // Skip dates that don't match selected days (unless "All" is selected)
+                        if (selectedDays.Any() && !selectedDays.Contains("All"))
+                        {
+                            var dayName = date.DayOfWeek.ToString();
+                            if (!selectedDays.Contains(dayName))
+                            {
+                                continue;
+                            }
+                        }
                         rateData.Add(new
                         {
                             RoomTypeId = rate.RoomTypeId,

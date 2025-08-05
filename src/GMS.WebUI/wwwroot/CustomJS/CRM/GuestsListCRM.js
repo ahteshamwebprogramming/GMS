@@ -783,7 +783,18 @@ function AddGuestsCRM() {
             processData: false,
             contentType: false,
             success: function (response) {
+                RoutetoAddReservation(response.groupId, 1);
+
+                return;
+
                 AddGuestsPartialView(response.groupId, 1);
+
+                let obj = { GroupId: response.groupId, PAXSno: 1, PageSource: "NewEnquiry" };
+                let json = JSON.stringify(obj);
+                let encoded = encodeURIComponent(json);
+
+                window.location.href = `/Reservation/GuestReservation/${encoded}`;
+
                 //$("#addGuestPopup").find(".btn-close").click();
                 //if (response != null) {
                 //    if (response.paxSno < response.pax) {
@@ -817,6 +828,15 @@ function AddGuestsCRM() {
 
 
 }
+
+function RoutetoAddReservation(groupId, paxSno) {
+    let obj = { GroupId: groupId, PAXSno: paxSno, PageSource: "NewEnquiry" };
+    let json = JSON.stringify(obj);
+    let encoded = encodeURIComponent(json);
+
+    window.location.href = `/Reservation/GuestReservation/${encoded}`;
+}
+
 
 function AddGuestsEnquiryConfirmation() {
     Swal.fire({

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -33,7 +34,7 @@ public class BulkRateAPIController : ControllerBase
     }
 
 
-    public async Task<List<RoomInventoryViewModel>> GetRoomInventory(DateTime startDate, int days)
+    public async Task<List<RoomInventoryViewModel>> GetRoomInventory(DateTime startDate, int days, int planId)
     {
 
         var endDate = startDate.AddDays(days - 1);
@@ -54,16 +55,27 @@ public class BulkRateAPIController : ControllerBase
         if (!roomTypes.Any()) return new List<RoomInventoryViewModel>();
 
 
-        var inventoryQuery = @"SELECT 
-                            Id, 
-                            RtypeID AS RoomTypeId, 
-                            Date, 
-                            TotalRoomForSale
-                            FROM RoomInventory
-                            WHERE Date BETWEEN @StartDate AND @EndDate
-                            AND RtypeID IN @RoomTypeIDs";
-        var inventoryDataRaw = await _unitOfWork.GenOperations.GetTableData<DailyRoomInventory>(inventoryQuery, new { StartDate = startDate, EndDate = endDate, RoomTypeIDs = roomTypes.Select(rt => rt.RoomTypeId).ToArray() });
-        var inventoryData = inventoryDataRaw.ToLookup(x => (x.RoomTypeId, x.Date.Date));
+        var inventoryQuery = @"SELECT Id,  RtypeID AS RoomTypeId,  Date,  TotalRoomForSale
+                                FROM RoomInventory
+                                WHERE RtypeID in @RoomTypeIDs
+                                  AND PlanId = @PlanId
+                                  AND Date = 
+                                      (
+                                        SELECT TOP 1 Date
+                                        FROM RoomInventory
+                                        WHERE RtypeID in @RoomTypeIDs
+                                          AND PlanId = @PlanId
+                                          AND (Date = @StartDate 
+                                               OR Date = (SELECT MAX(Date) 
+                                                          FROM RoomInventory 
+                                                          WHERE RtypeID in @RoomTypeIDs
+                                                            AND PlanId = @PlanId))
+                                        ORDER BY CASE WHEN Date = @StartDate THEN 1 ELSE 2 END
+                                      );";
+
+        var inventoryDataRaw = await _unitOfWork.GenOperations.GetTableData<DailyRoomInventory>(inventoryQuery, new { @PlanId = planId, StartDate = startDate, EndDate = endDate, RoomTypeIDs = roomTypes.Select(rt => rt.RoomTypeId).ToArray() });
+        //var inventoryData = inventoryDataRaw.ToLookup(x => (x.RoomTypeId, x.Date.Date));
+        var inventoryData = inventoryDataRaw.ToLookup(x => (x.RoomTypeId));
 
         //var inventoryData1 = (await connection.QueryAsync<DailyRoomInventory>(
         //    inventoryQuery,
@@ -78,7 +90,8 @@ public class BulkRateAPIController : ControllerBase
 
             for (var date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                var inventoryRecord = inventoryData[(roomType.RoomTypeId, date)].FirstOrDefault();
+                //var inventoryRecord = inventoryData[(roomType.RoomTypeId, date)].FirstOrDefault();
+                var inventoryRecord = inventoryData[(roomType.RoomTypeId)].FirstOrDefault();
 
                 dailyInventory.Add(new DailyRoomInventory
                 {
@@ -121,6 +134,56 @@ public class BulkRateAPIController : ControllerBase
               WHERE RoomTypeId = @RoomTypeId 
               AND Date BETWEEN @StartDate AND @EndDate",
                 new { RoomTypeId = roomType.Id, StartDate = startDate, EndDate = endDate });
+
+            //var rates1 = await connection.QueryAsync<Rate>(
+            //    @"SELECT Id, RoomTypeId, Date, Price ,MinRate, MaxRate
+            //  FROM Rates 
+            //  WHERE RoomTypeId = @RoomTypeId 
+            //  AND Date BETWEEN @StartDate AND @EndDate",
+            //    new { RoomTypeId = roomType.Id, StartDate = startDate, EndDate = endDate });
+
+            result.Add(new RoomRateViewModel
+            {
+                RoomTypeId = roomType.Id,
+                RoomTypeName = roomType.Rtype,
+                DailyRates = rates.ToList()
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<List<RoomRateViewModel>> GetRoomRatesAsync(DateTime startDate, int days, int planId)
+    {
+        //using var connection = _connectionFactory.CreateConnection();
+        var endDate = startDate.AddDays(days - 1);
+        var roomTypes = await _unitOfWork.GenOperations.GetTableData<RoomTypeDTO>("SELECT * FROM RoomType WHERE Status = 1");
+        //var roomTypes1 = await connection.QueryAsync<RoomType>(
+        //    "SELECT * FROM RoomType WHERE Status = 1");
+
+        var result = new List<RoomRateViewModel>();
+
+        foreach (var roomType in roomTypes)
+        {
+            var rates = await _unitOfWork.GenOperations.GetTableData<RatesDTO>(
+                @"SELECT Id, RoomTypeId, Date, Price, MinRate, MaxRate
+                        FROM Rates
+                        WHERE RoomTypeId = @RoomTypeId 
+                          AND PlanId = @PlanId
+                          AND Date = 
+                              (
+                                SELECT TOP 1 Date
+                                FROM Rates
+                                WHERE RoomTypeId = @RoomTypeId
+                                  AND PlanId = @PlanId
+                                  AND (Date = @StartDate 
+                                       OR Date = (SELECT MAX(Date) 
+                                                  FROM Rates 
+                                                  WHERE RoomTypeId = @RoomTypeId 
+                                                    AND PlanId = @PlanId))
+                                ORDER BY CASE WHEN Date = @StartDate THEN 1 ELSE 2 END
+                              );",
+                                        new { RoomTypeId = roomType.Id, StartDate = startDate, @PlanId = planId });
 
             //var rates1 = await connection.QueryAsync<Rate>(
             //    @"SELECT Id, RoomTypeId, Date, Price ,MinRate, MaxRate
@@ -277,11 +340,25 @@ public class BulkRateAPIController : ControllerBase
     }
 
 
-    public async Task<bool> UpdateBulkInventoryAsync(int channelId, DateTime fromDate, DateTime toDate, List<RoomInventoryBulkUpdate> inventory)
+    public async Task<bool> UpdateBulkInventoryAsync1(int channelId, DateTime fromDate, DateTime toDate, List<RoomInventoryBulkUpdate> inventory)
     {
         try
         {
-            await _unitOfWork.Rates.UpdateBulkInventoryAsync(channelId, fromDate, toDate, inventory);
+            //await _unitOfWork.Rates.UpdateBulkInventoryAsync(channelId, fromDate, toDate, inventory);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(UpdateBulkInventoryAsync)}");
+            throw;
+        }
+    }
+    
+    public async Task<bool> UpdateBulkInventoryAsync(BulkUpdateViewModel model)
+    {
+        try
+        {
+            await _unitOfWork.Rates.UpdateBulkInventoryAsync(model);
             return true;
         }
         catch (Exception ex)
@@ -295,6 +372,20 @@ public class BulkRateAPIController : ControllerBase
         try
         {
             await _unitOfWork.Rates.UpdateBulkRatesAsync(channelId, fromDate, toDate, rates);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(UpdateBulkRatesAsync)}");
+            throw;
+        }
+    }
+
+    public async Task<bool> UpdateBulkRatesAsync_Packages(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates, string selectedDaysList)
+    {
+        try
+        {
+            await _unitOfWork.Rates.UpdateBulkRatesAsyncPackages(channelId, fromDate, toDate, rates, selectedDaysList);
             return true;
         }
         catch (Exception ex)

@@ -1,0 +1,68 @@
+﻿ @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<style>
+    .formBlock table tbody tr td {
+        white-space: nowrap;
+    }
+</style>
+@{
+    var dates = Model?.RoomRatesForEnquiryList?
+    .Select(x => x.RateDate?.Date)
+    .Distinct()
+    .OrderBy(x => x)
+    .ToList();
+    var groupedRows = Model?.RoomRatesForEnquiryList?
+    .GroupBy(x => new { x.PlanId, x.RoomTypeId })
+    .ToList();
+}
+
+<div style="overflow-y: scroll;height: 700px;">
+    <table class="table">
+        <tbody>
+            @{
+                if (Model != null && Model.RoomRatesForEnquiryList != null && groupedRows != null)
+                {
+
+                    <tr>
+                        <td>Rate Plan</td>
+                        <td>@(groupedRows?.FirstOrDefault()?.First().PlanName)</td>
+                    </tr>
+                    <tr>
+                        <td>Plan Details</td>
+                        <td>@(groupedRows?.FirstOrDefault()?.First().PlanDescription)</td>
+                    </tr>
+                    <tr>
+                        <td>Room Category</td>
+                        <td>@(groupedRows?.FirstOrDefault()?.First().RoomType)</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    int nightCount = 0;
+                    foreach (var date in dates)
+                    {
+                        nightCount += 1;
+                        var rate = Model?.RoomRatesForEnquiryList?.Where(x => x.RateDate == date && x.PlanId == groupedRows?.FirstOrDefault()?.First().PlanId && x.RoomTypeId == groupedRows?.FirstOrDefault()?.First().RoomTypeId)?.FirstOrDefault()?.Rate ?? 0;
+                        <tr>
+                            <td>Night @nightCount (x@(Model?.NoOfRooms ?? 1))</td>
+                            <td style="text-align:right">₹ @((rate * Model?.NoOfRooms ?? 1).ToString("F2"))</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td>Gross Amount</td>
+                        <td style="text-align:right">$ @((Model?.RoomRatesForEnquiryList?.Sum(x => x.Rate) * Model?.NoOfRooms ?? 1).ToString("F2"))</td>
+                    </tr>
+                    <tr>
+                        <td>Taxes (15%)</td>
+                        <td style="text-align:right">$ @((Model?.RoomRatesForEnquiryList?.Sum(x => x.Rate) * 0.15 * Model?.NoOfRooms ?? 1).ToString("F2"))</td>
+                    </tr>
+                    <tr>
+                        <td>Total Charges</td>
+                        <td style="text-align:right">$ @((Model?.RoomRatesForEnquiryList?.Sum(x => x.Rate) * 1.15 * Model?.NoOfRooms ?? 1).ToString("F2"))</td>
+                    </tr>
+
+                }
+            }
+        </tbody>
+    </table>
+</div>

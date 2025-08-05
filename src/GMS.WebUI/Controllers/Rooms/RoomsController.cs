@@ -219,10 +219,10 @@ public class RoomsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetInventoryData(DateTime fromDate, DateTime toDate)
+    public async Task<IActionResult> GetInventoryData(DateTime fromDate, DateTime toDate, int planId)
     {
         var days = (toDate - fromDate).Days + 1;
-        var roomInventory = await _bulkRateAPIController.GetRoomInventory(fromDate, days);
+        var roomInventory = await _bulkRateAPIController.GetRoomInventory(fromDate, days, planId);
         var inventory = roomInventory.Select(r => new RoomInventoryBulkUpdate
         {
             RoomTypeId = r.RtypeID ?? 0,
@@ -237,6 +237,22 @@ public class RoomsController : Controller
     {
         var days = (toDate - fromDate).Days + 1;
         var roomRates = await _bulkRateAPIController.GetRoomRatesAsync(fromDate, days);
+        var rates = roomRates.Select(r => new RoomRateBulkUpdate
+        {
+            RoomTypeId = r.RoomTypeId ?? 0,
+            RoomTypeName = r.RoomTypeName,
+            SaleRate = r.DailyRates.FirstOrDefault()?.Price,
+            MinimumRate = r.DailyRates.FirstOrDefault()?.MinRate,
+            MaximumRate = r.DailyRates.FirstOrDefault()?.MaxRate
+        }).ToList();
+        return Json(rates);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetRatesData_New(DateTime fromDate, DateTime toDate, int planId, string? selectedDays)
+    {
+        var days = (toDate - fromDate).Days + 1;
+        var roomRates = await _bulkRateAPIController.GetRoomRatesAsync(fromDate, days, planId);
         var rates = roomRates.Select(r => new RoomRateBulkUpdate
         {
             RoomTypeId = r.RoomTypeId ?? 0,
@@ -282,7 +298,7 @@ public class RoomsController : Controller
     {
         try
         {
-            if (activeTab == "tab1")
+            if (activeTab == "tab2")
             {
                 var selectedInventory = model.Inventory.Where(i => i.IsSelected).ToList();
                 if (selectedInventory.Any())
@@ -291,12 +307,13 @@ public class RoomsController : Controller
                     {
                         return Json(new { success = false, message = "Selected inventory contains invalid RoomsOpen values" });
                     }
-                    await _bulkRateAPIController.UpdateBulkInventoryAsync(model.ChannelId, model.FromDate, model.ToDate, selectedInventory);
+                    //await _bulkRateAPIController.UpdateBulkInventoryAsync(model.ChannelId, model.FromDate, model.ToDate, selectedInventory);
+                    await _bulkRateAPIController.UpdateBulkInventoryAsync(model);
                     return Json(new { success = true, message = "Selected inventory updated successfully" });
                 }
                 return Json(new { success = false, message = "No inventory items selected for update" });
             }
-            else if (activeTab == "tab2")
+            else if (activeTab == "tab1")
             {
                 var selectedRates = model.Rates.Where(r => r.IsSelected).ToList();
                 if (selectedRates.Any())
@@ -309,6 +326,24 @@ public class RoomsController : Controller
                         return Json(new { success = false, message = "Selected rates contain invalid values" });
                     }
                     await _bulkRateAPIController.UpdateBulkRatesAsync(model.ChannelId, model.FromDate, model.ToDate, selectedRates);
+                    return Json(new { success = true, message = "Selected rates updated successfully" });
+                }
+                return Json(new { success = false, message = "No rates selected for update" });
+            }
+
+            else if (activeTab == "tab_PR")
+            {
+                var selectedRates = model.Rates.Where(r => r.IsSelected).ToList();
+                if (selectedRates.Any())
+                {
+                    if (!selectedRates.All(r => (r.MinimumRate.HasValue && r.MinimumRate >= 0) &&
+                        (r.MaximumRate == null || r.MaximumRate >= 0) &&
+                        (r.SaleRate.HasValue && r.SaleRate >= 0 && r.SaleRate >= r.MinimumRate &&
+                        (r.MaximumRate == null || r.SaleRate <= r.MaximumRate))))
+                    {
+                        return Json(new { success = false, message = "Selected rates contain invalid values" });
+                    }
+                    await _bulkRateAPIController.UpdateBulkRatesAsync_Packages(model.ChannelId, model.FromDate, model.ToDate, selectedRates, model.SelectedDaysList ?? "");
                     return Json(new { success = true, message = "Selected rates updated successfully" });
                 }
                 return Json(new { success = false, message = "No rates selected for update" });

@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Rooms\Rooms\**" />
+    <Content Remove="Views\Rooms\Rooms\**" />
+    <EmbeddedResource Remove="Views\Rooms\Rooms\**" />
+    <None Remove="Views\Rooms\Rooms\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="wwwroot\CustomJS\Guests\GuestSchedule.js" />
   </ItemGroup>
 

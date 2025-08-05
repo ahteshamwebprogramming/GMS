@@ -1,0 +1,41 @@
+﻿ @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<div class="formBlock" @(Model?.MemberDetail?.PAXSno > 1 ? "readonly disabled style=pointer-events:none;opacity:0.5;" : "")>
+
+    <div class="col-sm-12 formTitle"><b>PAYMENT INFORMATION</b></div>
+    <div class="form-group col-sm-4 col-xs-4 ">
+        <label class="required">Guarantee Code</label>
+        <select asp-for="MemberDetail.GuarenteeCode" class="contact_name form-control  requiredInput" dbCol>
+            <option value="0">--Guarantee Code *--</option>
+            @{
+                if (Model != null && Model.GuaranteeCodes != null)
+                {
+                    foreach (var item in Model.GuaranteeCodes)
+                    {
+                        <option value="@item.Id">@item.Code</option>
+                    }
+                }
+            }
+        </select>
+        <input type="hidden" value="0" id="hfddlGuarenteeCode">
+    </div>
+    <div class="form-group col-sm-4 col-xs-4" id="divddlPaymentStatus" style="display: none">
+        <label class="required">Payment Status</label>
+        <select asp-for="MemberDetail.PaymentStatus" class="contact_name form-control requiredInput" dbCol>
+            <option value="0">--Payment Status--</option>
+            <option value="1">Cash</option>
+            <option value="2">Later</option>
+            <option value="3">Paid</option>
+            <option value="4">Pending</option>
+        </select>
+        <input type="hidden" value="@Model?.MemberDetail?.PaymentStatus" id="hfddlPaymentStatus">
+    </div>
+    <div class="form-group col-sm-4 col-xs-4" id="divcalHoldTillDate" style="display: none">
+        <label>Hold Till Date</label>
+        <input asp-for="MemberDetail.HoldTillDate" type="text" placeholder="" class="contact_name form-control dateonly" value="@Model?.MemberDetail?.HoldTillDate?.ToString("dd-MM-yyyy")" dateformat="YYYY-MM-DD" dbCol autocomplete="off">
+    </div>
+    <div class="form-group col-sm-4 col-xs-4" id="divcalPaymentDate" style="display: none">
+        <label>Payment Date</label>
+        <input type="text" asp-for="MemberDetail.PaymentDate" value="@Model?.MemberDetail?.PaymentDate?.ToString("dd-MM-yyyy")" autocomplete="off" placeholder="" class="contact_name form-control dateonly" dateformat="YYYY-MM-DD" dbCol>
+    </div>
+    <div class="clearfix"></div>
+</div>

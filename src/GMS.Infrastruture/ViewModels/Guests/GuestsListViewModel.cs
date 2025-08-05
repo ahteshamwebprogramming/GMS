@@ -7,8 +7,11 @@ namespace GMS.Infrastructure.ViewModels.Guests;
 
 public class GuestsListViewModel
 {
+    public GuestReservationRouteValues? GuestReservationRouteValues { get; set; }
+    public Dictionary<string, bool>? VisibleSections { get; set; }
     public List<RoomRatesForEnquiry>? RoomRatesForEnquiryList { get; set; }
     public string? opt { get; set; }
+    public string? PageSource { get; set; }
     public int? NoOfRooms { get; set; }
     public GMSFinalGuestDTO? Guest { get; set; }
     public List<GuestDocumentAttachmentsDTO>? GuestAttachments { get; set; }

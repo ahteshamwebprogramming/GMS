@@ -22,7 +22,7 @@ public class DapperGenericRepository<T> : IDapperRepository<T> where T : class, 
     {
         ////string strConnection = "Data Source=182.18.138.110;Initial Catalog=MedicalReports_BK;User ID=sa;Password=CG$sBK9%!8P4c$;Encrypt=False;";
         _dapperDBContext = dapperDBContext;
-        //DbConnection = dapperDBContext.CreateConnection();
+        DbConnection = dapperDBContext.CreateConnection();
         ////_connection = new SqlConnection(strConnection);
         //_connectionString = DbConnection.ConnectionString;
     }

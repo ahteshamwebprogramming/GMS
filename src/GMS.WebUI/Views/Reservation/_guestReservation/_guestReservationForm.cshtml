@@ -1,0 +1,106 @@
+﻿@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+
+
+
+
+
+<div id="div_HiddenValues_PartialView">
+    @Html.Partial("_guestReservationForm/_hiddenValues", Model)
+</div>
+
+
+<ul class="nav nav-tabs" id="guestFormTabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="guest-info-tab" data-toggle="tab" href="#guest-info" role="tab" aria-controls="guest-info" aria-selected="true">Guest Information</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="stay-info-tab" data-toggle="tab" href="#stay-info" role="tab" aria-controls="stay-info" aria-selected="false">Stay Information</a>
+    </li>
+
+    <li class="nav-item ms-auto">
+        <!-- 'ms-auto' pushes it to the right -->
+        <span class="nav-link disabled" style="color: #000; padding-right: 0;">PAX No - <span name="spnPAXSno"></span></span>
+    </li>
+
+</ul>
+
+<div class="tab-content" id="guestFormTabsContent">
+    <!-- Guest Information Tab -->
+    <div class="tab-pane fade show active" id="guest-info" role="tabpanel">
+        <div class="row">
+            <div class="col-md-5" id="GuestInformationTab">
+                <div id="div_PersonalInformation_PartialView">
+                    @if (Model != null && Model.VisibleSections["PersonalInformation"])
+                    {
+                        @Html.Partial("_guestReservationForm/_personalInformation", Model)
+                    }
+                </div>
+                <div id="div_ContactInformation_PartialView">
+                    @if (Model != null && Model.VisibleSections["ContactInformation"])
+                    {
+                        @Html.Partial("_guestReservationForm/_contactInformation", Model)
+                    }
+                </div>
+                <div id="div_Documents_PartialView">
+                    @if (Model != null && Model.VisibleSections["Documents"])
+                    {
+                        @Html.Partial("_guestReservationForm/_documents", Model)
+                    }
+                </div>
+                <div>
+                    <input type="button" class="btn btn-primary" value="Next" onclick="ValidateAndNext()" style="float:right;width:150px;" />
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div id="div_GuestSearchSection_PartialView">
+                    @Html.Partial("_guestSearchSection/_guestSearch", Model)
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="stay-info" role="tabpanel">
+        <div class="row">
+            <div class="col-md-5" id="GuestStayTab">
+                <div id="div_StayInformation_PartialView">
+                    @if (Model != null && Model.VisibleSections["StayInformation"])
+                    {
+                        @Html.Partial("_guestReservationForm/_stayInformation", Model)
+                    }
+                </div>
+                <div id="div_EmergencySection_PartialView">
+                    @if (Model != null && Model.VisibleSections["EmergencySection"])
+                    {
+                        @Html.Partial("_guestReservationForm/_emergencySection", Model)
+                    }
+                </div>
+                <div id="div_MedicalInsuranceSection_PartialView">
+                    @if (Model != null && Model.VisibleSections["MedicalInsuranceSection"])
+                    {
+                        @Html.Partial("_guestReservationForm/_medicalInsuranceSection", Model)
+                    }
+                </div>
+                <div id="div_MarketingInformation_PartialView">
+                    @if (Model != null && Model.VisibleSections["MarketingInformation"])
+                    {
+                        @Html.Partial("_guestReservationForm/_marketingInformation", Model)
+                    }
+                </div>
+                <div id="div_PaymentInformation_PartialView">
+                    @if (Model != null && Model.VisibleSections["PaymentInformation"])
+                    {
+                        @Html.Partial("_guestReservationForm/_paymentInformation", Model)
+                    }
+                </div>
+                <div>
+                    <input type="button" class="btn btn-secondary" value="Back" onclick="PreviousTab()" style="float:left;width:150px;" />
+                    <input type="button" class="btn btn-primary" value="Add Guest" onclick="AddGuests()" style="float:right;width:150px;" />
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div id="div_RatePlanSection_PartialView">
+                    @Html.Partial("_ratePlanSection/_ratePlan", Model)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

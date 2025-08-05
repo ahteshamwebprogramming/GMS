@@ -39,8 +39,15 @@
                             <h4>Enquiry List</h4>
                         </a>
                     </li>
-                    <li onclick="AddGuestsPartialView()">
-                        <a href="javascript:void(0)">
+                    // <li onclick="AddGuestsPartialView()">
+                    //     <a href="javascript:void(0)">
+                    //         <figure><i class="bi bi-plus-circle-fill"></i></figure>
+                    //         <h4>Add Reservation(Old)</h4>
+                    //     </a>
+                    // </li>
+                    
+                    <li>
+                        <a href="/Reservation/GuestReservation">
                             <figure><i class="bi bi-plus-circle-fill"></i></figure>
                             <h4>Add Reservation</h4>
                         </a>
@@ -55,7 +62,7 @@
                         var menuListFilteredParent = menuList?.Where(x => x.MenuParentId == 2).ToList().OrderBy(x => x.SNo);
                         foreach (var menu in menuListFilteredParent)
                         {
-                            if (menu.MenuName == "Add Reservation")
+                            if (menu.MenuName == "Add Reservation1")
                             {
                                 <li onclick="AddGuestsPartialView()">
                                     <a href="javascript:void(0)">
@@ -77,10 +84,6 @@
                     }
                 }
             }
-
-
-
-
         </ul>
     </div>
 </div>

@@ -32,7 +32,8 @@ $(document).ready(function () {
     //});
 });
 
-var myspinner1 = '<div class="preloader" id="preloader"><img src="../assets/img/loader.gif"></div>';
+var myspinner1 = '<div class="preloader" id="preloader"><img src="/assets/img/loader.gif"></div>';
+
 var myspinner = '<div class="spinner-border spinner-border-lg text-primary" role="status"><span class="visually-hidden"> Loading...</span></div>';
 function BlockUI() {
     $.blockUI({ message: myspinner1 });

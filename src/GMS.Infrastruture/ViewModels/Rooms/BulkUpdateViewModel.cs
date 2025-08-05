@@ -9,6 +9,7 @@ namespace GMS.Infrastructure.ViewModels.Rooms
         public int ChannelId { get; set; }
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
+        public string? SelectedDaysList { get; set; }
         public List<RoomRateBulkUpdate> Rates { get; set; }
         public int Days { get; set; }
         public List<RoomInventoryBulkUpdate> Inventory { get; set; }

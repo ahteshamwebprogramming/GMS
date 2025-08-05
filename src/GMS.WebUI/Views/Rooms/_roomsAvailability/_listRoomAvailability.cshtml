@@ -34,7 +34,7 @@
                     {
                         var record = Model.RoomAvailabilities.Where(x => x.RNumber == item).FirstOrDefault();
                         <tr>
-                            <th scope="row">@record?.RNumber</th>
+                            <th scope="row" style="color:inherit">@record?.RNumber</th>
                             <td>@record?.RType</td>
                             @{
                                 foreach (var date in dates)
