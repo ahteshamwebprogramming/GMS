@@ -459,7 +459,8 @@ public class GuestsController : Controller
                         inputDTO.ApprovedBy = Convert.ToInt32(User.FindFirstValue("Id")); //when id=0
 
                         inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
-                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
+
+                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
 
                         inputDTO.GroupId = await _guestsAPIController.GenerateRandomNumberAndValidate();//When Id=0
                     }
@@ -497,7 +498,7 @@ public class GuestsController : Controller
                         inputDTO.IsApproved = 1;//When Id=0
                         inputDTO.ApprovedBy = Convert.ToInt32(User.FindFirstValue("Id")); //when id=0
                         inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
-                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
+                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
                         inputDTO.GroupId = dataVM.MemberDetail.GroupId;
                     }
 
@@ -533,7 +534,7 @@ public class GuestsController : Controller
                 }
                 if (String.IsNullOrEmpty(inputDTO.UHID))
                 {
-                    inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
+                    inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
                 }
 
                 //if (dataVM.MemberDetail.Id > 0)
@@ -1780,5 +1781,37 @@ public class GuestsController : Controller
 
         return PartialView("_guestsList/_addServices", dto);
     }
+    #endregion
+
+
+    #region ChangeInOutDates
+    public async Task<IActionResult> ChangeInOutDatePartialView([FromBody] MembersDetailsDTO? inputDTO)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+
+        var guestRes = await _guestsAPIController.GetGuestByIdWithChild(inputDTO?.Id ?? 0);
+        if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        {
+            dto.MembersWithAttributes = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        }
+
+
+        var roomAllocation = await _guestsAPIController.GetRoomAllocationByGuestId(inputDTO?.Id ?? 0);
+        if (roomAllocation != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomAllocation).StatusCode == 200)
+        {
+            dto.RoomAllocation = (RoomAllocationDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomAllocation).Value;
+        }
+
+
+        return PartialView("_guestsList/_changeInOutDate", dto);
+    }
+
+    public async Task<IActionResult> SaveCheckInOutDates([FromBody] RoomAllocationDTO? inputDTO)
+    {
+        var res = await _guestsAPIController.UpdateCheckInOutDates(inputDTO);
+
+        return res;
+    }
+
     #endregion
 }

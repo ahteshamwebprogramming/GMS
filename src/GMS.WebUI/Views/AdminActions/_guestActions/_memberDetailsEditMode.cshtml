@@ -1,0 +1,36 @@
+﻿@model GMS.Infrastructure.ViewModels.Admin.Actions.GuestsActionViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>
+
+                        </th>
+                        <th>FName</th>
+                        <th>MName</th>
+                        <th>LName</th>                        
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.GuestsList != null && Model.GuestsList.Any())
+                    {
+                        foreach (var guest in Model.GuestsList)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="button" value="Save" />
+                                </td>
+                                <td> <input type="text" value="@guest.Fname" /> </td>
+                                <td> <input type="text" value="@guest.Mname" /> </td>
+                                <td> <input type="text" value="@guest.Lname" /> </td>                                
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

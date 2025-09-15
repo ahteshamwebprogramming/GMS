@@ -103,8 +103,11 @@ public class RoomsController : Controller
         return View(roomRates);
     }
     [HttpPost]
-    public async Task<IActionResult> UpdateRates(RatesUpdateViewModel model)
+    public async Task<IActionResult> UpdateRates([FromBody] RatesUpdateViewModel model)
     {
+
+        //return BadRequest("");
+
         if (ModelState.IsValid)
         {
             try

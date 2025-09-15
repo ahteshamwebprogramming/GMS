@@ -187,6 +187,8 @@ public class GuestsAPIController : ControllerBase
                                        ,[AdditionalNights]
                                        ,(Case when ra.CheckInDate is not null then ra.CheckInDate else md.[DateOfArrival] end)[DateOfArrival]
                                        ,(Case when ra.CheckOutDate is not null then ra.CheckOutDate else md.[DateOfDepartment] end)[DateOfDepartment]
+                                       ,DateOfArrival [ActDateOfArrival]
+                                       ,DateOfDepartment [ActDateOfDepartment]
                                        ,[PAX]
                                        ,[NoOfRooms]
                                        ,[PickUpDrop]
@@ -649,7 +651,7 @@ public class GuestsAPIController : ControllerBase
                 searchFilter += $" (dbo.NormalizeSpaces(CustomerName) like '%{inputDTO.SearchKeyword}%')";
                 searchFilter += $" or (UHID like '%{inputDTO.SearchKeyword}%')";
                 searchFilter += $" OR (FORMAT(isnull(isnull(ra.CheckOutDate,DateOfDepartment),ra.TD), 'dd-MMM-yyyy') LIKE '%{inputDTO.SearchKeyword}%')";
-                searchFilter += $" or (MobileNo like '%{inputDTO.SearchKeyword}%')";
+                searchFilter += $" or (Replace(MobileNo,' ','') like Replace('%{inputDTO.SearchKeyword}%',' ',''))";
                 searchFilter += $" ) ";
                 if (Action == "Data")
                 {
@@ -686,7 +688,8 @@ public class GuestsAPIController : ControllerBase
                                         --AND ra.FD = md.DateOfArrival 
                                         --AND ra.TD = md.DateOfDepartment 
                                         AND ra.IsActive = 1 
-                                        FOR XML PATH('')), 1, 2, '')) AS RoomNumber   ";
+                                        FOR XML PATH('')), 1, 2, '')) AS RoomNumber   
+                                    ,(Select count(1) from Settlement s where s.GuestId=md.Id and IsActive=1) IsSettled";
                     orderBy += $" order by md.Id ";
                     if (inputDTO != null && inputDTO.PageNumber != null && inputDTO.PageSize != null)
                     {
@@ -846,12 +849,16 @@ public class GuestsAPIController : ControllerBase
     }
 
 
-    public async Task<string> GetUHIDFromMobileNo(string mobileno)
+    public async Task<string> GetUHIDFromMobileNo(string mobileno, string GuestName)
     {
         try
         {
-            string sQuery = "Select UHID,GroupId from MembersDetails where ltrim(rtrim(MobileNo)) = @MobileNo order by id desc";
-            var sParam = new { @MobileNo = mobileno };
+            if (mobileno.Length < 10)
+            {
+                return "";
+            }
+            string sQuery = "SELECT UHID, GroupId FROM MembersDetails WHERE Replace(LTRIM(RTRIM(MobileNo)),' ','') = Replace(@MobileNo,' ','') AND dbo.NormalizeSpaces(CustomerName) = dbo.NormalizeSpaces(@GuestName) ORDER BY Id DESC;";
+            var sParam = new { @MobileNo = mobileno, @GuestName = GuestName };
             var membersdetails = await _unitOfWork.MembersDetails.GetEntityData<MembersDetailsDTO>(sQuery, sParam);
             return membersdetails?.UHID ?? "";
         }
@@ -862,11 +869,11 @@ public class GuestsAPIController : ControllerBase
         }
     }
 
-    public async Task<string> GenerateUHIDAndValidate(string mobileno)
+    public async Task<string> GenerateUHIDAndValidate(string mobileno, string GuestName)
     {
         try
         {
-            string uhidFromDB = await GetUHIDFromMobileNo(mobileno);
+            string uhidFromDB = await GetUHIDFromMobileNo(mobileno, GuestName);
             if (!String.IsNullOrEmpty(uhidFromDB))
             {
                 return uhidFromDB;
@@ -1375,6 +1382,9 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
     {
         try
         {
+            await ValidateBillingForDateChange(inputDTO);
+
+
             string existsByGroupIdAndPaxQuery = "Select * from MembersDetails where GroupId=@GroupId and PaxSno=@PaxSno";
             var existsByGroupIdAndPaxParameters = new { @GroupId = inputDTO.GroupId, @PaxSno = inputDTO.PAXSno };
 
@@ -1454,6 +1464,36 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
             throw;
         }
     }
+
+    public async Task<IActionResult> ValidateBillingForDateChange(MembersDetailsDTO inputDTO)
+    {
+        try
+        {
+            if (inputDTO != null)
+            {
+                var memberDetails = await _unitOfWork.MembersDetails.GetEntityData<MembersDetailsDTO>("Select * from MembersDetails where GroupId=@GroupId and PAXSno=@PAXSno and Status=1", new { @GroupId = inputDTO.GroupId, @PAXSno = inputDTO.PAXSno });
+                if (memberDetails != null)
+                {
+                    var billingDetails = await _unitOfWork.Billing.GetTableData<BillingDTO>("Select * from Billing where GuestId=@GuestId", new { @GuestId = memberDetails.Id });
+                    if (billingDetails != null)
+                    {
+                        await _unitOfWork.Billing.RunSQLCommand("Update b set b.Confirmed=null from Billing b where b.GuestId = @GuestId ", new { @GuestId = memberDetails.Id });
+                    }
+                }
+
+                return Ok();
+            }
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            throw;
+        }
+    }
+
+
+
     public async Task<IActionResult> SaveDetailsToEnquiry(GuestReservationDTO inputDTO)
     {
         try
@@ -1594,6 +1634,50 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
             inputDTO.Id = await _unitOfWork.RoomAllocation.AddAsync(_mapper.Map<RoomAllocation>(inputDTO));
             if (inputDTO.Id > 0) { return Ok(inputDTO); }
             else { return BadRequest("Some error has occurred while assigning room"); }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            throw;
+        }
+    }
+
+
+    public async Task<IActionResult> UpdateCheckInOutDates(RoomAllocationDTO? inputDTO)
+    {
+        try
+        {
+            if (inputDTO != null)
+            {
+                var allocationRoom = await _unitOfWork.RoomAllocation.GetEntityData<RoomAllocation>("Select * from RoomAllocation where GuestID=@GuestID", new { @GuestID = inputDTO.GuestId });
+
+                if (allocationRoom != null)
+                {
+                    if (inputDTO.CheckInDate != null)
+                    {
+                        allocationRoom.CheckInDate = inputDTO.CheckInDate;
+                    }
+                    if (inputDTO.CheckOutDate != null)
+                    {
+                        allocationRoom.CheckOutDate = inputDTO.CheckOutDate;
+                    }
+                    allocationRoom.ModifiedBy = inputDTO.ModifiedBy;
+                    allocationRoom.ModifiedDate = DateTime.Now;
+                    allocationRoom.Reason = allocationRoom.Reason + " || Check in and out Dates Changed by the system ";
+
+                    bool updated = await _unitOfWork.RoomAllocation.UpdateAsync(allocationRoom);
+
+                    if (updated)
+                    {
+                        return Ok("");
+                    }
+                    else
+                    {
+                        return BadRequest("");
+                    }
+                }
+            }
+            return BadRequest("");
         }
         catch (Exception ex)
         {
@@ -2102,7 +2186,7 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
             {
                 string sQuery = @"Select CustomerName,gm.Gender GenderName , md.* from MembersDetails md
                                 Left Join GenderMaster gm on md.Gender=gm.Id
-                                where MobileNo like '%'+@Phno+'%'";
+                                where Replace(MobileNo,' ','') like Replace('%'+@Phno+'%',' ','') order by id desc";
                 var sParam = new { @Phno = inputDTO.PhNo };
                 var res = await _unitOfWork.MembersDetails.GetTableData<MemberDetailsWithChild>(sQuery, sParam);
                 return Ok(res);

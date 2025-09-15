@@ -23,4 +23,7 @@ public class MemberDetailsWithChild : MembersDetailsDTO
     public DateTime? ActivityStartTime { get; set; }
     public DateTime? ActivityEndTime { get; set; }
     public DateTime? CheckInDate { get; set; }
+    public DateTime? ActDateOfArrival { get; set; }
+    public DateTime? ActDateOfDepartment { get; set; }
+    public bool? IsSettled { get; set; }
 }

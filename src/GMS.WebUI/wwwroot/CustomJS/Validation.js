@@ -21,7 +21,7 @@
     var isValid = true;
 
     // Select all inputs and selects with both dbCol and required attributes
-    let formElements = $("#" + formId).find(".requiredInput");
+    let formElements = $("#" + formId).find(".requiredInput:visible");
     formElements.each(function () {
         var element = $(this);
         var value = element.val();

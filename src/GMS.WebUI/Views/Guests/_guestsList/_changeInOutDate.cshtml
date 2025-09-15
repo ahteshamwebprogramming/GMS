@@ -1,0 +1,241 @@
+﻿@* Modal Code  *@
+@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+<style>
+
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+
+    .clickabel-icon {
+        cursor: pointer;
+        transition: transform .2s; /* Animation */
+    }
+
+        .clickabel-icon:hover {
+            transform: scale(1.5); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+            cursor: pointer;
+        }
+
+    .fc-parent {
+        padding: 3px .5rem !important;
+    }
+
+    .discount {
+        text-align: right;
+    }
+
+    .form-control-c {
+        float: right;
+    }
+
+    .form-control-c {
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        display: block;
+        padding: 3.375px 0.75rem !important;
+        appearance: none;
+        border-radius: .375rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    .text-right {
+        text-align: right
+    }
+
+    * {
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        margin: 0;
+        color: #333;
+        background: #FFF2EB;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .invoice-header {
+        background-color: #005670;
+        color: #fff;
+        padding: 20px;
+        position: relative;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+        .invoice-header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+    .company-info {
+        font-size: 14px;
+        margin-top: 10px;
+    }
+
+        .company-info span {
+            display: block;
+        }
+
+    .section {
+        padding: 15px;
+    }
+
+    .section-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .info-table td {
+        padding: 4px 8px;
+        vertical-align: top;
+    }
+
+    .payment-details {
+        color: #d9534f;
+        font-size: 13px;
+    }
+
+        .payment-details span {
+            display: block;
+        }
+
+    .data-table th {
+        background-color: #005670;
+        color: #fff;
+        padding: 8px;
+        border: 1px solid #ccc;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .data-table td {
+        padding: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .totals td {
+        padding: 8px;
+        font-weight: bold;
+    }
+
+    .footer {
+        background-color: #005670;
+        color: #ffcc00;
+        text-align: center;
+        padding: 20px;
+        font-size: 18px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .section td {
+        padding: 20px;
+    }
+
+    /* PAID Ribbon */
+    .paid-ribbon {
+        position: absolute;
+        top: 10px;
+        right: -50px;
+        background: #28a745;
+        color: white;
+        padding: 12px 58px;
+        font-size: 28px;
+        font-weight: bold;
+        transform: rotate(45deg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        z-index: 999;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* PAID Ribbon */
+    .unpaid-ribbon {
+        position: absolute;
+        top: 10px;
+        right: -50px;
+        background: red;
+        color: white;
+        padding: 12px 58px;
+        font-size: 28px;
+        font-weight: bold;
+        transform: rotate(45deg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        z-index: 999;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .headingInfo {
+        color: dodgerblue !important
+    }
+
+    #tblBillingAttributes .bi-check-lg {
+        margin-right: 10px;
+    }
+
+</style>
+<input type="button" id="btnChangeInOutDateModal" style="display:none" data-bs-toggle="modal" data-bs-target="#ChangeInOutDateModal" value="button test" />
+<div class="modal fade" id="ChangeInOutDateModal" tabindex="-1" aria-labelledby="ChangeInOutDateModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="width: 1568px;max-width: 1500px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ChangeInOutDateModalLabel">ChangeInOutDate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="resposive_table review_table" style="background:#98c1d9">
+                    <table class="table table-striped" style="margin-bottom:0px !important">
+                        <tbody style="color:#000">
+                            <tr>
+                                <td>CID <br /> <span class="headingInfo">#@Model?.MembersWithAttributes?.UHID </span> </td>
+                                <td>Guest Name <br /><span class="headingInfo">@Model?.MembersWithAttributes?.CustomerName</span></td>
+                                <td>Mobile No <br /> <span class="headingInfo">@Model?.MembersWithAttributes?.MobileNo</span></td>
+                            </tr>
+                            <tr>
+                                <td class="no-border">Stay Dates <br /><span class="headingInfo">@Model?.MembersWithAttributes?.ActDateOfArrival?.ToString("dd MMM yyyy") - @Model?.MembersWithAttributes?.ActDateOfDepartment?.ToString("dd MMM yyyy")</span></td>
+                                <td class="no-border">Room Type <br /><span class="headingInfo">@Model?.MembersWithAttributes?.RoomTypeName</span></td>
+                                <td class="no-border">In-Out Dates <br /><span class="headingInfo">@Model?.RoomAllocation?.CheckInDate?.ToString("dd MMM yyyy") - @Model?.RoomAllocation?.CheckOutDate?.ToString("dd MMM yyyy")</span></td>
+
+                                <input type="hidden" value="@Model?.MembersWithAttributes?.ActDateOfArrival?.ToString("dd MMM yyyy")" id="hdnCheckinoutArrivalDate" />
+                                <input type="hidden" value="@Model?.MembersWithAttributes?.ActDateOfDepartment?.ToString("dd MMM yyyy")" id="hdnCheckinoutDepartureDate" />
+                                <input type="hidden" value="@Model?.MembersWithAttributes?.Id" name="hdnCheckinoutGuestId" />
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row" id="InOutDateSection">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="form-group col-sm-4 col-xs-4 ">
+                                <label class="required">Check In Date</label>
+                                <input asp-for="RoomAllocation.CheckInDate" value="@Model?.RoomAllocation?.CheckInDate?.ToString("dd-MMM-yyyy HH:mm")" type="text" class="contact_name form-control datetimeonly requiredInput" dateformat="YYYY-MM-DD HH:mm" autocomplete="off" placeholder="" dbCol>
+                            </div>
+                            <div class="form-group col-sm-4 col-xs-4 ">
+                                <label class="required">Check Out Date</label>
+                                <input asp-for="RoomAllocation.CheckOutDate" value="@Model?.RoomAllocation?.CheckOutDate?.ToString("dd-MMM-yyyy HH:mm")" type="text" class="contact_name form-control datetimeonly requiredInput" dateformat="YYYY-MM-DD HH:mm" autocomplete="off" placeholder="" dbCol>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="SaveChangeInOutDetails()"> <i class="bi bi-floppy"></i> </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Modal Code *@

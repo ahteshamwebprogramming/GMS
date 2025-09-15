@@ -1,0 +1,38 @@
+﻿@model GMS.Infrastructure.ViewModels.Admin.Actions.GuestsActionViewModel
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAllGuests" />
+                        </th>
+                        <th>Customer Name</th>
+                        <th>UHID</th>
+                        <th>Group Id</th>
+                        <th>Mobile No</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.GuestsList != null && Model.GuestsList.Any())
+                    {
+                        foreach (var guest in Model.GuestsList)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="selectedGuests" value="@guest.Id" onclick="SearchGuestById(@guest.Id)" />
+                                </td>
+                                <td>@guest.CustomerName</td>
+                                <td>@guest.UHID</td>
+                                <td>@guest.GroupId</td>
+                                <td>@guest.MobileNo</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -227,7 +227,7 @@ public class InvoicesAPIController : ControllerBase
                         LEFT JOIN EHRMS.dbo.WorkerMaster wm ON s.ApprovedBy = wm.WorkerID
                         Left Join Services services on md1.CatID=services.ID
 						LEFT JOIN RoomType roomt on md1.RoomType=roomt.ID
-                        Where S.IsActive=1 and md1.Status=1 and Month(s.CreatedDate)=@Month and Year(s.CreatedDate)=@Year;";
+                        Where S.IsActive=1 and md1.Status=1 and ra.IsActive=1 and Month(s.CreatedDate)=@Month and Year(s.CreatedDate)=@Year;";
             var res = await _unitOfWork.GenOperations.GetTableData<InvoicingDTO>(query,new { @Month = Month,@Year=Year });
             return Ok(res);
         }

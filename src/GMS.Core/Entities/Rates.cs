@@ -13,5 +13,7 @@ namespace GMS.Core.Entities
         public decimal Price { get; set; }
         public decimal MinRate { get; set; }
         public decimal MaxRate { get; set; }
+        public string? OTAID { get; set; }
+        public decimal? PlanId { get; set; }
     }
 }

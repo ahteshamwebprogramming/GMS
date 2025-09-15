@@ -8,6 +8,7 @@ public class ServicesDTO
 
     public int? Status { get; set; }
     public bool? Readonly { get; set; }
+    public bool? DefaultRates { get; set; }
 
     public DateTime? CreateDate { get; set; }
 

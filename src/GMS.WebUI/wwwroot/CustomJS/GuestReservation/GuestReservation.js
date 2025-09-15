@@ -13,7 +13,8 @@
     let GuestReservationRouteValues = {};
     GuestReservationRouteValues.PageSource = $("#AddGuestForm").find("[name='GuestReservationRouteValues.PageSource']").val();
     GuestReservationRouteValues.RoomNumber = $("#AddGuestForm").find("[name='GuestReservationRouteValues.RoomNumber']").val();
-    GuestReservationRouteValues.RoomType = $("#AddGuestForm").find("[name='GuestReservationRouteValues.RoomType']").val();
+    //GuestReservationRouteValues.RoomType = $("#AddGuestForm").find("[name='GuestReservationRouteValues.RoomType']").val();
+    GuestReservationRouteValues.RoomType = Number($("#AddGuestForm").find("[name='GuestReservationRouteValues.RoomType']").val()) || 0;
 
     let inputData = {};
     inputData.MemberDetail = MemberDetail;

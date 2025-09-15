@@ -5,5 +5,6 @@ namespace GMS.Infrastructure.ViewModels.Rooms
     public class RatesUpdateViewModel
     {
         public List<RatesDTO> Rates { get; set; } = new List<RatesDTO>();
+        public int? PlanId { get; set; }
     }
 }

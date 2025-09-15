@@ -212,7 +212,7 @@ public class RoomRateAPIController : ControllerBase
     {
         try
         {
-            var res = await _unitOfWork.Rates.UpdateRatesAsync(model.Rates);
+            var res = await _unitOfWork.Rates.UpdateRatesAsync(model);
 
             return res;
         }

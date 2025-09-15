@@ -52,6 +52,49 @@ public class RunAuditController : Controller
         {
             dto.PaymentDataList = (List<RevenueData>?)((Microsoft.AspNetCore.Mvc.ObjectResult)resPaymentData).Value;
         }
+
+        var resADR_REVPAR_Today_Data = await _dashboardAPIController.GetADRREVPARPERIODWISE("TODAY");
+        if (resADR_REVPAR_Today_Data != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_Today_Data).StatusCode == 200)
+        {
+            dto.ADRREVPARToday = (RevenueDataADRREVPARPERIODWISE?)((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_Today_Data).Value;
+        }
+        var resADR_REVPAR_Yesterday_Data = await _dashboardAPIController.GetADRREVPARPERIODWISE("YESTERDAY");
+        if (resADR_REVPAR_Yesterday_Data != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_Yesterday_Data).StatusCode == 200)
+        {
+            dto.ADRREVPARYesterday = (RevenueDataADRREVPARPERIODWISE?)((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_Yesterday_Data).Value;
+        }
+        var resADR_REVPAR_MTD_Data = await _dashboardAPIController.GetADRREVPARPERIODWISE("MTD");
+        if (resADR_REVPAR_MTD_Data != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_MTD_Data).StatusCode == 200)
+        {
+            dto.ADRREVPARMTD = (RevenueDataADRREVPARPERIODWISE?)((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_MTD_Data).Value;
+        }
+        var resADR_REVPAR_YTD_Data = await _dashboardAPIController.GetADRREVPARPERIODWISE("YTD");
+        if (resADR_REVPAR_YTD_Data != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_YTD_Data).StatusCode == 200)
+        {
+            dto.ADRREVPARYTD = (RevenueDataADRREVPARPERIODWISE?)((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_YTD_Data).Value;
+        }
+        var resADR_REVPAR_CPD_Data = await _dashboardAPIController.GetADRREVPARPERIODWISE("CPD");
+        if (resADR_REVPAR_CPD_Data != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_CPD_Data).StatusCode == 200)
+        {
+            dto.ADRREVPARCPD = (RevenueDataADRREVPARPERIODWISE?)((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_CPD_Data).Value;
+        }
+        var resADR_REVPAR_CPM_Data = await _dashboardAPIController.GetADRREVPARPERIODWISE("CPM");
+        if (resADR_REVPAR_CPM_Data != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_CPM_Data).StatusCode == 200)
+        {
+            dto.ADRREVPARCPM = (RevenueDataADRREVPARPERIODWISE?)((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_CPM_Data).Value;
+        }
+        var resADR_REVPAR_CPY_Data = await _dashboardAPIController.GetADRREVPARPERIODWISE("CPY");
+        if (resADR_REVPAR_CPY_Data != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_CPY_Data).StatusCode == 200)
+        {
+            dto.ADRREVPARCPY = (RevenueDataADRREVPARPERIODWISE?)((Microsoft.AspNetCore.Mvc.ObjectResult)resADR_REVPAR_CPY_Data).Value;
+        }
+        var resAverageSellingRate = await _dashboardAPIController.GetAverageSellingRate();
+        if (resAverageSellingRate != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingRate).StatusCode == 200)
+        {
+            dto.AverageSellingRate = (Result?)((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingRate).Value;
+        }
+
+
         return View(dto);
 
     }

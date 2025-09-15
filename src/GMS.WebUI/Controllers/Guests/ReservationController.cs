@@ -393,7 +393,8 @@ public class ReservationController : Controller
             PersonalInformation = PersonalInformation,
             ContactInformation = ContactInformation,
             Documents = Documents,
-            HiddenValues = HiddenValues
+            HiddenValues = HiddenValues,
+            UHID = viewModel?.MemberDetail?.UHID ?? ""
         });
 
         //return PartialView("_guestsList/_guestsFormDetails", viewModel);

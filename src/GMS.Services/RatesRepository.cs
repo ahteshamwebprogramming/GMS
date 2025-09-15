@@ -17,8 +17,10 @@ namespace GMS.Services
         {
 
         }
-        public async Task<bool> UpdateRatesAsync(List<RatesDTO> rates)
+        public async Task<bool> UpdateRatesAsync(RatesUpdateViewModel model)
         {
+            List<RatesDTO> rates = model.Rates;
+            rates.ForEach(r => r.PlanId = model.PlanId);
             IDbConnection connection = DbConnection;
             if (rates == null || !rates.Any())
             {
@@ -34,10 +36,10 @@ namespace GMS.Services
             try
             {
 
-                var rateLookup = new HashSet<(int RoomTypeId, DateTime Date)>();
+                var rateLookup = new HashSet<(int RoomTypeId, DateTime Date, int? PlanId)>();
                 foreach (var rate in rates)
                 {
-                    var key = (rate.RoomTypeId, rate.Date.Date);
+                    var key = (rate.RoomTypeId, rate.Date.Date, model.PlanId);
                     if (!rateLookup.Add(key))
                     {
                         throw new InvalidOperationException(
@@ -49,22 +51,23 @@ namespace GMS.Services
                 var newRates = rates.Where(r => r.Id == 0).ToList();
                 if (newRates.Any())
                 {
-                    var existingRates = await connection.QueryAsync<(int RoomTypeId, DateTime Date)>(
-                        @"SELECT RoomTypeId, Date 
+                    var existingRates = await connection.QueryAsync<(int RoomTypeId, DateTime Date, int? PlanId)>(
+                        @"SELECT RoomTypeId, Date ,PlanId
                   FROM Rates 
                   WHERE RoomTypeId IN @RoomTypeIds 
-                  AND Date IN @Dates",
+                  AND Date IN @Dates and PlanId in @PlanIds",
                         new
                         {
                             RoomTypeIds = newRates.Select(r => r.RoomTypeId).Distinct().ToArray(),
-                            Dates = newRates.Select(r => r.Date.Date).Distinct().ToArray()
+                            Dates = newRates.Select(r => r.Date.Date).Distinct().ToArray(),
+                            PlanIds = newRates.Where(r => r.PlanId.HasValue).Select(r => r.PlanId).Distinct().ToArray()
                         },
                         transaction);
 
-                    var existingSet = new HashSet<(int RoomTypeId, DateTime Date)>(existingRates);
+                    var existingSet = new HashSet<(int RoomTypeId, DateTime Date, int? PlanId)>(existingRates);
                     foreach (var rate in newRates)
                     {
-                        if (existingSet.Contains((rate.RoomTypeId, rate.Date.Date)))
+                        if (existingSet.Contains((rate.RoomTypeId, rate.Date.Date, model.PlanId)))
                         {
                             throw new InvalidOperationException(
                                 $"A rate already exists for RoomTypeId={rate.RoomTypeId} on Date={rate.Date:yyyy-MM-dd}");
@@ -95,8 +98,8 @@ namespace GMS.Services
                 if (inserts.Any())
                 {
                     const string insertQuery = @"
-                INSERT INTO Rates (RoomTypeId, Date, Price, MinRate, MaxRate)
-                VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate)";
+                INSERT INTO Rates (RoomTypeId, Date, Price, MinRate, MaxRate,PlanId)
+                VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate,@PlanId)";
 
                     foreach (var batch in inserts.Chunk(batchSize))
                     {

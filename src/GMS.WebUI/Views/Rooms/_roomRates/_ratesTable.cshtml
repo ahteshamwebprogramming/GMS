@@ -158,7 +158,7 @@
                 <tr class="section-header">
                     <td colspan="@(days + 1)" style="text-align: left;">@room.RoomTypeName</td>
                 </tr>
-                <tr>
+                <tr roomtypeid="@room.RoomTypeId" ratetype="price">
                     <td>Rates</td>
                     @for (int i = 0; i < days; i++)
                     {
@@ -167,48 +167,39 @@
                         var priceId = $"price-{rateIndex}";
                         var minRateId = $"minRate-{rateIndex}";
                         var maxRateId = $"maxRate-{rateIndex}";
-                        <td>
-                            <input type="hidden" name="Rates[@rateIndex].Id" value="@(rate?.Id ?? 0)" />
-                            <input type="hidden" name="Rates[@rateIndex].RoomTypeId" value="@room.RoomTypeId" />
-                            <input type="hidden" name="Rates[@rateIndex].Date" value="@date.ToString("yyyy-MM-dd")" />
+                        <td day="@i">
+                            <input type="hidden" dbname="Id" class="@($"Id_{room.RoomTypeId}_{i}")" name="Rates[@rateIndex].Id" value="@(rate?.Id ?? 0)" />
+                            <input type="hidden" dbname="RoomTypeId" class="@($"RoomTypeId_{room.RoomTypeId}_{i}")" name="Rates[@rateIndex].RoomTypeId" value="@room.RoomTypeId" />
+                            <input type="hidden" dbname="Date" class="@($"Date_{room.RoomTypeId}_{i}")" name="Rates[@rateIndex].Date" value="@date.ToString("yyyy-MM-dd")" />
                             <span style="margin-right: 5px;">₹</span>
-                            <input type="text" id="@priceId" name="Rates[@rateIndex].Price"
-                                   value="@(rate?.Price != null ? ((int)rate.Price).ToString("N0") : "0")"
-                                   onblur="validateRate('@priceId', '@minRateId', '@maxRateId')"
-                                   style="width: 80px;" data-date-index="@i" disabled />
+                            <input type="text" class="@($"Price_{room.RoomTypeId}_{i}")" id="@priceId" dbname="Price" name="Rates[@rateIndex].Price" value="@(rate?.Price != null ? ((int)rate.Price).ToString("N0") : "0")" onblur="validateRate('@priceId', '@minRateId', '@maxRateId')" style="width: 80px;" data-date-index="@i" disabled />
                         </td>
                         rateIndex++;
                     }
                 </tr>
-                <tr>
+                <tr roomtypeid="@room.RoomTypeId" ratetype="minrate">
                     <td>Min Rate</td>
                     @for (int i = 0; i < days; i++)
                     {
                         var date = startDate.AddDays(i);
                         var rate = room.DailyRates.FirstOrDefault(r => r.Date.Date == date.Date);
                         var minRateId = $"minRate-{rateIndex - days + i}";
-                        <td>
+                        <td day="@i">
                             <span style="margin-right: 5px;">₹</span>
-                            <input type="text" id="@minRateId" name="Rates[@(rateIndex - days + i)].MinRate"
-                                   value="@(rate?.MinRate != null ? ((int)rate.MinRate).ToString("N0") : "0")"
-                                   onblur="validateRate('price-@(rateIndex - days + i)', '@minRateId', 'maxRate-@(rateIndex - days + i)')"
-                                   style="width: 80px;" data-date-index="@i" />
+                            <input type="text" class="@($"MinRate_{room.RoomTypeId}_{i}")" id="@minRateId" dbname="MinRate" name="Rates[@(rateIndex - days + i)].MinRate" value="@(rate?.MinRate != null ? ((int)rate.MinRate).ToString("N0") : "0")" onblur="validateRate('price-@(rateIndex - days + i)', '@minRateId', 'maxRate-@(rateIndex - days + i)')" style="width: 80px;" data-date-index="@i" />
                         </td>
                     }
                 </tr>
-                <tr>
+                <tr roomtypeid="@room.RoomTypeId" ratetype="maxrate">
                     <td>Max Rate</td>
                     @for (int i = 0; i < days; i++)
                     {
                         var date = startDate.AddDays(i);
                         var rate = room.DailyRates.FirstOrDefault(r => r.Date.Date == date.Date);
                         var maxRateId = $"maxRate-{rateIndex - days + i}";
-                        <td>
+                        <td day="@i">
                             <span style="margin-right: 5px;">₹</span>
-                            <input type="text" id="@maxRateId" name="Rates[@(rateIndex - days + i)].MaxRate"
-                                   value="@(rate?.MaxRate != null ? ((int)rate.MaxRate).ToString("N0") : "0")"
-                                   onblur="validateRate('price-@(rateIndex - days + i)', 'minRate-@(rateIndex - days + i)', '@maxRateId')"
-                                   style="width: 80px;" data-date-index="@i" />
+                            <input type="text" class="@($"MaxRate_{room.RoomTypeId}_{i}")" id="@maxRateId" dbname="MaxRate" name="Rates[@(rateIndex - days + i)].MaxRate" value="@(rate?.MaxRate != null ? ((int)rate.MaxRate).ToString("N0") : "0")" onblur="validateRate('price-@(rateIndex - days + i)', 'minRate-@(rateIndex - days + i)', '@maxRateId')" style="width: 80px;" data-date-index="@i" />
                         </td>
                     }
                 </tr>
@@ -241,7 +232,7 @@
     document.addEventListener('DOMContentLoaded', function() {
     @for (int i = 0; i < days; i++)
     {
-        @:toggleInputs('@i');
+                                                                @:toggleInputs('@i');
     }
     });
 </script>

@@ -169,7 +169,7 @@
                     <div>
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="mb-2 mb-lg-0">
-                                <h3 class="mb-0  text-white">Front Office Dashboard</h3>
+                                <h3 class="mb-0  text-white">Audit Report</h3>
                             </div>
                             <div class="mb-2 mb-lg-0">
                                 <input type="button" class="btn btn-dark btn-lg" value="Run Audit" onclick="RunAudit()" />
@@ -190,22 +190,21 @@
                                 <div class="d-flex justify-content-between align-items-center
                     mb-3">
                                     <div>
-                                        <h4 class="mb-0">Occupancy Percentage</h4>
+                                        <h4 class="mb-0">Occupancy</h4>
                                     </div>
-                                    <div class="icon-shape icon-md bg-light-primary text-primary2
-                      rounded-2">
-                                        <i class="bi bi-briefcase fs-4"></i>
+                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                        <i class="bi bi-buildings fs-4"></i>
                                     </div>
                                 </div>
                                 <!-- project number -->
-                                <div>
+                                <div style="text-align:right">
                                     @{
                                         var dateData = Model?.RoomOccupancyDataList?.ToList();
-                                        decimal bookedRooms = dateData?.Sum(x => x.BookedRooms) ?? 0;
+                                        double bookedRooms = dateData?.Sum(x => x.BookedRooms) ?? 0;
                                         var totalRooms = dateData?.Sum(x => x.TotalRooms) ?? 0;
                                         var totaloccupancypercent = (bookedRooms * 100) / (totalRooms);
                                     }
-                                    <h1 class="fw-bold">@(totaloccupancypercent.ToString("F2"))%</h1>
+                                    <h1 class="fw-bold">@(totaloccupancypercent.ToString("F1"))%</h1>
                                     @* <p class="mb-0"><span class="text-dark me-2">@(bookedRooms)</span>Occupied</p> *@
                                 </div>
                             </div>
@@ -225,17 +224,17 @@
                                         <h4 class="mb-0">Total Revenue</h4>
                                     </div>
                                     <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
-                                        <i class="bi bi-list-task fs-4"></i>
+                                        <i class="bi bi-credit-card fs-4"></i>
                                     </div>
                                 </div>
                                 <!-- project number -->
-                                <div>
+                                <div style="text-align:right">
                                     @{
                                         var dateDataRoom = Model?.RoomRevenueDataList?.FirstOrDefault();
                                         var dateDataFnB = Model?.PackageRevenueDataList?.FirstOrDefault();
                                         var dateDataUpsell = Model?.UpsellRevenueDataList?.FirstOrDefault();
                                     }
-                                    <h1 class="fw-bold">@((dateDataRoom?.TotalRevenue + dateDataFnB?.TotalRevenue + dateDataUpsell?.TotalRevenue)?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
+                                    <h1 class="fw-bold">@((dateDataRoom?.TotalRevenue + dateDataFnB?.TotalRevenue + dateDataUpsell?.TotalRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
                                     @* <p class="mb-0"><span class="text-dark me-2">28</span>Completed</p> *@
                                 </div>
                             </div>
@@ -252,15 +251,15 @@
                                         <h4 class="mb-0">Todays Collection</h4>
                                     </div>
                                     <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
-                                        <i class="bi bi-people fs-4"></i>
+                                        <i class="bi bi-cash fs-4"></i>
                                     </div>
                                 </div>
                                 <!-- project number -->
-                                <div>
+                                <div style="text-align:right">
                                     @{
                                         var datePayment = Model?.PaymentDataList?.FirstOrDefault();
                                     }
-                                    <h1 class="fw-bold">@(datePayment?.TotalRevenue?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
+                                    <h1 class="fw-bold">@(datePayment?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
                                     @* <p class="mb-0"><span class="text-dark me-2">1</span>Completed</p> *@
                                 </div>
                             </div>
@@ -273,19 +272,17 @@
                             <!-- card body -->
                             <div class="card-body">
                                 <!-- heading -->
-                                <div class="d-flex justify-content-between align-items-center
-                    mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div>
                                         <h4 class="mb-0">Average Selling Rate</h4>
                                     </div>
-                                    <div class="icon-shape icon-md bg-light-primary text-primary2
-                      rounded-2">
-                                        <i class="bi bi-bullseye fs-4"></i>
+                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                        <i class="bi bi-plus-slash-minus fs-4"></i>
                                     </div>
                                 </div>
                                 <!-- project number -->
-                                <div>
-                                    <h1 class="fw-bold">76%</h1>
+                                <div class="" style="text-align:right">
+                                    <h1 class="fw-bold">@(Model?.AverageSellingRate?.Value?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
                                     @* <p class="mb-0"><span class="text-success me-2">5%</span>Completed</p> *@
                                 </div>
                             </div>
@@ -400,19 +397,24 @@
                             <div class="card-body">
                                 <div class="item">
                                     <div class="label">Today</div>
-                                    <div class="value">@((roomRevenue?.TotalRevenue + fnbRevenue?.TotalRevenue + upsellRevenue?.TotalRevenue)?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                    <div class="value">@((roomRevenue?.TotalRevenue + fnbRevenue?.TotalRevenue + upsellRevenue?.TotalRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">MTD</div>
-                                    <div class="value">@((roomRevenue?.MTDRevenue + fnbRevenue?.MTDRevenue + upsellRevenue?.MTDRevenue)?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                    <div class="value">@((roomRevenue?.MTDRevenue + fnbRevenue?.MTDRevenue + upsellRevenue?.MTDRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">YTD</div>
-                                    <div class="value">@((roomRevenue?.YTDRevenue + fnbRevenue?.YTDRevenue + upsellRevenue?.YTDRevenue)?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                    <div class="value">@((roomRevenue?.YTDRevenue + fnbRevenue?.YTDRevenue + upsellRevenue?.YTDRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
+                                @{
+                                    var totalRevenueCPDChange = (roomRevenue?.CPD_Change + fnbRevenue?.CPD_Change + upsellRevenue?.CPD_Change) ?? 0;
+                                    string totalRevenueCPDClass = totalRevenueCPDChange > 0 ? "text-success" : totalRevenueCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string totalRevenueCPDArrow = totalRevenueCPDChange > 0 ? "↑" : totalRevenueCPDChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
-                                    <div class="label">CPD</div>
-                                    <div class="value">@((roomRevenue?.YTDRevenue + fnbRevenue?.YTDRevenue + upsellRevenue?.YTDRevenue)?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                    <div class="label">CPD <span style="color:blue;font-size:12px;">(Change from previous day)</span></div>
+                                    <div class="value @(totalRevenueCPDClass)">@(totalRevenueCPDChange.ToString("P1")) @(totalRevenueCPDArrow)</div>
                                 </div>
                                 @{
                                     var totalRevenueCPMChange = (roomRevenue?.CPM_Change + fnbRevenue?.CPM_Change + upsellRevenue?.CPM_Change) ?? 0;
@@ -420,9 +422,9 @@
                                     string totalRevenueCPMArrow = totalRevenueCPMChange > 0 ? "↑" : totalRevenueCPMChange < 0 ? "↓" : "→";
                                 }
                                 <div class="item">
-                                    <div class="label">CPM</div>
+                                    <div class="label">CPM <span style="color:blue;font-size:12px;">(Change from previous month)</span></div>
                                     <div class="value @(totalRevenueCPMClass)">
-                                        @(totalRevenueCPMChange) @(totalRevenueCPMArrow)<span></span>
+                                        @(totalRevenueCPMChange.ToString("P1")) @(totalRevenueCPMArrow)<span></span>
                                     </div>
                                 </div>
                                 @{
@@ -431,9 +433,9 @@
                                     string totalRevenueCPYArrow = totalRevenueCPYChange > 0 ? "↑" : totalRevenueCPYChange < 0 ? "↓" : "→";
                                 }
                                 <div class="item">
-                                    <div class="label">CPY</div>
+                                    <div class="label">CPY <span style="color:blue;font-size:12px;">(Change from previous year)</span></div>
                                     <div class="value @(totalRevenueCPYClass)">
-                                        @(totalRevenueCPYChange) @(totalRevenueCPYArrow)<span></span>
+                                        @(totalRevenueCPYChange.ToString("P1")) @(totalRevenueCPYArrow)<span></span>
                                     </div>
                                 </div>
                             </div>
@@ -453,34 +455,50 @@
                                 <div class="item">
                                     <div class="label">Today</div>
                                     <div class="value">
-                                        @(roomRevenue?.TotalRevenue?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
+                                        @(roomRevenue?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
                                     </div>
                                 </div>
                                 <div class="item">
                                     <div class="label">MTD</div>
                                     <div class="value">
-                                        @(roomRevenue?.MTDRevenue?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
+                                        @(roomRevenue?.MTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
                                     </div>
                                 </div>
                                 <div class="item">
                                     <div class="label">YTD</div>
                                     <div class="value">
-                                        @(roomRevenue?.YTDRevenue?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
+                                        @(roomRevenue?.YTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
                                     </div>
                                 </div>
+                                @{
+                                    var roomRevenueCPDChange = (roomRevenue?.CPD_Change) ?? 0;
+                                    string roomRevenueCPDClass = roomRevenueCPDChange > 0 ? "text-success" : roomRevenueCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string roomRevenueCPDArrow = roomRevenueCPDChange > 0 ? "↑" : roomRevenueCPDChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
-                                    <div class="label">CPD% (Change from previous day)</div>
-                                    <div class="value @cpdClass">
-                                        @(Math.Abs(cpdChange)) @cpdArrow
+                                    <div class="label">CPD</div>
+                                    <div class="value @roomRevenueCPDClass">
+                                        @* @(Math.Abs(cpdChange)) @cpdArrow *@
+                                        @(roomRevenueCPDChange.ToString("P1")) @roomRevenueCPDArrow
                                     </div>
                                 </div>
+                                @{
+                                    var roomRevenueCPMChange = (roomRevenue?.CPM_Change) ?? 0;
+                                    string roomRevenueCPMClass = roomRevenueCPMChange > 0 ? "text-success" : roomRevenueCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string roomRevenueCPMArrow = roomRevenueCPMChange > 0 ? "↑" : roomRevenueCPMChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
-                                    <div class="label">CPM%</div>
-                                    <div class="value">26,582</div>
+                                    <div class="label">CPM</div>
+                                    <div class="value @roomRevenueCPMClass">@(roomRevenueCPMChange.ToString("P1")) @roomRevenueCPMArrow</div>
                                 </div>
+                                @{
+                                    var roomRevenueCPYChange = (roomRevenue?.CPY_Change) ?? 0;
+                                    string roomRevenueCPYClass = roomRevenueCPYChange > 0 ? "text-success" : roomRevenueCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string roomRevenueCPYArrow = roomRevenueCPYChange > 0 ? "↑" : roomRevenueCPYChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
-                                    <div class="label">CPY%</div>
-                                    <div class="value">26,582</div>
+                                    <div class="label">CPY</div>
+                                    <div class="value @(roomRevenueCPYClass)">@(roomRevenueCPYChange.ToString("P1")) @(roomRevenueCPYArrow)</div>
                                 </div>
                             </div>
                         </div>
@@ -493,27 +511,42 @@
                             <div class="card-body">
                                 <div class="item">
                                     <div class="label">Today</div>
-                                    <div class="value">@(fnbRevenue?.TotalRevenue?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                    <div class="value">@(fnbRevenue?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">MTD</div>
-                                    <div class="value">3,872 <span></span></div>
+                                    <div class="value">@(fnbRevenue?.MTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">YTD</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value">@(fnbRevenue?.YTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
+                                @{
+                                    var fnbRevenueCPDChange = (fnbRevenue?.CPD_Change) ?? 0;
+                                    string fnbRevenueCPDClass = fnbRevenueCPDChange > 0 ? "text-success" : fnbRevenueCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string fnbRevenueCPDArrow = fnbRevenueCPDChange > 0 ? "↑" : fnbRevenueCPDChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPD</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @fnbRevenueCPDClass">@fnbRevenueCPDChange.ToString("P1") @fnbRevenueCPDArrow<span></span></div>
                                 </div>
+                                @{
+                                    var fnbRevenueCPMChange = (fnbRevenue?.CPM_Change) ?? 0;
+                                    string fnbRevenueCPMClass = fnbRevenueCPMChange > 0 ? "text-success" : fnbRevenueCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string fnbRevenueCPMArrow = fnbRevenueCPMChange > 0 ? "↑" : fnbRevenueCPMChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPM</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @fnbRevenueCPMClass">@fnbRevenueCPMChange.ToString("P1") @fnbRevenueCPMArrow <span></span></div>
                                 </div>
+                                @{
+                                    var fnbRevenueCPYChange = (fnbRevenue?.CPY_Change) ?? 0;
+                                    string fnbRevenueCPYClass = fnbRevenueCPYChange > 0 ? "text-success" : fnbRevenueCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string fnbRevenueCPYArrow = fnbRevenueCPYChange > 0 ? "↑" : fnbRevenueCPYChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPY</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @fnbRevenueCPYClass">@fnbRevenueCPYChange.ToString("P1") @fnbRevenueCPYArrow <span></span></div>
                                 </div>
                             </div>
                         </div>
@@ -525,27 +558,42 @@
                             <div class="card-body">
                                 <div class="item">
                                     <div class="label">Today</div>
-                                    <div class="value">@(upsellRevenue?.TotalRevenue?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                    <div class="value">@(upsellRevenue?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">MTD</div>
-                                    <div class="value">3,872 <span></span></div>
+                                    <div class="value">@(upsellRevenue?.MTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">YTD</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value">@(upsellRevenue?.YTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
+                                @{
+                                    var upsellRevenueCPDChange = (upsellRevenue?.CPD_Change) ?? 0;
+                                    string upsellRevenueCPDClass = upsellRevenueCPDChange > 0 ? "text-success" : upsellRevenueCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string upsellRevenueCPDArrow = upsellRevenueCPDChange > 0 ? "↑" : upsellRevenueCPDChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPD</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @upsellRevenueCPDClass">@upsellRevenueCPDChange.ToString("P1") @upsellRevenueCPDArrow<span></span></div>
                                 </div>
+                                @{
+                                    var upsellRevenueCPMChange = (upsellRevenue?.CPM_Change) ?? 0;
+                                    string upsellRevenueCPMClass = upsellRevenueCPMChange > 0 ? "text-success" : upsellRevenueCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string upsellRevenueCPMArrow = upsellRevenueCPMChange > 0 ? "↑" : upsellRevenueCPMChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPM</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @upsellRevenueCPMClass">@upsellRevenueCPMChange.ToString("P1") @upsellRevenueCPMArrow<span></span></div>
                                 </div>
+                                @{
+                                    var upsellRevenueCPYChange = (upsellRevenue?.CPY_Change) ?? 0;
+                                    string upsellRevenueCPYClass = upsellRevenueCPYChange > 0 ? "text-success" : upsellRevenueCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string upsellRevenueCPYArrow = upsellRevenueCPYChange > 0 ? "↑" : upsellRevenueCPYChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPY</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @upsellRevenueCPYClass">@upsellRevenueCPYChange.ToString("P1") @upsellRevenueCPYArrow<span></span></div>
                                 </div>
                             </div>
                         </div>
@@ -559,35 +607,107 @@
                                 <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
                             </div>
                             <div class="card-body">
-                                <div class="item">
+                                @* <div class="item">
                                     <div class="label">Today</div>
                                     <div class="value">@(adr.ToString("F2")) <span></span></div>
+                                </div> *@
+                                <div class="item">
+                                    <div class="label">Today</div>
+                                    <div class="value">@(Model?.ADRREVPARToday?.REVPAR?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">MTD</div>
-                                    <div class="value">3,872 <span></span></div>
+                                    <div class="value">@(Model?.ADRREVPARMTD?.REVPAR?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">YTD</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value">@(Model?.ADRREVPARYTD?.REVPAR?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
                                 </div>
+                                @{
+                                    var adrCurrentDay = Model?.ADRREVPARToday?.ADR ?? 0;
+                                    var adrPreviousDay = Model?.ADRREVPARYesterday?.ADR ?? 0;
+
+                                    var revParCPDChange = adrPreviousDay == 0 ? 0 : (adrCurrentDay - adrPreviousDay) / adrPreviousDay;
+                                    string revParCPDClass = revParCPDChange > 0 ? "text-success" : revParCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string revParCPDArrow = revParCPDChange > 0 ? "↑" : revParCPDChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPD</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @revParCPDClass">
+                                        @(revParCPDChange.ToString("P1")) @revParCPDArrow
+                                    </div>
                                 </div>
+                                @{
+                                    var adrCurrentMonth = Model?.ADRREVPARMTD?.ADR ?? 0;
+                                    var adrPreviousMonth = Model?.ADRREVPARCPM?.ADR ?? 0;
+                                    var adrCPMChange = adrPreviousMonth == 0 ? 0 : (adrCurrentMonth - adrPreviousMonth) / adrPreviousMonth;
+
+                                    string adrCPMClass = adrCPMChange > 0 ? "text-success" : adrCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string adrCPMArrow = adrCPMChange > 0 ? "↑" : adrCPMChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPM</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @adrCPMClass">
+                                        @(adrCPMChange.ToString("P1")) @adrCPMArrow
+                                    </div>
                                 </div>
+                                @{
+                                    var adrCurrentYear = Model?.ADRREVPARYTD?.ADR ?? 0;
+                                    var adrPreviousYear = Model?.ADRREVPARCPY?.ADR ?? 0;
+                                    var adrCPYChange = adrPreviousYear == 0 ? 0 : (adrCurrentYear - adrPreviousYear) / adrPreviousYear;
+
+                                    // Conditional formatting
+                                    string adrCPYClass = adrCPYChange > 0 ? "text-success" : adrCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string adrCPYArrow = adrCPYChange > 0 ? "↑" : adrCPYChange < 0 ? "↓" : "→";
+                                }
                                 <div class="item">
                                     <div class="label">CPY</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @adrCPYClass">
+                                        @(adrCPYChange.ToString("P1")) @adrCPYArrow
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         @{
-                            var revpar = totalRooms == 0 ? 0 : (roomRevenue?.TotalRevenue / totalRooms) ?? 0;
+                            var revparToday = totalRooms == 0 ? 0 : (roomRevenue?.TotalRevenue ?? 0) / totalRooms;
+
+                            var revparCPD = Model?.ADRREVPARCPD?.REVPAR ?? 0;
+                            var revparCPM = Model?.ADRREVPARCPM?.REVPAR ?? 0;
+                            var revparCPY = Model?.ADRREVPARCPY?.REVPAR ?? 0;
+
+                            var revCurrentDay = Model?.ADRREVPARToday?.REVPAR ?? 0;
+                            var revCurrentMonth = Model?.ADRREVPARMTD?.REVPAR ?? 0;
+                            var revCurrentYear = Model?.ADRREVPARYTD?.REVPAR ?? 0;
+
+                            var revPreviousDay = Model?.ADRREVPARYesterday?.REVPAR ?? 0;
+                            var revPreviousMonth = Model?.ADRREVPARCPM?.REVPAR ?? 0;
+                            var revPreviousYear = Model?.ADRREVPARCPY?.REVPAR ?? 0;
+
+
+                            var revparCPDChange = revPreviousDay == 0 ? 0 : ((revCurrentDay - revPreviousDay) / revPreviousDay);
+                            var revparCPMChange = revPreviousMonth == 0 ? 0 : ((revCurrentMonth - revPreviousMonth) / revPreviousMonth);
+                            var revparCPYChange = revPreviousYear == 0 ? 0 : ((revCurrentYear - revPreviousYear) / revPreviousYear);
+
+                            string GetClass(double change) =>
+                            change > 0 ? "text-success" : change < 0 ? "text-danger" : "text-muted";
+
+                            string GetArrow(double change) =>
+                            change > 0 ? "↑" : change < 0 ? "↓" : "→";
+
+                            var revparCPDClass = GetClass(revparCPDChange);
+                            var revparCPMClass = GetClass(revparCPMChange);
+                            var revparCPYClass = GetClass(revparCPYChange);
+
+                            var revparCPDArrow = GetArrow(revparCPDChange);
+                            var revparCPMArrow = GetArrow(revparCPMChange);
+                            var revparCPYArrow = GetArrow(revparCPYChange);
+
+                            // For MTD and YTD, if you have values, replace the fixed numbers below similarly.
+                            // For example:
+                            var revparMTD = Model?.ADRREVPARMTD?.REVPAR ?? 0;
+                            var revparYTD = Model?.ADRREVPARYTD?.REVPAR ?? 0;
                         }
+
                         <div class="cardItems">
                             <div class="card-header">
                                 <h4>RevPAR</h4>
@@ -596,30 +716,37 @@
                             <div class="card-body">
                                 <div class="item">
                                     <div class="label">Today</div>
-                                    <div class="value">@(revpar.ToString("F2")) <span></span></div>
+                                    <div class="value">@revparToday.ToString("F2") <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">MTD</div>
-                                    <div class="value">3,872 <span></span></div>
+                                    <div class="value">@revparMTD.ToString("F2") <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">YTD</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value">@revparYTD.ToString("F2") <span></span></div>
                                 </div>
                                 <div class="item">
                                     <div class="label">CPD</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @revparCPDClass">
+                                        @revparCPDChange.ToString("P1") <span>@revparCPDArrow</span>
+                                    </div>
                                 </div>
                                 <div class="item">
                                     <div class="label">CPM</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @revparCPMClass">
+                                        @revparCPMChange.ToString("P1") <span>@revparCPMArrow</span>
+                                    </div>
                                 </div>
                                 <div class="item">
                                     <div class="label">CPY</div>
-                                    <div class="value">26,582 <span></span></div>
+                                    <div class="value @revparCPYClass">
+                                        @revparCPYChange.ToString("P1") <span>@revparCPYArrow</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
 
                     </div>
                 </div>

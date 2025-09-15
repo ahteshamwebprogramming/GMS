@@ -95,14 +95,17 @@ function SelectGuestForForm(Id) {
             $("#div_PersonalInformation_PartialView").html(data.personalInformation);
             $("#div_ContactInformation_PartialView").html(data.contactInformation);
             $("#div_Documents_PartialView").html(data.documents);
-            $("#div_HiddenValues_PartialView").html(data.hiddenValues);
+            //$("#div_HiddenValues_PartialView").html(data.hiddenValues);
+
+
 
             initDatesByFormId(formId);
             initValidateRoomsAvailabilityByFormId(formId)
             getOnLoadAddGuests(formId);
 
-            $("[name='MemberDetail.Id']").val(0);
+            //$("[name='MemberDetail.Id']").val(0);
 
+            $("#div_HiddenValues_PartialView").find("[name='MemberDetail.UHID']").val(data.uhid);
 
             $("select").chosen({
                 width: '100%'

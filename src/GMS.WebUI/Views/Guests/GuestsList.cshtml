@@ -137,6 +137,9 @@
         @Html.Partial("_guestsList/_addGuests")
     </div>
     <!-- Add Guests Model -->
+    <div id="div_ChangeInOutDatePartial">
+        @Html.Partial("_guestsList/_changeInOutDate")
+    </div>
     <div id="div_BillingPartial">
         @Html.Partial("_guestsList/_billing")
     </div>
@@ -184,7 +187,7 @@
                             <button class="search-icon"><i class="bi bi-search"></i></button>
                         </div> *@
 
-                       @*  <button class="btn btn-primary" onclick="document.getElementById('btnModelAddGuests').click()"
+                        @*  <button class="btn btn-primary" onclick="document.getElementById('btnModelAddGuests').click()"
                                 style="background-color: #61a39f; border-color: #61a39f; margin-right: 10px;">
                             <i class="bi bi-plus-circle"></i> Add Guest
                         </button>
@@ -277,6 +280,7 @@
     <script src="~/customjs/guests/Settlement.js"></script>
     <script src="~/customjs/guests/RatePlans.js"></script>
     <script src="~/customjs/guests/ChangeReservationDetails.js"></script>
+    <script src="~/customjs/guests/ChangeInOutDates.js"></script>
 
     <script>
         let dateOfDepartment;

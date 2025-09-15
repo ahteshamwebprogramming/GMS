@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "GuestActions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="admin_wrapper">
+    @Html.Partial("_services/_leftNavigationServices")
+    <div class="right_container">
+
+
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Guest Actions <span></span></h2>
+                </div>
+
+                <div class="title_area" id="SearchSection">
+                    <label>Search Guest By UHID/MobileNo/Name</label>
+                    <input type="text" class="form-control" name="searchField" />
+                    <input type="button" class="btn btn-primary" value="Search Guests" onclick="SearchGuests()" />
+                </div>
+
+                <div id="div_SearchResultGuestsPartialView">
+                    @Html.Partial("_guestActions/_searchResultGuests")
+                </div>
+
+
+
+                <div class="tabs_content">
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-guestdetails-tab" data-bs-toggle="tab" data-bs-target="#tab_guestdetails" type="button" role="tab">Guest Details</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-roomallocation-tab" data-bs-toggle="tab" data-bs-target="#tab_roomallocation" type="button" role="tab">Room Allocation</button>
+                        </li>
+
+                    </ul>
+
+                    <div class="tab-content mt-3" id="myTabContent">
+
+                        <!-- Rack Rate Tab -->
+                        <div class="tab-pane fade show active" id="tab_guestdetails" role="tabpanel">
+
+                            <div id="div_MembersPartialView">
+                                @Html.Partial("_guestActions/_memberDetailsEditMode")
+                            </div>
+
+                        </div>
+
+                        <!-- Package Rate Tab -->
+                        <div class="tab-pane fade" id="tab_roomallocation" role="tabpanel">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+@section Scripts {
+
+    <script src="~/customjs/admin/actions/guests.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+        });
+    </script>
+}
+

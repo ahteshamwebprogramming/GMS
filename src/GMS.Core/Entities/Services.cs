@@ -13,6 +13,7 @@ public class Services
     public int? Status { get; set; }
 
     public bool? Readonly { get; set; }
+    public bool? DefaultRates { get; set; }
     public DateTime? CreateDate { get; set; }
     public int? MinimumNight { get; set; }
     public int? MaximumNight { get; set; }

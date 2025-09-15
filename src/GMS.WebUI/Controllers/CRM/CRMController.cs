@@ -577,7 +577,7 @@ public class CRMController : Controller
                         inputDTO.ApprovedBy = Convert.ToInt32(User.FindFirstValue("Id")); //when id=0
 
                         inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
-                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
+                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
 
                         inputDTO.GroupId = await _guestsAPIController.GenerateRandomNumberAndValidate();//When Id=0
                     }
@@ -615,8 +615,8 @@ public class CRMController : Controller
                         inputDTO.IsApproved = 1;//When Id=0
                         inputDTO.ApprovedBy = Convert.ToInt32(User.FindFirstValue("Id")); //when id=0
                         inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
-                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
-                        inputDTO.GroupId = dataVM.MemberDetail.GroupId;
+                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
+                        inputDTO.GroupId = dataVM?.MemberDetail?.GroupId ?? "";
                     }
 
                 }
@@ -651,7 +651,7 @@ public class CRMController : Controller
                 }
                 if (String.IsNullOrEmpty(inputDTO.UHID))
                 {
-                    inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "");//When Id=0
+                    inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "",dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
                 }
 
                 //if (dataVM.MemberDetail.Id > 0)
