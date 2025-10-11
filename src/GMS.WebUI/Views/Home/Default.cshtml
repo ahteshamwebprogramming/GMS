@@ -552,11 +552,6 @@
 
 
                     </div>
-                    @{
-                        var roomRevenue = Model?.RoomRevenueDataList?.FirstOrDefault();
-                        var fnbRevenue = Model?.PackageRevenueDataList?.FirstOrDefault();
-                        var upsellRevenue = Model?.UpsellRevenueDataList?.FirstOrDefault();
-                    }
                     <div class="owl-carousel owl-theme ">
                         <div class="cardItems">
                             <div class="card-header">
@@ -837,7 +832,9 @@
                                 </div>
                             </div>
                         </div>
-                        @{
+                        @{ 
+                            var totalRooms = Model?.RoomOccupancyDataList?.Sum(x => x.TotalRooms ?? 0) ?? 0;
+
                             var revparToday = totalRooms == 0 ? 0 : (roomRevenue?.TotalRevenue ?? 0) / totalRooms;
 
                             var revparCPD = Model?.ADRREVPARCPD?.REVPAR ?? 0;
