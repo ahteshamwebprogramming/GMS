@@ -23,4 +23,10 @@ public class BillingDTO
     public int? CreatedBy { get; set; }
     public int? ModifiedBy { get; set; }
     public int? PostedToAudit { get; set; }
+
+    public string? BillingTo { get; set; }
+    public string? BillingMobile { get; set; }
+    public string? BillingEmail { get; set; }
+    public string? BillingAddressLine1 { get; set; }
+    public string? BillingAddressLine2 { get; set; }
 }

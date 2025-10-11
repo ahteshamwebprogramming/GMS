@@ -185,6 +185,127 @@
         margin-right: 10px;
     }
 
+    .bill-to-card {
+        background: linear-gradient(135deg, #f6fbff, #eef4ff);
+        border: 1px solid rgba(0, 86, 112, 0.15);
+        border-radius: 18px;
+        padding: 1.5rem;
+        box-shadow: 0 12px 30px rgba(0, 34, 51, 0.08);
+    }
+
+    .bill-to-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+    }
+
+    .bill-to-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        background: rgba(0, 86, 112, 0.12);
+        color: #005670;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+    }
+
+    .bill-to-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #00394a;
+    }
+
+    .bill-to-subtitle {
+        margin-bottom: 0;
+        color: #5c7380;
+        font-size: 0.85rem;
+    }
+
+    .bill-to-tag {
+        padding: 0.35rem 1.1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 86, 112, 0.2);
+        background-color: #ffffff;
+        color: #005670;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .bill-to-label {
+        font-weight: 600;
+        color: #005670;
+    }
+
+    .bill-to-card .form-control {
+        background-color: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 10px;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .bill-to-card .form-control::placeholder {
+            color: #8a9aa7;
+            font-size: 0.85rem;
+        }
+
+        .bill-to-card .form-control:focus {
+            border-color: #005670;
+            box-shadow: 0 0 0 0.2rem rgba(0, 86, 112, 0.18);
+        }
+
+    .bill-to-card .form-text {
+        color: #5c7380;
+    }
+
+    .bill-to-body {
+        padding-top: 0.25rem;
+    }
+
+    .billing-toggle-wrapper {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1rem;
+    }
+
+    .billing-toggle-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-weight: 600;
+        color: #d4af37;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .billing-toggle-link:hover {
+            text-decoration: underline;
+            color: #d4af37;
+        }
+
+    @@media (max-width: 575.98px) {
+        .bill-to-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .bill-to-tag {
+            align-self: stretch;
+            text-align: center;
+        }
+    }
+
+
 </style>
 <input type="button" id="btnBillingModal" style="display:none" data-bs-toggle="modal" data-bs-target="#BillingModal" value="button test" />
 <div class="modal fade" id="BillingModal" tabindex="-1" aria-labelledby="BillingModal" aria-hidden="true">
@@ -195,6 +316,18 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+
+                @{
+                    var grossAmountRow = Model?.BillingDataList?.FirstOrDefault(x => x.ServiceType == "GrossAmount");
+                    var invoiceTo = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingTo) ? grossAmountRow?.BillingTo : Model?.MembersWithAttributes?.CustomerName;
+                    var invoiceMobile = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingMobile) ? grossAmountRow?.BillingMobile : Model?.MembersWithAttributes?.MobileNo;
+                    var invoiceEmail = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingEmail) ? grossAmountRow?.BillingEmail : Model?.MembersWithAttributes?.Email;
+                    var invoiceAddressLine1 = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingAddressLine1) ? grossAmountRow?.BillingAddressLine1 : Model?.MembersWithAttributes?.Address1;
+                    var invoiceAddressLine2 = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingAddressLine2) ? grossAmountRow?.BillingAddressLine2 : Model?.MembersWithAttributes?.Address2;
+                    var hasSavedBillingDetails = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingTo) || !string.IsNullOrWhiteSpace(grossAmountRow?.BillingMobile) || !string.IsNullOrWhiteSpace(grossAmountRow?.BillingEmail) || !string.IsNullOrWhiteSpace(grossAmountRow?.BillingAddressLine1) || !string.IsNullOrWhiteSpace(grossAmountRow?.BillingAddressLine2);
+                    var showBillingContact = hasSavedBillingDetails;
+                }
+
                 <div class="resposive_table review_table" style="background:#98c1d9">
                     <table class="table table-striped" style="margin-bottom:0px !important">
                         <tbody style="color:#000">
@@ -223,6 +356,56 @@
                         </tbody>
                     </table>
                 </div>
+
+
+
+                <div class="billing-toggle-wrapper">
+                    <a href="javascript:void(0)" class="mb-3 billing-toggle-link @(showBillingContact ? string.Empty : "collapsed")" id="toggleBillingDetails" aria-expanded="@(showBillingContact.ToString().ToLower())">
+                        <i class="bi bi-receipt"></i>
+                        <span>@(showBillingContact ? "Hide Bill To" : "Show Bill To")</span>
+                    </a>
+                </div>
+                <div class="bill-to-card mb-4 mt-3 @(showBillingContact ? string.Empty : "d-none")" id="billingDetailsCard">
+                    <div class="bill-to-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bill-to-icon">
+                                <i class="bi bi-person-lines-fill"></i>
+                            </div>
+                            <div>
+                                <h6 class="bill-to-title mb-1">Bill To</h6>
+                                <p class="bill-to-subtitle">Provide the contact information that should appear on the invoice.</p>
+                            </div>
+                        </div>
+                        <span class="bill-to-tag">Invoice Contact</span>
+                    </div>
+                    <div class="bill-to-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6 col-xl-4">
+                                <label class="form-label bill-to-label">Payer Name</label>
+                                <input type="text" class="form-control" name="InvoiceTo" value="@invoiceTo" placeholder="Enter person or company name" />
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-4">
+                                <label class="form-label bill-to-label">Phone Number</label>
+                                <input type="text" class="form-control" name="InvoiceMobile" value="@invoiceMobile" placeholder="Add a contact number" />
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-4">
+                                <label class="form-label bill-to-label">Email Address</label>
+                                <input type="email" class="form-control" name="InvoiceEmail" value="@invoiceEmail" placeholder="name@example.com" />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label bill-to-label">Billing Address</label>
+                                <input type="text" class="form-control" name="InvoiceAddressLine1" value="@invoiceAddressLine1" placeholder="Street, building, or company" />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label bill-to-label">Tax ID / GSTIN</label>
+                                <input type="text" class="form-control" name="InvoiceAddressLine2" value="@invoiceAddressLine2" placeholder="Enter registered Tax ID or GSTIN" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
                 <div class="row">
                     <div class="col-md-12">
                         <table class="table" id="tblBillingAttributes">

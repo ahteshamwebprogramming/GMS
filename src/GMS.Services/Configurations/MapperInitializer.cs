@@ -56,6 +56,7 @@ public class MapperInitializer : Profile
 
         CreateMap<AuditedRevenue, AuditedRevenueDTO>().ReverseMap();
         CreateMap<GuestReservation, GuestReservationDTO>().ReverseMap();
+        CreateMap<GuestCancellationVerification, GuestCancellationVerificationDTO>().ReverseMap();
         CreateMap<Sources, SourcesDTO>().ReverseMap();
         CreateMap<CreditDebitNoteAccount, CreditDebitNoteAccountDTO>().ReverseMap();
         CreateMap<GuestLedger, GuestLedgerDTO>().ReverseMap();

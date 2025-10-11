@@ -341,6 +341,19 @@ public class GuestsController : Controller
         {
             if (dataVM != null && dataVM.MemberDetail != null)
             {
+                #region NormalizeData Guest Data
+
+                dataVM.MemberDetail.MobileNo = CommonHelper.NormalizePhoneNumber(dataVM?.MemberDetail.MobileNo ?? "");
+
+                string fullname = string.Join(" ", new[] {
+                                        dataVM?.MemberDetail?.Fname,
+                                        dataVM?.MemberDetail?.Mname,
+                                        dataVM?.MemberDetail?.Lname
+                                    }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+                #endregion
+
+
                 #region CapsulateData
                 MembersDetailsDTO inputDTO = new MembersDetailsDTO();
                 inputDTO.Age = 0;
@@ -366,7 +379,7 @@ public class GuestsController : Controller
                 inputDTO.Relations = dataVM.MemberDetail.Relations;
                 inputDTO.ReferContact = dataVM.MemberDetail.ReferContact;
                 inputDTO.Email = dataVM.MemberDetail.Email;
-                inputDTO.MobileNo = dataVM.MemberDetail.MobileNo;
+                inputDTO.MobileNo = CommonHelper.NormalizePhoneNumber(dataVM.MemberDetail.MobileNo ?? "");
                 inputDTO.Remarks = dataVM.MemberDetail.Remarks;
                 inputDTO.UserId = Convert.ToInt32(User.FindFirstValue("Id"));
                 inputDTO.GuarenteeCode = dataVM.MemberDetail.GuarenteeCode;
@@ -460,7 +473,7 @@ public class GuestsController : Controller
 
                         inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
 
-                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
+                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", fullname);//When Id=0
 
                         inputDTO.GroupId = await _guestsAPIController.GenerateRandomNumberAndValidate();//When Id=0
                     }
@@ -498,7 +511,7 @@ public class GuestsController : Controller
                         inputDTO.IsApproved = 1;//When Id=0
                         inputDTO.ApprovedBy = Convert.ToInt32(User.FindFirstValue("Id")); //when id=0
                         inputDTO.UniqueNo = "NAAD00" + CommonHelper.GenerateNaadRandomNo();//When Id=0
-                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
+                        inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", fullname);//When Id=0
                         inputDTO.GroupId = dataVM.MemberDetail.GroupId;
                     }
 
@@ -534,7 +547,7 @@ public class GuestsController : Controller
                 }
                 if (String.IsNullOrEmpty(inputDTO.UHID))
                 {
-                    inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", dataVM?.MemberDetail?.Fname + " " + dataVM?.MemberDetail?.Mname + dataVM?.MemberDetail?.Lname);//When Id=0
+                    inputDTO.UHID = await _guestsAPIController.GenerateUHIDAndValidate(dataVM?.MemberDetail?.MobileNo ?? "", fullname);//When Id=0
                 }
 
                 //if (dataVM.MemberDetail.Id > 0)
@@ -1072,6 +1085,46 @@ public class GuestsController : Controller
         }
         return BadRequest("Unable to assign room at the moment");
     }
+    public async Task<IActionResult> GetCancellationVerification(int guestId)
+    {
+        if (guestId <= 0)
+        {
+            return BadRequest("Invalid guest details");
+        }
+
+        var res = await _guestsAPIController.GetCancellationVerification(guestId);
+        return res;
+    }
+    public async Task<IActionResult> VerifyCancellationAmount([FromBody] GuestCancellationVerificationDTO inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            var userId = User.FindFirstValue("Id");
+            if (!string.IsNullOrWhiteSpace(userId) && int.TryParse(userId, out var parsedUserId))
+            {
+                inputDTO.VerifiedBy = parsedUserId;
+            }
+
+            var res = await _guestsAPIController.VerifyCancellationAmount(inputDTO);
+            return res;
+        }
+
+        return BadRequest("Unable to verify the cancellation amount at the moment");
+    }
+    public async Task<IActionResult> CancelGuestReservation([FromBody] RoomAllocationDTO inputDTO)
+    {
+        if (inputDTO != null)
+        {
+            var userId = User.FindFirstValue("Id");
+            if (!string.IsNullOrWhiteSpace(userId) && int.TryParse(userId, out var parsedUserId))
+            {
+                inputDTO.CancelledBy = parsedUserId;
+            }
+            var res = await _guestsAPIController.CancelGuestReservation(inputDTO);
+            return res;
+        }
+        return BadRequest("Unable to cancel reservation at the moment");
+    }
     public async Task<IActionResult> AllocateRoomToAllGroup([FromBody] RoomAllocationDTO inputDTO)
     {
         if (inputDTO != null)
@@ -1469,6 +1522,7 @@ public class GuestsController : Controller
             }
             dto.AccountSettled = await _guestsAPIController.IsAccountSettled(inputDTO?.Id ?? 0);
         }
+
 
 
 

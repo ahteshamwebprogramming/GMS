@@ -57,6 +57,7 @@ public class UnitOfWork : IUnitOfWork
         Feedback = new FeedbackRepository(_dapperDBContext);
         AuditedRevenue = new AuditedRevenueRepository(_dapperDBContext);
         GuestReservation = new GuestReservationRepository(_dapperDBContext);
+        GuestCancellationVerification = new GuestCancellationVerificationRepository(_dapperDBContext);
         Sources = new SourcesRepository(_dapperDBContext);
         CreditDebitNoteAccount = new CreditDebitNoteAccountRepository(_dapperDBContext);
         GuestLedger = new GuestLedgerRepository(_dapperDBContext);
@@ -108,6 +109,7 @@ public class UnitOfWork : IUnitOfWork
 
     public IAuditedRevenueRepository AuditedRevenue { get; private set; }
     public IGuestReservationRepository GuestReservation { get; private set; }
+    public IGuestCancellationVerificationRepository GuestCancellationVerification { get; private set; }
     public ISourcesRepository Sources { get; private set; }
     public ICreditDebitNoteAccountRepository CreditDebitNoteAccount { get; private set; }
     public IGuestLedgerRepository GuestLedger { get; private set; }

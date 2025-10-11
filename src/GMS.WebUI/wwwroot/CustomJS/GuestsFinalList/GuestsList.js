@@ -1414,3 +1414,322 @@ function GuestNoShow(Id) {
         }
     });
 }
+
+function CancelGuestReservation(Id) {
+    BlockUI();
+    $.ajax({
+        type: "GET",
+        url: "/Guests/GetCancellationVerification",
+        data: { guestId: Id },
+        success: function (verificationData) {
+            UnblockUI();
+            openCancelReservationPopup(Id, verificationData);
+        },
+        error: function (error) {
+            UnblockUI();
+            const errorText = error && error.responseText ? error.responseText : 'Unable to fetch cancellation details right now';
+            $erroralert("Transaction Failed!", errorText + '!');
+        }
+    });
+}
+
+function openCancelReservationPopup(Id, verificationData) {
+    let isAmountVerified = verificationData && verificationData.isVerified === true;
+    let verifiedOnText = verificationData && verificationData.verifiedOn ? formatCancellationTimestamp(verificationData.verifiedOn) : '';
+    let verifiedAmount = verificationData && verificationData.cancellationAmount !== undefined && verificationData.cancellationAmount !== null
+        ? verificationData.cancellationAmount
+        : '';
+
+    Swal.fire({
+        title: 'Cancel Reservation?',
+        html: `
+            <p>This will cancel the reservation and release the room for other guests.</p>
+            <div style="text-align: left;">
+                <label for="cancellationMode" style="display:block;margin-bottom:5px;">Request Mode</label>
+                <select id="cancellationMode" class="form-select" style="width: 100%; margin-bottom: 15px;">
+                    <option value="">Select mode</option>
+                    <option value="1">Email</option>
+                    <option value="2">Phone</option>
+                    <option value="3">In Person</option>
+                </select>
+                <label for="cancellationRequestedBy" style="display:block;margin-bottom:5px;">Requested By</label>
+                <input type="text" id="cancellationRequestedBy" class="form-control" style="width: 100%; margin-bottom: 15px;" />
+                <label for="cancellationAmount" style="display:block;margin-bottom:5px;">Refund Amount</label>
+                <div style="display:flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="number" id="cancellationAmount" class="form-control" style="flex:1;" min="0" step="0.01" placeholder="Enter refund amount" />
+                    <button type="button" class="btn btn-outline-primary" id="verifyCancellationAmount">Verify</button>
+                </div>
+                <div id="verificationStatusMessage" class="small mb-3"></div>
+                <label for="cancelReason" style="display:block;margin-bottom:5px;">Comments</label>
+                <textarea id="cancelReason" style="width: 100%; height: 100px; padding: 8px; resize: vertical; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            </div>
+        `,
+        imageUrl: 'https://cdn-icons-png.flaticon.com/512/5974/5974771.png',
+        imageWidth: 64,
+        imageHeight: 64,
+        imageAlt: 'Cancel Reservation Icon',
+        showCancelButton: true,
+        confirmButtonText: 'Cancel Reservation',
+        cancelButtonText: 'Keep Booking',
+        customClass: {
+            popup: 'custom-ns-popup',
+            confirmButton: 'btn btn-danger me-3',
+            cancelButton: 'btn btn-label-secondary',
+        },
+        buttonsStyling: false,
+        didOpen: () => {
+            const popup = Swal.getPopup();
+            const amountInput = popup.querySelector('#cancellationAmount');
+            const verifyButton = popup.querySelector('#verifyCancellationAmount');
+            const statusMessage = popup.querySelector('#verificationStatusMessage');
+            const confirmButton = Swal.getConfirmButton();
+            const parseAmountValue = (value) => {
+                if (value === null || value === undefined || value === '') {
+                    return null;
+                }
+                const parsed = parseFloat(value);
+                return Number.isNaN(parsed) ? null : parsed;
+            };
+            const totalAmountPaid = parseAmountValue(verificationData && verificationData.totalAmountPaid);
+
+            const defaultVerifyText = verifyButton ? verifyButton.innerHTML : 'Verify';
+            const warningMessage = 'Please verify the refund amount to continue.';
+            const formatVerifiedStatus = () => verifiedOnText ? `Amount verified on ${verifiedOnText}.` : 'Amount verified.';
+            const amountsAreEqual = (first, second) => {
+                const firstValue = parseFloat(first);
+                const secondValue = parseFloat(second);
+                if (Number.isNaN(firstValue) || Number.isNaN(secondValue)) {
+                    return false;
+                }
+                return Math.abs(firstValue - secondValue) < 0.01;
+            };
+            const setStatus = (message, type) => {
+                if (!statusMessage) {
+                    return;
+                }
+                statusMessage.textContent = message;
+                statusMessage.classList.remove('text-success', 'text-danger', 'text-warning');
+                if (type === 'success') {
+                    statusMessage.classList.add('text-success');
+                } else if (type === 'error') {
+                    statusMessage.classList.add('text-danger');
+                } else {
+                    statusMessage.classList.add('text-warning');
+                }
+            };
+            const updateConfirmButton = () => {
+                if (confirmButton) {
+                    confirmButton.disabled = !isAmountVerified;
+                }
+            };
+
+            if (statusMessage) {
+                statusMessage.classList.add('text-warning');
+            }
+
+            if (amountInput) {
+                if (verifiedAmount !== '') {
+                    amountInput.value = verifiedAmount;
+                    amountInput.setAttribute('data-verified-value', verifiedAmount);
+                } else if (totalAmountPaid !== null) {
+                    amountInput.value = totalAmountPaid.toFixed(2);
+                }
+            }
+
+            if (isAmountVerified) {
+                setStatus(formatVerifiedStatus(), 'success');
+                if (verifyButton) {
+                    verifyButton.disabled = true;
+                    verifyButton.innerHTML = 'Verified';
+                }
+            } else {
+                setStatus(warningMessage, 'warning');
+                if (verifyButton) {
+                    verifyButton.disabled = false;
+                    verifyButton.innerHTML = defaultVerifyText;
+                }
+            }
+
+            updateConfirmButton();
+
+            if (amountInput) {
+                amountInput.addEventListener('input', function () {
+                    const verifiedValue = amountInput.getAttribute('data-verified-value');
+                    if (verifiedValue !== null && verifiedValue !== '' && amountsAreEqual(verifiedValue, amountInput.value)) {
+                        isAmountVerified = true;
+                        setStatus(formatVerifiedStatus(), 'success');
+                        if (verifyButton) {
+                            verifyButton.disabled = true;
+                            verifyButton.innerHTML = 'Verified';
+                        }
+                    } else {
+                        isAmountVerified = false;
+                        setStatus(warningMessage, 'warning');
+                        if (verifyButton) {
+                            verifyButton.disabled = false;
+                            verifyButton.innerHTML = defaultVerifyText;
+                        }
+                    }
+                    updateConfirmButton();
+                });
+            }
+
+            if (verifyButton) {
+                verifyButton.addEventListener('click', function () {
+                    const amountValue = amountInput ? amountInput.value.trim() : '';
+                    if (amountValue === '') {
+                        setStatus('Please enter a refund amount to verify.', 'error');
+                        return;
+                    }
+
+                    const parsedAmount = parseFloat(amountValue);
+                    if (Number.isNaN(parsedAmount)) {
+                        setStatus('Please enter a valid numeric refund amount.', 'error');
+                        return;
+                    }
+
+                    const originalButtonContent = verifyButton.innerHTML;
+                    verifyButton.disabled = true;
+                    verifyButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Verifying...';
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/Guests/VerifyCancellationAmount',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            guestId: Id,
+                            cancellationAmount: parsedAmount
+                        }),
+                        success: function (response) {
+                            isAmountVerified = response && response.isVerified === true;
+                            const responseAmount = response && response.cancellationAmount !== undefined && response.cancellationAmount !== null
+                                ? response.cancellationAmount
+                                : parsedAmount;
+
+                            verifiedAmount = responseAmount;
+                            if (amountInput) {
+                                amountInput.value = responseAmount;
+                                amountInput.setAttribute('data-verified-value', responseAmount);
+                            }
+
+                            verifiedOnText = response && response.verifiedOn ? formatCancellationTimestamp(response.verifiedOn) : formatCancellationTimestamp(new Date());
+                            setStatus(formatVerifiedStatus(), 'success');
+                            verifyButton.innerHTML = 'Verified';
+                        },
+                        error: function (error) {
+                            isAmountVerified = false;
+                            const errorMessage = error && error.responseText ? error.responseText : 'Unable to verify the refund amount right now.';
+                            setStatus(errorMessage, 'error');
+                            verifyButton.innerHTML = originalButtonContent;
+                            verifyButton.disabled = false;
+                        },
+                        complete: function () {
+                            updateConfirmButton();
+                            if (isAmountVerified) {
+                                verifyButton.disabled = true;
+                            }
+                        }
+                    });
+                });
+            }
+        },
+        preConfirm: () => {
+            if (!isAmountVerified) {
+                Swal.showValidationMessage('Please verify the refund amount before cancelling.');
+                return false;
+            }
+
+            const modeElement = document.getElementById('cancellationMode');
+            const requestedByElement = document.getElementById('cancellationRequestedBy');
+            const reasonElement = document.getElementById('cancelReason');
+
+            const mode = modeElement ? modeElement.value : '';
+            const requestedBy = requestedByElement ? requestedByElement.value.trim() : '';
+            const reason = reasonElement ? reasonElement.value.trim() : '';
+
+            if (!mode) {
+                Swal.showValidationMessage('Please select a request mode.');
+                return false;
+            }
+
+            if (!reason) {
+                Swal.showValidationMessage('Please enter comments.');
+                return false;
+            }
+
+            if (!requestedBy) {
+                Swal.showValidationMessage('Please enter who requested the cancellation.');
+                return false;
+            }
+
+            const amountField = document.getElementById('cancellationAmount');
+            const cancellationAmount = amountField ? parseFloat(amountField.value) : null;
+
+            return {
+                reason,
+                mode: parseInt(mode, 10),
+                requestedBy,
+                cancellationAmount
+            };
+        }
+    }).then(function (result) {
+        if (result.isConfirmed && result.value) {
+            BlockUI();
+            var inputDTO = {
+                GuestId: Id,
+                CancelledReason: result.value.reason,
+                ModeOfCancellation: result.value.mode,
+                Cancelled: true,
+                CancellationRequestedBy: result.value.requestedBy
+            };
+            $.ajax({
+                type: "POST",
+                url: "/Guests/CancelGuestReservation",
+                contentType: 'application/json',
+                data: JSON.stringify(inputDTO),
+                success: function (data) {
+                    UnblockUI();
+                    const bookingId = data && data.bookingId ? data.bookingId : 'N/A';
+                    const cancellationId = data && data.cancellationId ? data.cancellationId : 'N/A';
+                    let requestedOn = formatCancellationTimestamp(data && data.cancelledOn);
+                    if (!requestedOn) {
+                        requestedOn = formatCancellationTimestamp(new Date());
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cancellation Successful',
+                        html: `<div style="text-align:left;">Your booking <strong>[Booking ID: ${bookingId}]</strong> has been cancelled successfully.<br/>Cancellation ID: <strong>${cancellationId}</strong><br/>Requested on: <strong>${requestedOn}</strong></div>`,
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    }).then(function () {
+                        GuestsListPartialView();
+                    });
+                },
+                error: function (error) {
+                    $erroralert("Transaction Failed!", error.responseText + '!');
+                    UnblockUI();
+                }
+            });
+        }
+    });
+}
+function formatCancellationTimestamp(dateValue) {
+    if (!dateValue || typeof moment === 'undefined') {
+        return '';
+    }
+
+    const dateMoment = moment(dateValue);
+
+    if (!dateMoment.isValid()) {
+        return '';
+    }
+
+    const month = dateMoment.format('MMM');
+    const formattedMonth = month === 'Sep' ? 'Sept' : month;
+
+    return `${dateMoment.format('DD')}-${formattedMonth}-${dateMoment.format('YYYY hh:mm A')}`;
+}

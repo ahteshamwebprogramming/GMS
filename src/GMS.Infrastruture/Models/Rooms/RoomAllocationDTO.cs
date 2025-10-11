@@ -32,4 +32,13 @@ public class RoomAllocationDTO
     public string? Reason { get; set; }
     public bool? NoShow { get; set; }
     public string? NoShowReason { get; set; }
+
+    public bool? Cancelled { get; set; }
+    public string? CancelledReason { get; set; }
+    public int? ModeOfCancellation { get; set; }
+    public int? CancelledBy { get; set; }
+    public DateTime? CancelledOn { get; set; }
+    public string? CancellationId { get; set; }
+    public string? CancellationRequestedBy { get; set; }
+
 }

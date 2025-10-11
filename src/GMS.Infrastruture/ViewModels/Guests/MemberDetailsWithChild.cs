@@ -17,6 +17,7 @@ public class MemberDetailsWithChild : MembersDetailsDTO
     public string? RType { get; set; }
     public bool InHouse { get; set; }
     public int? CheckInStatus { get; set; }
+    public bool? Cancelled { get; set; }
     public double? PackagePrice { get; set; }
     public double? RoomPrice { get; set; }
     public string? GuestTask { get; set; }

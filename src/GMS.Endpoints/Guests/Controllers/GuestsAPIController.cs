@@ -18,6 +18,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Net.Mail;
 using System.Reflection.Metadata;
+using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -574,23 +575,30 @@ public class GuestsAPIController : ControllerBase
                     selectData = $"count(1)";
                 }
 
-                query = $"Select {selectData} FROM GMSFinalGuest FG left Join GenderMaster gm on fg.Gender=gm.Id ";
+                if (inputDTO?.GuestsListType == "Cancelled")
+                {
+                    statusFilter += $" and isnull(ra.Cancelled,0)=1";
+                }
+                else
+                {
+                    statusFilter += $" and isnull(ra.Cancelled,0)=0";
 
-                if (inputDTO?.GuestsListType == "Current")
-                {
-                    statusFilter += $" and convert(date,getdate()) BETWEEN Convert(date,DOA) AND Convert(date,DOD) ";
-                }
-                else if (inputDTO?.GuestsListType == "All")
-                {
-                    statusFilter += $"  ";
-                }
-                else if (inputDTO?.GuestsListType == "Upcoming")
-                {
-                    statusFilter += $" and convert(date,getdate()) < Convert(date,DOA) ";
-                }
-                else if (inputDTO?.GuestsListType == "Previous")
-                {
-                    statusFilter += $" and convert(date,getdate()) > Convert(date,DOA) ";
+                    if (inputDTO?.GuestsListType == "Current")
+                    {
+                        statusFilter += $" and convert(date,getdate()) BETWEEN Convert(date,DOA) AND Convert(date,DOD) ";
+                    }
+                    else if (inputDTO?.GuestsListType == "All")
+                    {
+                        statusFilter += $"  ";
+                    }
+                    else if (inputDTO?.GuestsListType == "Upcoming")
+                    {
+                        statusFilter += $" and convert(date,getdate()) < Convert(date,DOA) ";
+                    }
+                    else if (inputDTO?.GuestsListType == "Previous")
+                    {
+                        statusFilter += $" and convert(date,getdate()) > Convert(date,DOA) ";
+                    }
                 }
 
                 string whereClause = " 1=1 ";
@@ -650,6 +658,8 @@ public class GuestsAPIController : ControllerBase
                 searchFilter += $" ( ";
                 searchFilter += $" (dbo.NormalizeSpaces(CustomerName) like '%{inputDTO.SearchKeyword}%')";
                 searchFilter += $" or (UHID like '%{inputDTO.SearchKeyword}%')";
+                searchFilter += $" or (GroupId like '%{inputDTO.SearchKeyword}%')";
+                searchFilter += $" or (rt.RType like '%{inputDTO.SearchKeyword}%')";
                 searchFilter += $" OR (FORMAT(isnull(isnull(ra.CheckOutDate,DateOfDepartment),ra.TD), 'dd-MMM-yyyy') LIKE '%{inputDTO.SearchKeyword}%')";
                 searchFilter += $" or (Replace(MobileNo,' ','') like Replace('%{inputDTO.SearchKeyword}%',' ',''))";
                 searchFilter += $" ) ";
@@ -679,9 +689,11 @@ public class GuestsAPIController : ControllerBase
                                     ,(select count(1) from [dbo].[GuestsChkList] gcl where gcl.GuestID=md.Id) IsChecked
                                     ,md.Age
                                     ,md.Nationality 
+                                    ,isnull(ra.Cancelled,0) Cancelled
                                     ,isnull(isnull(ra.CheckInDate,DateOfArrival),ra.FD)DateOfArrival 
                                     ,isnull(isnull(ra.CheckOutDate,DateOfDepartment),ra.TD)DateOfDepartment
                                     ,rt.RType
+                                    ,rt.RType RoomTypeName
                                     ,(SELECT STUFF((SELECT ', ' + convert(nvarchar(20),'Room No '+ra.RNumber) 
                                         FROM RoomAllocation ra 
                                         WHERE ra.GuestID = md.Id 
@@ -703,24 +715,32 @@ public class GuestsAPIController : ControllerBase
 
                 query = $"Select {selectData} FROM MembersDetails md\r\nleft Join RoomType rt on md.RoomType=rt.ID\r\nleft Join GenderMaster g on md.Gender=g.Id\r\nleft join MstCategory mc on mc.ID=md.ServiceId\r\nleft join Services s on s.ID=md.CatID Left Join RoomAllocation ra on md.Id=ra.GuestID and ra.IsActive=1";
 
-                if (inputDTO?.GuestsListType == "Current")
+                if (inputDTO?.GuestsListType == "Cancelled")
                 {
-                    statusFilter += $" and ( convert(datetime,getdate()) BETWEEN Convert(datetime,isnull(ra.CheckInDate,DateOfArrival)) AND Convert(datetime,isnull(ra.CheckOutDate,DateOfDepartment)) or (Convert(datetime,ra.CheckInDate) is not null and  Convert(datetime,ra.CheckOutDate) is null ) )";
-                    //statusFilter += $" and convert(datetime,getdate()) BETWEEN Convert(datetime,isnull(ra.CheckInDate,DateOfArrival)) AND Convert(datetime,isnull(ra.CheckOutDate,DateOfDepartment)) ";
+                    statusFilter += $" and isnull(ra.Cancelled,0)=1";
                 }
-                else if (inputDTO?.GuestsListType == "All")
+                else
                 {
-                    statusFilter += $"  ";
-                }
-                else if (inputDTO?.GuestsListType == "Upcoming")
-                {
-                    statusFilter += $" and convert(datetime,getdate()) < Convert(datetime,isnull(ra.CheckInDate,DateOfArrival)) ";
-                }
-                else if (inputDTO?.GuestsListType == "Previous")
-                {
-                    statusFilter += $" and convert(datetime,getdate()) > Convert(datetime,isnull(ra.CheckInDate,DateOfArrival)) ";
-                }
+                    statusFilter += $" and isnull(ra.Cancelled,0)=0";
 
+                    if (inputDTO?.GuestsListType == "Current")
+                    {
+                        statusFilter += $" and ( convert(datetime,getdate()) BETWEEN Convert(datetime,isnull(ra.CheckInDate,DateOfArrival)) AND Convert(datetime,isnull(ra.CheckOutDate,DateOfDepartment)) or (Convert(datetime,ra.CheckInDate) is not null and  Convert(datetime,ra.CheckOutDate) is null ) )";
+                        //statusFilter += $" and convert(datetime,getdate()) BETWEEN Convert(datetime,isnull(ra.CheckInDate,DateOfArrival)) AND Convert(datetime,isnull(ra.CheckOutDate,DateOfDepartment)) ";
+                    }
+                    else if (inputDTO?.GuestsListType == "All")
+                    {
+                        statusFilter += $"  ";
+                    }
+                    else if (inputDTO?.GuestsListType == "Upcoming")
+                    {
+                        statusFilter += $" and convert(datetime,getdate()) < Convert(datetime,isnull(ra.CheckInDate,DateOfArrival)) ";
+                    }
+                    else if (inputDTO?.GuestsListType == "Previous")
+                    {
+                        statusFilter += $" and convert(datetime,getdate()) > Convert(datetime,isnull(ra.CheckInDate,DateOfArrival)) ";
+                    }
+                }
                 string whereClause = " md.Status=1  ";
                 whereClause += statusFilter + searchFilter;
                 if (!String.IsNullOrEmpty(whereClause))
@@ -1018,10 +1038,25 @@ public class GuestsAPIController : ControllerBase
                                                               FROM Rooms r
                                                               WHERE r.RTypeID = @RTypeID
                                                                 AND r.Status = @Status
+                                                                AND NOT EXISTS (
+                                                                  SELECT 1
+                                                                  FROM RoomLock rl
+                                                                  WHERE rl.Status = 1
+                                                                    AND rl.[Type] IN ('Lock', 'Hold')
+                                                                    AND (
+                                                                          (rl.Rooms IS NOT NULL AND rl.Rooms = r.RNumber)
+                                                                       OR (rl.Rooms IS NULL AND rl.RType = r.RTypeID)
+                                                                        )
+                                                                    AND (
+                                                                          (rl.FD IS NULL OR CAST(rl.FD AS DATE) <= CAST(@EndDate AS DATE))
+                                                                      AND (rl.ED IS NULL OR CAST(rl.ED AS DATE) >= CAST(@StartDate AS DATE))
+                                                                        )
+                                                                )
                                                                 AND r.RNumber NOT IN (
                                                                   SELECT isnull(ra.RNumber,'')
                                                                   FROM RoomAllocation ra
                                                                   WHERE ra.IsActive = 1
+                                                                    AND ISNULL(ra.Cancelled, 0) = 0
                                                                     --AND (
                                                                     --  -- Case 1: Both CheckInDate and CheckOutDate are NOT NULL
                                                                     --  (
@@ -1080,10 +1115,24 @@ Select @StartDate = (Case when md.DateOfArrival > getdate() then md.DateOfArriva
                                                               FROM Rooms r
                                                               WHERE r.RTypeID = @RTypeID
                                                                 AND r.Status = @Status
+                                                                AND NOT EXISTS (
+                                                                  SELECT 1
+                                                                  FROM RoomLock rl
+                                                                  WHERE rl.Status = 1
+                                                                    AND rl.[Type] IN ('Lock', 'Hold')
+                                                                    AND (
+                                                                          (rl.Rooms IS NOT NULL AND rl.Rooms = r.RNumber)
+                                                                       OR (rl.Rooms IS NULL AND rl.RType = r.RTypeID)
+                                                                        )
+                                                                    AND (
+                                                                          (rl.FD IS NULL OR CAST(rl.FD AS DATE) <= CAST(@EndDate AS DATE))
+                                                                      AND (rl.ED IS NULL OR CAST(rl.ED AS DATE) >= CAST(@StartDate AS DATE))
+                                                                        )
+                                                                )
                                                                 AND r.RNumber NOT IN (
                                                                   SELECT isnull(ra.RNumber,'')
                                                                   FROM RoomAllocation ra
-                                                                  WHERE ra.IsActive = 1 and ra.Shared=2
+                                                                  WHERE ra.IsActive = 1 and ISNULL(ra.Cancelled, 0) = 0 and ra.Shared=2
                                                                     --AND (
                                                                       -- Case 1: Both CheckInDate and CheckOutDate are NOT NULL
                                                                       --(
@@ -1120,10 +1169,10 @@ Select @StartDate = (Case when md.DateOfArrival > getdate() then md.DateOfArriva
 )
 Select ar.RNumber RoomNo,
 	isnull((STUFF((
-	Select '-' + md.CustomerName from RoomAllocation ra Left Join MembersDetails md on ra.GuestID = md.Id where ra.RNumber= ar.RNumber and ar.Rnumber in (
+	Select '-' + md.CustomerName from RoomAllocation ra Left Join MembersDetails md on ra.GuestID = md.Id where ra.RNumber= ar.RNumber and ISNULL(ra.Cancelled, 0) = 0 and ar.Rnumber in (
                                                                   SELECT isnull(ra1.RNumber,'')
                                                                   FROM RoomAllocation ra1																  
-                                                                  WHERE ra1.IsActive = 1
+                                                                  WHERE ra1.IsActive = 1 and ISNULL(ra1.Cancelled, 0) = 0
                                                                     AND (
                                                                         @StartDate BETWEEN ISNULL(ra.CheckInDate, ra.FD) AND ISNULL(ra.CheckOutDate, ra.TD)  
                                                                         OR 
@@ -1140,7 +1189,7 @@ Select ar.RNumber RoomNo,
                                                                 )
 	FOR XML PATH(''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 1, '' )),'') as SharedWith
 																
-from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') from RoomAllocation ral where ral.GuestID=@GuestId)";
+from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') from RoomAllocation ral where ral.GuestID=@GuestId) and ISNULL(ral.Cancelled, 0) = 0)";
             var sParameters = new { @GuestId = GuestId };
             var res = await _unitOfWork.GenOperations.GetTableData<AvailableRoomsForGuestAllocation>(sQuery, sParameters);
             return Ok(res);
@@ -1321,6 +1370,8 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
                                     WHERE GuestID in (SELECT Id
                                     FROM MembersDetails
                                     WHERE GroupId = (SELECT GroupId FROM GuestGroup))
+                                    AND IsActive = 1
+                                    AND ISNULL(Cancelled, 0) = 0
                                     ORDER BY Id DESC
                                 ),
                                 ExcludedGuestIDs AS (
@@ -1328,16 +1379,32 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
                                     FROM RoomAllocation ra
                                     WHERE ra.GuestID IN (SELECT GuestID FROM GroupMembers)
                                       AND ra.RNumber = (SELECT RNumber FROM GuestLastRoom)
+                                      AND ra.IsActive = 1
+                                      AND ISNULL(ra.Cancelled, 0) = 0
                                 ),
                                 AvailableRooms AS ( 
                                 SELECT r.RNumber
                                 FROM Rooms r
                                 WHERE r.RTypeID = @RTypeID
                                 AND r.Status = @Status
+                                AND NOT EXISTS (
+                                    SELECT 1
+                                    FROM RoomLock rl
+                                    WHERE rl.Status = 1
+                                      AND rl.[Type] IN ('Lock', 'Hold')
+                                      AND (
+                                            (rl.Rooms IS NOT NULL AND rl.Rooms = r.RNumber)
+                                         OR (rl.Rooms IS NULL AND rl.RType = r.RTypeID)
+                                          )
+                                      AND (
+                                            (rl.FD IS NULL OR CAST(rl.FD AS DATE) <= CAST(@EndDate AS DATE))
+                                        AND (rl.ED IS NULL OR CAST(rl.ED AS DATE) >= CAST(@StartDate AS DATE))
+                                          )
+                                )
                                 AND r.RNumber NOT IN (
                                 SELECT isnull(ra.RNumber,'')
                                 FROM RoomAllocation ra
-                                WHERE ra.IsActive = 1 and ra.GuestID not in (SELECT GuestID FROM ExcludedGuestIDs)
+                                WHERE ra.IsActive = 1 and ISNULL(ra.Cancelled, 0) = 0 and ra.GuestID not in (SELECT GuestID FROM ExcludedGuestIDs)
                                 AND (
                                     @StartDate BETWEEN ISNULL(CheckInDate, FD) AND ISNULL(CheckOutDate, TD)  
                                     OR 
@@ -1729,6 +1796,307 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
             _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
             throw;
         }
+    }
+
+    public async Task<IActionResult> GetCancellationVerification(int guestId)
+    {
+        try
+        {
+            if (guestId <= 0)
+            {
+                return BadRequest("Invalid guest details");
+            }
+
+            var verification = await _unitOfWork.GuestCancellationVerification.GetEntityData<GuestCancellationVerification>(
+                "SELECT TOP 1 * FROM GuestCancellationVerification WHERE GuestId=@GuestId",
+                new { @GuestId = guestId });
+
+            var totalAmountPaid = await GetTotalAmountPaidForGuest(guestId);
+
+            if (verification == null)
+            {
+                return Ok(new GuestCancellationVerificationDTO
+                {
+                    GuestId = guestId,
+                    CancellationAmount = totalAmountPaid,
+                    TotalAmountPaid = totalAmountPaid,
+                    IsVerified = false
+                });
+            }
+
+            var response = _mapper.Map<GuestCancellationVerificationDTO>(verification);
+            response.TotalAmountPaid = totalAmountPaid;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetCancellationVerification)}");
+            throw;
+        }
+    }
+
+    public async Task<IActionResult> VerifyCancellationAmount(GuestCancellationVerificationDTO inputDTO)
+    {
+        try
+        {
+            if (inputDTO == null || inputDTO.GuestId <= 0)
+            {
+                return BadRequest("Invalid guest details");
+            }
+
+            if (inputDTO.CancellationAmount < 0)
+            {
+                return BadRequest("Cancellation amount cannot be negative");
+            }
+
+            var memberDetail = await _unitOfWork.MembersDetails.GetEntityData<MembersDetails>("Select * from MembersDetails where Id=@Id", new { @Id = inputDTO.GuestId });
+            if (memberDetail == null)
+            {
+                return BadRequest("Unable to find the details of the guest");
+            }
+
+            var verification = await _unitOfWork.GuestCancellationVerification.GetEntityData<GuestCancellationVerification>(
+                "SELECT TOP 1 * FROM GuestCancellationVerification WHERE GuestId=@GuestId",
+                new { @GuestId = inputDTO.GuestId });
+
+            var now = DateTime.Now;
+
+            if (verification == null)
+            {
+                verification = new GuestCancellationVerification
+                {
+                    GuestId = inputDTO.GuestId,
+                    CancellationAmount = inputDTO.CancellationAmount,
+                    IsVerified = true,
+                    VerifiedOn = now,
+                    VerifiedBy = inputDTO.VerifiedBy
+                };
+
+                verification.Id = await _unitOfWork.GuestCancellationVerification.AddAsync(verification);
+                if (verification.Id <= 0)
+                {
+                    return BadRequest("Unable to verify the cancellation amount right now");
+                }
+            }
+            else
+            {
+                verification.CancellationAmount = inputDTO.CancellationAmount;
+                verification.IsVerified = true;
+                verification.VerifiedOn = now;
+                verification.VerifiedBy = inputDTO.VerifiedBy;
+
+                bool isUpdated = await _unitOfWork.GuestCancellationVerification.UpdateAsync(verification);
+                if (!isUpdated)
+                {
+                    return BadRequest("Unable to verify the cancellation amount right now");
+                }
+            }
+
+            var response = _mapper.Map<GuestCancellationVerificationDTO>(verification);
+            response.TotalAmountPaid = await GetTotalAmountPaidForGuest(inputDTO.GuestId);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(VerifyCancellationAmount)}");
+            throw;
+        }
+    }
+
+    private async Task<decimal> GetTotalAmountPaidForGuest(int guestId)
+    {
+        if (guestId <= 0)
+        {
+            return 0m;
+        }
+
+        const string totalPaymentsQuery = @"SELECT ISNULL(SUM(p.Amount), 0) AS TotalAmount
+                                            FROM Payment p
+                                            WHERE p.IsActive = 1
+                                            AND (
+                                                p.GuestId = @GuestId
+                                                OR p.GuestId IN (
+                                                    SELECT DISTINCT md.Id
+                                                    FROM MembersDetails md
+                                                    LEFT JOIN RoomAllocation ra ON md.Id = ra.GuestID
+                                                    WHERE md.GroupId = (
+                                                        SELECT GroupId
+                                                        FROM MembersDetails
+                                                        WHERE Id = @GuestId
+                                                    )
+                                                    AND ra.RNumber IN (
+                                                        SELECT RNumber
+                                                        FROM RoomAllocation
+                                                        WHERE GuestID = @GuestId
+                                                    )
+                                                )
+                                            )";
+
+        var totalPayments = await _unitOfWork.GenOperations.GetEntityData<BillingDTO>(totalPaymentsQuery, new { @GuestId = guestId });
+        var totalAmountPaid = totalPayments?.TotalAmount ?? 0d;
+
+        return Convert.ToDecimal(totalAmountPaid);
+    }
+
+    public async Task<IActionResult> CancelGuestReservation(RoomAllocationDTO inputDTO)
+    {
+        try
+        {
+            if (inputDTO.GuestId == null)
+            {
+                return BadRequest("Invalid guest details");
+            }
+
+            var memberDetail = await _unitOfWork.GenOperations.GetEntityData<MembersDetails>("Select * from MembersDetails where Id=@Id", new { @Id = inputDTO.GuestId });
+            if (memberDetail == null)
+            {
+                return BadRequest("Unable to find the details of the guest");
+            }
+
+            if (memberDetail.Status != 1)
+            {
+                return BadRequest("Reservation cannot be cancelled in the current status");
+            }
+
+            string? cancellationReason = !string.IsNullOrWhiteSpace(inputDTO.CancelledReason)
+                ? inputDTO.CancelledReason
+                : inputDTO.Reason;
+
+            if (string.IsNullOrWhiteSpace(cancellationReason))
+            {
+                return BadRequest("Please provide a cancellation reason");
+            }
+
+            if (inputDTO.ModeOfCancellation == null || inputDTO.ModeOfCancellation <= 0)
+            {
+                return BadRequest("Please select a mode of cancellation");
+            }
+
+            if (string.IsNullOrWhiteSpace(inputDTO.CancellationRequestedBy))
+            {
+                return BadRequest("Please specify who requested the cancellation");
+            }
+
+            var verification = await _unitOfWork.GuestCancellationVerification.GetEntityData<GuestCancellationVerification>(
+                "SELECT TOP 1 * FROM GuestCancellationVerification WHERE GuestId=@GuestId",
+                new { @GuestId = inputDTO.GuestId });
+
+            if (verification == null || !verification.IsVerified)
+            {
+                return BadRequest("Please verify the refund amount before cancelling this reservation");
+            }
+
+            var roomAllocation = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>("Select * from RoomAllocation where GuestID=@GuestId and IsActive=1", new { @GuestId = inputDTO.GuestId });
+            bool isExistingAllocation = roomAllocation != null;
+
+            if (!isExistingAllocation)
+            {
+                roomAllocation = new RoomAllocation
+                {
+                    GuestId = inputDTO.GuestId,
+                    Fd = memberDetail.DateOfArrival,
+                    Td = memberDetail.DateOfDepartment,
+                    AsigndDate = DateTime.Now,
+                    IsActive = 1,
+                    CreeatedBy = inputDTO.CancelledBy,
+                    Rtype = memberDetail.RoomType
+                };
+            }
+            else if (roomAllocation.Cancelled == true)
+            {
+                return BadRequest("Reservation has already been cancelled");
+            }
+
+            string cancellationId = roomAllocation.CancellationId ?? await GenerateUniqueCancellationId();
+            DateTime cancellationTimestamp = DateTime.Now;
+
+            roomAllocation.Cancelled = true;
+            roomAllocation.CancelledReason = cancellationReason;
+            roomAllocation.ModeOfCancellation = inputDTO.ModeOfCancellation;
+            roomAllocation.CancelledBy = inputDTO.CancelledBy;
+            roomAllocation.CancelledOn = cancellationTimestamp;
+            roomAllocation.CancellationId = cancellationId;
+            roomAllocation.CancellationRequestedBy = inputDTO.CancellationRequestedBy?.Trim();
+            roomAllocation.ModifiedBy = inputDTO.CancelledBy ?? roomAllocation.ModifiedBy;
+            roomAllocation.ModifiedDate = cancellationTimestamp;
+
+            if (roomAllocation.Fd == null)
+            {
+                roomAllocation.Fd = memberDetail.DateOfArrival;
+            }
+
+            if (roomAllocation.Td == null)
+            {
+                roomAllocation.Td = memberDetail.DateOfDepartment;
+            }
+
+            if (roomAllocation.AsigndDate == null)
+            {
+                roomAllocation.AsigndDate = cancellationTimestamp;
+            }
+
+            if (roomAllocation.IsActive == null)
+            {
+                roomAllocation.IsActive = 1;
+            }
+
+            if (roomAllocation.Rtype == null)
+            {
+                roomAllocation.Rtype = memberDetail.RoomType;
+            }
+
+            if (isExistingAllocation)
+            {
+                bool allocationUpdated = await _unitOfWork.RoomAllocation.UpdateAsync(roomAllocation);
+                if (!allocationUpdated)
+                {
+                    return BadRequest("Unable to cancel reservation right now");
+                }
+            }
+            else
+            {
+                roomAllocation.Id = await _unitOfWork.RoomAllocation.AddAsync(roomAllocation);
+                if (roomAllocation.Id <= 0)
+                {
+                    return BadRequest("Unable to cancel reservation right now");
+                }
+            }
+
+            return Ok(new
+            {
+                CancellationId = cancellationId,
+                BookingId = memberDetail.GroupId,
+                CancelledOn = cancellationTimestamp
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(CancelGuestReservation)}");
+            throw;
+        }
+    }
+
+    private async Task<string> GenerateUniqueCancellationId()
+    {
+        const string prefix = "CANC";
+        const int maxAttempts = 10;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            int randomNumber = RandomNumberGenerator.GetInt32(0, 100_000_000);
+            string candidate = $"{prefix}{randomNumber:D8}";
+
+            var existingCount = await _unitOfWork.GenOperations.GetEntityCount(
+                "SELECT COUNT(1) FROM RoomAllocation WHERE CancellationId = @CancellationId",
+                new { CancellationId = candidate });
+
+            if (existingCount == 0)
+            {
+                return candidate;
+            }
+        }
+
+        throw new InvalidOperationException("Unable to generate a unique cancellation ID.");
     }
 
     public async Task<IActionResult> GuestCheckIn(MedicalSoultion_GuestCheckList inputDTO)
@@ -2486,6 +2854,11 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
                             billingData.SGST = item.SGST;
                             billingData.CGST = item.CGST;
                             billingData.TotalAmount = item.TotalAmount;
+                            billingData.BillingTo = item.BillingTo;
+                            billingData.BillingMobile = item.BillingMobile;
+                            billingData.BillingEmail = item.BillingEmail;
+                            billingData.BillingAddressLine1 = item.BillingAddressLine1;
+                            billingData.BillingAddressLine2 = item.BillingAddressLine2;
                             var updated = await _unitOfWork.Billing.UpdateAsync(billingData);
                             if (updated == false)
                             {
@@ -2525,6 +2898,11 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
                                     billingData.SGST = item.SGST;
                                     billingData.CGST = item.CGST;
                                     billingData.TotalAmount = item.TotalAmount;
+                                    billingData.BillingTo = item.BillingTo;
+                                    billingData.BillingMobile = item.BillingMobile;
+                                    billingData.BillingEmail = item.BillingEmail;
+                                    billingData.BillingAddressLine1 = item.BillingAddressLine1;
+                                    billingData.BillingAddressLine2 = item.BillingAddressLine2;
                                     var updated = await _unitOfWork.Billing.UpdateAsync(billingData);
                                     if (updated == false)
                                     {
@@ -2545,9 +2923,6 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
                             }
                         }
                     }
-
-
-
                 }
 
                 if (error == false)
@@ -3821,6 +4196,24 @@ OPTION (MAXRECURSION 100);";
             _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
             throw;
         }
+    }
+    private async Task<string?> GetAvailableRoomNumber(int? roomTypeId, DateTime? checkIn, DateTime? checkOut)
+    {
+        if (roomTypeId == null)
+        {
+            return null;
+        }
+
+        string query = @"SELECT TOP 1 r.RNumber AS Rnumber
+                          FROM Rooms r
+                            WHERE r.RtypeId = @RoomTypeId AND r.Status = 1 AND r.RNumber NOT IN (
+                              SELECT ra.RNumber FROM RoomAllocation ra
+                              WHERE ra.Rtype = @RoomTypeId AND ra.IsActive = 1 AND ISNULL(ra.Cancelled, 0) = 0 AND ((@FD BETWEEN ra.FD AND ra.TD) OR (@TD BETWEEN ra.FD AND ra.TD) OR (ra.FD BETWEEN @FD AND @TD) OR (ra.TD BETWEEN @FD AND @TD))
+                          )";
+
+        var parameters = new { RoomTypeId = roomTypeId, FD = checkIn, TD = checkOut };
+        var room = await _unitOfWork.GenOperations.GetEntityData<RoomAllocationDTO>(query, parameters);
+        return room?.Rnumber;
     }
 
 }

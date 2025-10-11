@@ -209,14 +209,28 @@
         </table>
     </div>
 
+    @{
+        //var grossAmountRow = Model?.BillingDataList?.Where(a => a.ServiceType == "GrossAmount").FirstOrDefault();
+        var grossAmountRow = Model?.BillingDataList?.FirstOrDefault(x => x.ServiceType == "GrossAmount");
+        var invoiceTo = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingTo) ? grossAmountRow?.BillingTo : Model?.MembersWithAttributes?.CustomerName;
+        var invoiceMobile = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingMobile) ? grossAmountRow?.BillingMobile : Model?.MembersWithAttributes?.MobileNo;
+        var invoiceEmail = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingEmail) ? grossAmountRow?.BillingEmail : Model?.MembersWithAttributes?.Email;
+        var invoiceAddressLine1 = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingAddressLine1) ? grossAmountRow?.BillingAddressLine1 : Model?.MembersWithAttributes?.Address1;
+        var invoiceTaxId = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingAddressLine2) ? grossAmountRow?.BillingAddressLine2 : Model?.MembersWithAttributes?.Address2;
+    }
     <!-- Remaining content unchanged -->
     <table class="section">
         <tr>
             <td width="50%">
-                <strong>To:</strong> @(Model?.MembersWithAttributes?.CustomerName)<br>
-                <strong>Mobile No:</strong> @(Model?.MembersWithAttributes?.MobileNo)<br>
-                <strong>Email:</strong> @(Model?.MembersWithAttributes?.Email)<br>
-                <strong>GSTIN#</strong>
+                <strong>To:</strong> @invoiceTo<br>
+                <strong>Mobile No:</strong> @invoiceMobile<br>
+                <strong>Email:</strong> @invoiceEmail<br>
+                @if (!string.IsNullOrWhiteSpace(invoiceTaxId))
+                {
+                    <strong>GSTIN#</strong>
+                    @invoiceTaxId                
+                    <br>
+                }                
             </td>
             <td>
                 <strong>Date:</strong>
@@ -245,9 +259,7 @@
         <tr>
             <td width="50%">
                 <div class="section-title">Address:</div>
-                @(Model?.MembersWithAttributes?.Address1)
-                <br />
-                @(Model?.MembersWithAttributes?.Address2)
+                @invoiceAddressLine1
             </td>
 
         </tr>
@@ -321,7 +333,7 @@
             <td colspan="6" style="text-align:right">Total</td>
             <td class="priceAliment">
                 @{
-                    var grossAmountRow = Model?.BillingDataList?.Where(a => a.ServiceType == "GrossAmount").FirstOrDefault();
+                    
                     <span>@grossAmountRow?.Price?.ToString("C", System.Globalization.CultureInfo.CreateSpecificCulture("hi-IN"))</span>
                 }
             </td>

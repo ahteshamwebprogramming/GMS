@@ -13,12 +13,31 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace GMS.Infrastructure.Helper;
 
 public static class CommonHelper
 {
-   
+
+    public static string NormalizePhoneNumber(string input, string defaultCountryCode = "+91")
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        string cleaned = Regex.Replace(input, @"[^\d+]", "");
+        if (cleaned.StartsWith("+"))
+        {
+            cleaned = "+" + Regex.Replace(cleaned.Substring(1), @"[+]", "");
+        }
+        else
+        {
+            cleaned = defaultCountryCode + cleaned;
+        }
+        cleaned = cleaned.Replace(" ", "").Replace("-", "");
+        return cleaned;
+    }
+
     public static T GetClassObject<T>(T t) where T : class, new()
     {
         if (t == null)
@@ -214,7 +233,7 @@ public static class CommonHelper
         return cipherText;
     }
 
-  
+
 
     public static string getContentTypeByExtesnion(string extension)
     {

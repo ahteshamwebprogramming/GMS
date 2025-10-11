@@ -54,8 +54,10 @@
                             <ul class="usert_info">
                                 <li><i class="bi bi-person-vcard"></i> <span>@item.UHID</span></li>
                                 <li><i class="bi bi-person"></i> <span>@item.CustomerName</span></li>
+                                <li><i class="bi bi-ticket-perforated"></i> <span>@(string.IsNullOrWhiteSpace(item.GroupId) ? "-" : item.GroupId)</span></li>
                                 <li><i class="bi bi-phone"></i> <span>@item.MobileNo</span></li>
                                 <li><i class="bi bi-calendar"></i> <span> @item.DateOfArrival?.ToString("dd-MMM-yy") to @item.DateOfDepartment?.ToString("dd-MMM-yy")</span></li>
+                                <li><i class="fas fa-bed"></i> <span>@(string.IsNullOrWhiteSpace(item.RoomTypeName) ? "-" : item.RoomTypeName)</span></li>
                                 <li><i class="bi bi-clock"></i> <span>@item.Category</span></li>
 
                                 @{
@@ -76,55 +78,31 @@
                         </a>
                         <div class="guest_info_bottom_button">
                             @{
-                                // if (item.CheckInStatus == 1)
-                                // {
-                                //     <a href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)" class="checkin_btn">Add Room</a>
-                                // }
-                                // else if (item.CheckInStatus == 2)
-                                // {
-                                //     <a href="javascript:void(0)" onclick="OpenCheckInListModalPartialView(@item.Id,'@item.UniqueNo','@item.CustomerName','@item.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")')" class="checkin_btn">Check In</a>
-                                // }
-                                // else if (item.CheckInStatus == 3)
-                                // {
-                                //     <a href="javascript:void(0)" onclick="OpenCheckOutListModalPartialView(@item.Id,'@item.UniqueNo','@item.CustomerName','@item.DateOfDepartment?.ToString("yyyy-MM-dd HH:mm")')" class="checkin_btn">Check Out</a>
-                                // }
-                                // else if (item.CheckInStatus == 4)
-                                // {
-                                //     <a href="javascript:void(0)" class="checkin_btn">Review</a>
-                                // }
-                                // else
-                                // {
-                                // }
-                                if (item.CheckInStatus == 1)
-                                {
-                                    @*<a href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)" class="checkin_btn">Add Room</a>*@
-                                }
-                                else if (item.CheckInStatus == 2)
-                                {
-                                    @*<a href="javascript:void(0)" onclick="OpenCheckInListModalPartialView(@item.Id,'@item.UniqueNo','@item?.CustomerName?.Replace("'", "\\'")','@item.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")')" class="checkin_btn">Check In</a>*@
-                                    <div class="d-flex justify-content-start gap-5 align-items-center">
-                                        <div class="ckin">
-                                            <a href="javascript:void(0)" onclick="OpenCheckInListModalPartialView(@item.Id,'@item.UniqueNo','@item?.CustomerName?.Replace("'", "\\'")','@item.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")')" class="checkin_btn">
-                                                <i class="bi bi-door-open"></i>
-                                            </a>
-                                        </div>
-                                        <div class="noshow">
-                                            <a href="javascript:void(0)" onclick="GuestNoShow(@item.Id)" class="noshow_btn"> <i class="bi bi-ban"></i></a>
-                                        </div>
-                                    </div>
-                                }
-                                else if (item.CheckInStatus == 3)
-                                {
-                                    <a href="javascript:void(0)" onclick="OpenCheckOutListModalPartialView(@item.Id,'@item.UniqueNo','@item?.CustomerName?.Replace("'", "\\'")','@item.DateOfDepartment?.ToString("yyyy-MM-dd HH:mm")')" class="checkin_btn2 checkin_btn" style="background-color: #FFDF88; border: #FFDF88 solid 2px;"><i class="bi bi-door-closed"></i></a>
-                                }
-                                else if (item.CheckInStatus == 4)
-                                {
-                                    <a href="javascript:void(0)" class="checkin_btn checkin_btn_review"><i class="bi bi-file-check"></i></a>
-                                }
-                                else
-                                {
-                                }
+                                bool isCancelledReservation = item?.Cancelled == true;
+                                bool canCheckIn = !isCancelledReservation && item.CheckInStatus == 2;
+                                bool canNoShow = !isCancelledReservation && item.CheckInStatus == 2;
+                                bool canReview = isCancelledReservation || item.CheckInStatus == 4;
+                                bool canCancel = !isCancelledReservation && (item.CheckInStatus == 1 || item.CheckInStatus == 2);
+                                bool canCheckOut = !isCancelledReservation && item.CheckInStatus == 3;
                             }
+
+                            <div class="button-strip" role="group" aria-label="Guest action buttons">
+                                <button class="btn-icon @(canCheckIn ? string.Empty : "disabled")" type="button" title="Check-in" @(canCheckIn ? string.Empty : "disabled") onclick="OpenCheckInListModalPartialView(@item.Id,'@item.UniqueNo','@item?.CustomerName?.Replace("'", "\\'")','@item.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")')">
+                                    <i class="bi bi-door-open"></i>
+                                </button>
+                                <button class="btn-icon @(canNoShow ? string.Empty : "disabled")" type="button" title="No Show" @(canNoShow ? string.Empty : "disabled") onclick="GuestNoShow(@item.Id)">
+                                    <i class="bi bi-ban"></i>
+                                </button>
+                                <button class="btn-icon @(canReview ? string.Empty : "disabled")" type="button" title="Review" @(canReview ? string.Empty : "disabled") onclick="javascript:void(0)">
+                                    <i class="bi bi-file-check"></i>
+                                </button>
+                                <button class="btn-icon @(canCancel ? string.Empty : "disabled")" type="button" title="Cancel" @(canCancel ? string.Empty : "disabled") onclick="CancelGuestReservation(@item.Id)">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                                <button class="btn-icon @(canCheckOut ? string.Empty : "disabled")" type="button" title="Check-out" @(canCheckOut ? string.Empty : "disabled") onclick="OpenCheckOutListModalPartialView(@item.Id,'@item.UniqueNo','@item?.CustomerName?.Replace("'", "\\'")','@item.DateOfDepartment?.ToString("yyyy-MM-dd HH:mm")')">
+                                    <i class="bi bi-door-closed"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 }

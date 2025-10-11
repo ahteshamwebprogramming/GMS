@@ -46,6 +46,7 @@ public interface IUnitOfWork : IDisposable
     public IFeedbackRepository Feedback { get; }
     public IAuditedRevenueRepository AuditedRevenue { get; }
     public IGuestReservationRepository GuestReservation { get; }
+    public IGuestCancellationVerificationRepository GuestCancellationVerification { get; }
     public ISourcesRepository Sources { get; }
     public ICreditDebitNoteAccountRepository CreditDebitNoteAccount { get; }
     public IGuestLedgerRepository GuestLedger { get; }

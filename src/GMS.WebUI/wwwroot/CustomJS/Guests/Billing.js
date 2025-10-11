@@ -5,6 +5,7 @@
 });
 
 function initBillingAttributes() {
+    setupBillingDetailsToggle();
     CalculateAmountBilling();
     $("#tblBillingAttributes").find("tbody").find(".discount").find("input").on("propertychange change keyup paste input", function () {
         CalculateAmountBilling();
@@ -64,7 +65,36 @@ function initBillingAttributes() {
         CalculateAmountBilling();
     });
 }
+function setupBillingDetailsToggle() {
+    const $card = $("#billingDetailsCard");
+    const $link = $("#toggleBillingDetails");
 
+    if (!$card.length || !$link.length) {
+        return;
+    }
+
+    const updateLinkState = (isVisible) => {
+        const label = isVisible ? "Hide Bill To" : "Show Bill To";
+        $link.attr("aria-expanded", isVisible);
+        $link.toggleClass("collapsed", !isVisible);
+        $link.find("span").text(label);
+    };
+
+    updateLinkState(!$card.hasClass("d-none"));
+
+    $link.off("click.billingToggle").on("click.billingToggle", function (event) {
+        event.preventDefault();
+        const isVisible = !$card.hasClass("d-none");
+        $card.toggleClass("d-none", isVisible);
+        updateLinkState(!isVisible);
+
+        if (!isVisible) {
+            window.setTimeout(() => {
+                $card.find("input:visible").first().trigger("focus");
+            }, 0);
+        }
+    });
+}
 function initPaymentAttributes() {
     $("#tblPaymentAttributes").find("tbody").find("tr.cal").last().find("td.mode select").chosen({
         width: '100%'
@@ -287,6 +317,13 @@ function SaveBillingData() {
     return new Promise((resolve, reject) => {
         let gGuestId = $("#BillingModal").find("[name='GuestId']").val()
         let billingList = [];
+
+        const invoiceTo = $("#BillingModal").find("[name='InvoiceTo']").val() || "";
+        const invoiceMobile = $("#BillingModal").find("[name='InvoiceMobile']").val() || "";
+        const invoiceEmail = $("#BillingModal").find("[name='InvoiceEmail']").val() || "";
+        const invoiceAddressLine1 = $("#BillingModal").find("[name='InvoiceAddressLine1']").val() || "";
+        const invoiceAddressLine2 = $("#BillingModal").find("[name='InvoiceAddressLine2']").val() || "";
+
         $("#tblBillingAttributes tbody tr.bdb").each(function () {
             let $row = $(this);
             let serviceId
@@ -348,7 +385,12 @@ function SaveBillingData() {
             IGST: parseFloat($("#tblBillingAttributes").find("tbody").find(".taxes_IGST").text().trim()) || 0,
             CGST: parseFloat($("#tblBillingAttributes").find("tbody").find(".taxes_CGST").text().trim()) || 0,
             SGST: parseFloat($("#tblBillingAttributes").find("tbody").find(".taxes_SGST").text().trim()) || 0,
-            TotalAmount: $("#tblBillingAttributes").find("tbody").find(".finaltotal").text().trim() || 0
+            TotalAmount: $("#tblBillingAttributes").find("tbody").find(".finaltotal").text().trim() || 0,
+            BillingTo: invoiceTo,
+            BillingMobile: invoiceMobile,
+            BillingEmail: invoiceEmail,
+            BillingAddressLine1: invoiceAddressLine1,
+            BillingAddressLine2: invoiceAddressLine2
         });
 
         if (ValidateDiscountOnBilling() == false) {
