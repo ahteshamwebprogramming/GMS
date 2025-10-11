@@ -185,7 +185,7 @@
                         <!-- card -->
                         <div class="card ">
                             <!-- card body -->
-                            <div class="card-body">
+                            <div class="card-body metric-card">
                                 <!-- heading -->
                                 <div class="d-flex justify-content-between align-items-center
                     mb-3">
@@ -197,14 +197,14 @@
                                     </div>
                                 </div>
                                 <!-- project number -->
-                                <div style="text-align:right">
+                                <div>
                                     @{
                                         var dateData = Model?.RoomOccupancyDataList?.ToList();
                                         double bookedRooms = dateData?.Sum(x => x.BookedRooms) ?? 0;
                                         var totalRooms = dateData?.Sum(x => x.TotalRooms) ?? 0;
                                         var totaloccupancypercent = (bookedRooms * 100) / (totalRooms);
                                     }
-                                    <h1 class="fw-bold">@(totaloccupancypercent.ToString("F1"))%</h1>
+                                    <p class="metric-card__value fw-bold text-end">@(totaloccupancypercent.ToString("F1"))%</p>
                                     @* <p class="mb-0"><span class="text-dark me-2">@(bookedRooms)</span>Occupied</p> *@
                                 </div>
                             </div>
@@ -217,7 +217,7 @@
                         <!-- card -->
                         <div class="card ">
                             <!-- card body -->
-                            <div class="card-body">
+                            <div class="card-body metric-card">
                                 <!-- heading -->
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div>
@@ -228,13 +228,13 @@
                                     </div>
                                 </div>
                                 <!-- project number -->
-                                <div style="text-align:right">
+                                <div>
                                     @{
                                         var dateDataRoom = Model?.RoomRevenueDataList?.FirstOrDefault();
                                         var dateDataFnB = Model?.PackageRevenueDataList?.FirstOrDefault();
                                         var dateDataUpsell = Model?.UpsellRevenueDataList?.FirstOrDefault();
                                     }
-                                    <h1 class="fw-bold">@((dateDataRoom?.TotalRevenue + dateDataFnB?.TotalRevenue + dateDataUpsell?.TotalRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
+                                    <p class="metric-card__value fw-bold text-end">@((dateDataRoom?.TotalRevenue + dateDataFnB?.TotalRevenue + dateDataUpsell?.TotalRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</p>
                                     @* <p class="mb-0"><span class="text-dark me-2">28</span>Completed</p> *@
                                 </div>
                             </div>
@@ -244,7 +244,7 @@
                         <!-- card -->
                         <div class="card ">
                             <!-- card body -->
-                            <div class="card-body">
+                            <div class="card-body metric-card">
                                 <!-- heading -->
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div>
@@ -255,11 +255,11 @@
                                     </div>
                                 </div>
                                 <!-- project number -->
-                                <div style="text-align:right">
+                                <div>
                                     @{
                                         var datePayment = Model?.PaymentDataList?.FirstOrDefault();
                                     }
-                                    <h1 class="fw-bold">@(datePayment?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
+                                    <p class="metric-card__value fw-bold text-end">@(datePayment?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</p>
                                     @* <p class="mb-0"><span class="text-dark me-2">1</span>Completed</p> *@
                                 </div>
                             </div>
@@ -270,7 +270,7 @@
                         <!-- card -->
                         <div class="card ">
                             <!-- card body -->
-                            <div class="card-body">
+                            <div class="card-body metric-card">
                                 <!-- heading -->
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div>
@@ -281,8 +281,8 @@
                                     </div>
                                 </div>
                                 <!-- project number -->
-                                <div class="" style="text-align:right">
-                                    <h1 class="fw-bold">@(Model?.AverageSellingRate?.Value?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
+                                <div>
+                                    <p class="metric-card__value fw-bold text-end">@(Model?.AverageSellingRate?.Value?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</p>
                                     @* <p class="mb-0"><span class="text-success me-2">5%</span>Completed</p> *@
                                 </div>
                             </div>
