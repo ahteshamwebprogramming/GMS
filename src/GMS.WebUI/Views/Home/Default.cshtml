@@ -1,4 +1,5 @@
 ﻿@model GMS.Infrastructure.ViewModels.Dashboard.DashboardViewModel
+@using System.Linq
 
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -176,115 +177,287 @@
                 </div>
 
                 <div class="col-lg-12 col-md-12 col-12">
-                    <div class="owl-carousel owl-theme mt-5 pb-0 fistCr">
+                    @{
+                        var occupancyData = (Model?.RoomOccupancyDataList ?? new System.Collections.Generic.List<GMS.Infrastructure.ViewModels.Dashboard.RoomOccupancyData>()).ToList();
+                        var todayDate = DateTime.Today;
+                        var todaysOccupancy = occupancyData.Where(x => x.TheDate?.Date == todayDate || x.TheDate == null).ToList();
+                        if (!todaysOccupancy.Any() && occupancyData.Any())
+                        {
+                            todaysOccupancy = occupancyData;
+                        }
 
-                        <!-- card -->
-                        <div class="card ">
-                            <!-- card body -->
-                            <div class="card-body">
-                                <!-- heading -->
-                                <div class="d-flex justify-content-between align-items-center
-                    mb-3">
-                                    <div>
-                                        <h4 class="mb-0">Occupancy</h4>
+                        decimal todaysArrivals = todaysOccupancy.Sum(x => x.TodayCheckIns ?? 0);
+                        decimal todaysDepartures = todaysOccupancy.Sum(x => x.TodayCheckOuts ?? 0);
+                        decimal upcomingArrivals = todaysOccupancy.Sum(x => Math.Max(0, Convert.ToDecimal(x.BookedRooms ?? 0) - (x.TodayCheckIns ?? 0)));
+
+                        var yesterdayDate = todayDate.AddDays(-1);
+                        decimal yesterdaysDepartures = occupancyData.Where(x => x.TheDate?.Date == yesterdayDate).Sum(x => x.TodayCheckOuts ?? 0);
+
+                        var totalRoomsCount = todaysOccupancy.Sum(x => x.TotalRooms ?? 0);
+                        var occupiedRooms = todaysOccupancy.Sum(x => x.BookedRooms ?? 0);
+                        var availableRooms = todaysOccupancy.Sum(x => x.AvailableRooms ?? 0);
+                        decimal tidyRooms = todaysOccupancy.Sum(x => x.TidyRooms ?? 0);
+                        double occupancyRate = totalRoomsCount > 0 ? (occupiedRooms * 100.0) / totalRoomsCount : 0;
+
+                        var roomRevenue = Model?.RoomRevenueDataList?.FirstOrDefault();
+                        var fnbRevenue = Model?.PackageRevenueDataList?.FirstOrDefault();
+                        var upsellRevenue = Model?.UpsellRevenueDataList?.FirstOrDefault();
+                        var paymentData = Model?.PaymentDataList?.FirstOrDefault();
+
+                        double todaysRevenue = (roomRevenue?.TotalRevenue ?? 0) + (fnbRevenue?.TotalRevenue ?? 0) + (upsellRevenue?.TotalRevenue ?? 0);
+                        double mtdRevenue = (roomRevenue?.MTDRevenue ?? 0) + (fnbRevenue?.MTDRevenue ?? 0) + (upsellRevenue?.MTDRevenue ?? 0);
+                        double ytdRevenue = (roomRevenue?.YTDRevenue ?? 0) + (fnbRevenue?.YTDRevenue ?? 0) + (upsellRevenue?.YTDRevenue ?? 0);
+                        double collectedRevenue = paymentData?.TotalRevenue ?? todaysRevenue;
+                        double averageSellingRate = Model?.AverageSellingRate?.Value ?? 0;
+                    }
+
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-5 g-4 mt-5">
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Today's Arrival</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-box-arrow-in-right fs-4"></i>
+                                        </div>
                                     </div>
-                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
-                                        <i class="bi bi-buildings fs-4"></i>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@todaysArrivals.ToString("0")</h1>
                                     </div>
-                                </div>
-                                <!-- project number -->
-                                <div style="text-align:right">
-                                    @{
-                                        var dateData = Model?.RoomOccupancyDataList?.ToList();
-                                        double bookedRooms = dateData?.Sum(x => x.BookedRooms) ?? 0;
-                                        var totalRooms = dateData?.Sum(x => x.TotalRooms) ?? 0;
-                                        var totaloccupancypercent = (bookedRooms * 100) / (totalRooms);
-                                    }
-                                    <h1 class="fw-bold">@(totaloccupancypercent.ToString("F1"))%</h1>
-                                    @* <p class="mb-0"><span class="text-dark me-2">@(bookedRooms)</span>Occupied</p> *@
                                 </div>
                             </div>
                         </div>
-
-
-
-
-
-                        <!-- card -->
-                        <div class="card ">
-                            <!-- card body -->
-                            <div class="card-body">
-                                <!-- heading -->
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <h4 class="mb-0">Total Revenue</h4>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Upcoming Arrivals</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-calendar-event fs-4"></i>
+                                        </div>
                                     </div>
-                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
-                                        <i class="bi bi-credit-card fs-4"></i>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@upcomingArrivals.ToString("0")</h1>
                                     </div>
-                                </div>
-                                <!-- project number -->
-                                <div style="text-align:right">
-                                    @{
-                                        var dateDataRoom = Model?.RoomRevenueDataList?.FirstOrDefault();
-                                        var dateDataFnB = Model?.PackageRevenueDataList?.FirstOrDefault();
-                                        var dateDataUpsell = Model?.UpsellRevenueDataList?.FirstOrDefault();
-                                    }
-                                    <h1 class="fw-bold">@((dateDataRoom?.TotalRevenue + dateDataFnB?.TotalRevenue + dateDataUpsell?.TotalRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
-                                    @* <p class="mb-0"><span class="text-dark me-2">28</span>Completed</p> *@
                                 </div>
                             </div>
                         </div>
-
-
-                        <!-- card -->
-                        <div class="card ">
-                            <!-- card body -->
-                            <div class="card-body">
-                                <!-- heading -->
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <h4 class="mb-0">Todays Collection</h4>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Occupancy Rate</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-graph-up fs-4"></i>
+                                        </div>
                                     </div>
-                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
-                                        <i class="bi bi-cash fs-4"></i>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@occupancyRate.ToString("F1")%</h1>
                                     </div>
-                                </div>
-                                <!-- project number -->
-                                <div style="text-align:right">
-                                    @{
-                                        var datePayment = Model?.PaymentDataList?.FirstOrDefault();
-                                    }
-                                    <h1 class="fw-bold">@(datePayment?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
-                                    @* <p class="mb-0"><span class="text-dark me-2">1</span>Completed</p> *@
                                 </div>
                             </div>
                         </div>
-
-
-
-                        <!-- card -->
-                        <div class="card ">
-                            <!-- card body -->
-                            <div class="card-body">
-                                <!-- heading -->
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <h4 class="mb-0">Average Selling Rate</h4>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Yesterday's Departure</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-arrow-left-circle fs-4"></i>
+                                        </div>
                                     </div>
-                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
-                                        <i class="bi bi-plus-slash-minus fs-4"></i>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@yesterdaysDepartures.ToString("0")</h1>
                                     </div>
                                 </div>
-                                <!-- project number -->
-                                <div class="" style="text-align:right">
-                                    <h1 class="fw-bold">@(Model?.AverageSellingRate?.Value?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</h1>
-                                    @* <p class="mb-0"><span class="text-success me-2">5%</span>Completed</p> *@
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Today's Departure</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-box-arrow-left fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@todaysDepartures.ToString("0")</h1>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-5 g-4 mt-1">
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Average Selling Rate</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-plus-slash-minus fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@averageSellingRate.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Today's Revenue</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-cash fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@todaysRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">MTD Revenue</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-calendar-week fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@mtdRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">YTD Revenue</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-calendar2-event fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@ytdRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Total Revenue</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-credit-card fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@collectedRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 mt-1">
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Total Rooms</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-grid-3x3-gap fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@totalRoomsCount</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Occupied</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-person-fill-check fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@occupiedRooms</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Available</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-door-open fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@availableRooms</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h4 class="mb-0">Tidy</h4>
+                                        </div>
+                                        <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                            <i class="bi bi-stars fs-4"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h1 class="fw-bold">@tidyRooms.ToString("0")</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                     <div class="owl-carousel owl-theme ">
                         <div class="cardItems">
                             <div class="card-header">
