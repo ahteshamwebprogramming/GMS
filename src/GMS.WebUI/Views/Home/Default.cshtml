@@ -214,7 +214,7 @@
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-5 g-4 mt-5">
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Today's Arrival</h4>
@@ -223,15 +223,13 @@
                                             <i class="bi bi-box-arrow-in-right fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@todaysArrivals.ToString("0")</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@todaysArrivals.ToString("0")</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Upcoming Arrivals</h4>
@@ -240,15 +238,13 @@
                                             <i class="bi bi-calendar-event fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@upcomingArrivals.ToString("0")</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@upcomingArrivals.ToString("0")</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Occupancy Rate</h4>
@@ -257,15 +253,13 @@
                                             <i class="bi bi-graph-up fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@occupancyRate.ToString("F1")%</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@occupancyRate.ToString("F1")%</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Yesterday's Departure</h4>
@@ -274,15 +268,13 @@
                                             <i class="bi bi-arrow-left-circle fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@yesterdaysDepartures.ToString("0")</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@yesterdaysDepartures.ToString("0")</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Today's Departure</h4>
@@ -291,9 +283,7 @@
                                             <i class="bi bi-box-arrow-left fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@todaysDepartures.ToString("0")</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@todaysDepartures.ToString("0")</p>
                                 </div>
                             </div>
                         </div>
@@ -302,7 +292,7 @@
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-5 g-4 mt-1">
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Average Selling Rate</h4>
@@ -311,15 +301,13 @@
                                             <i class="bi bi-plus-slash-minus fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@averageSellingRate.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@averageSellingRate.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Today's Revenue</h4>
@@ -328,15 +316,13 @@
                                             <i class="bi bi-cash fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@todaysRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@todaysRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">MTD Revenue</h4>
@@ -345,15 +331,13 @@
                                             <i class="bi bi-calendar-week fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@mtdRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@mtdRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">YTD Revenue</h4>
@@ -362,15 +346,13 @@
                                             <i class="bi bi-calendar2-event fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@ytdRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@ytdRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Total Revenue</h4>
@@ -379,9 +361,7 @@
                                             <i class="bi bi-credit-card fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@collectedRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@collectedRevenue.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))</p>
                                 </div>
                             </div>
                         </div>
@@ -390,7 +370,7 @@
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 mt-1">
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Total Rooms</h4>
@@ -399,15 +379,13 @@
                                             <i class="bi bi-grid-3x3-gap fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@totalRoomsCount</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@totalRoomsCount</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Occupied</h4>
@@ -416,15 +394,13 @@
                                             <i class="bi bi-person-fill-check fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@occupiedRooms</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@occupiedRooms</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Available</h4>
@@ -433,15 +409,13 @@
                                             <i class="bi bi-door-open fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@availableRooms</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@availableRooms</p>
                                 </div>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card h-100">
-                                <div class="card-body">
+                                <div class="card-body metric-card">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
                                             <h4 class="mb-0">Tidy</h4>
@@ -450,9 +424,7 @@
                                             <i class="bi bi-stars fs-4"></i>
                                         </div>
                                     </div>
-                                    <div class="text-end">
-                                        <h1 class="fw-bold">@tidyRooms.ToString("0")</h1>
-                                    </div>
+                                    <p class="metric-card__value fw-bold text-end">@tidyRooms.ToString("0")</p>
                                 </div>
                             </div>
                         </div>
