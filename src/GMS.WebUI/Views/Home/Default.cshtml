@@ -1,9 +1,12 @@
 ﻿@model GMS.Infrastructure.ViewModels.Dashboard.DashboardViewModel
 @using System.Linq
 
-@{
+@{ 
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Index";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/metrics.css" asp-append-version="true" />
 }
 <style type="text/css">
     .bg-primary2 {
