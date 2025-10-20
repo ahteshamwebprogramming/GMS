@@ -153,17 +153,15 @@ function CalculateAmountBilling() {
         let roomRate = (price - discount);
         let roomCharges = (price - discount) * count;
 
-        if (roomRate >= 5000) {
-            SGST = SGST + (parseFloat(roomCharges) * (2.5 / 100));
-            CGST = CGST + (parseFloat(roomCharges) * (2.5 / 100));
-            //if (state == "haryana") {
-            //    SGST = SGST + (parseFloat(roomCharges) * (2.5 / 100));
-            //    CGST = CGST + (parseFloat(roomCharges) * (2.5 / 100));
-            //}
-            //else {
-            //    IGST = IGST + (parseFloat(roomCharges) * (5 / 100));
-            //}
-        }
+        SGST = SGST + (parseFloat(roomCharges) * (2.5 / 100));
+        CGST = CGST + (parseFloat(roomCharges) * (2.5 / 100));
+        //if (state == "haryana") {
+        //    SGST = SGST + (parseFloat(roomCharges) * (2.5 / 100));
+        //    CGST = CGST + (parseFloat(roomCharges) * (2.5 / 100));
+        //}
+        //else {
+        //    IGST = IGST + (parseFloat(roomCharges) * (5 / 100));
+        //}
     });
 
 
