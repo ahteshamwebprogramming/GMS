@@ -368,6 +368,91 @@ ORDER BY d.TheDate;";
             throw;
         }
     }
+    public async Task<IActionResult> GetAverageSellingRate_Rooms_Audit()
+    {
+        try
+        {
+            string query = @"Select avg(TotalDueAmount) Value from AuditedRevenue where ChargesCategory='RoomCharges'";
+            var res = await _unitOfWork.GenOperations.GetEntityData<Result>(query);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRoomRevenueData)}");
+            throw;
+        }
+    }
+    public async Task<IActionResult> GetAverageSellingRate_Packages_Audit()
+    {
+        try
+        {
+            string query = @"Select avg(TotalDueAmount) Value from AuditedRevenue where ChargesCategory in ('PackageSystem')";
+            var res = await _unitOfWork.GenOperations.GetEntityData<Result>(query);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRoomRevenueData)}");
+            throw;
+        }
+    }
+    public async Task<IActionResult> GetAverageSellingRateOverall()
+    {
+        try
+        {
+            string query = @"SELECT 
+                                AVG(Price) AS Value
+                            FROM 
+                                Rates";
+            var res = await _unitOfWork.GenOperations.GetEntityData<Result>(query);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRoomRevenueData)}");
+            throw;
+        }
+    }
+    public async Task<IActionResult> AverageOccupancYearly()
+    {
+        try
+        {
+            string query = @"DECLARE @MinDate DATE = (SELECT MIN(CAST(FD AS DATE)) FROM RoomAllocation WHERE YEAR(FD) = YEAR(GETDATE()));
+DECLARE @MaxDate DATE = (SELECT MAX(CAST(TD AS DATE)) FROM RoomAllocation WHERE YEAR(TD) = YEAR(GETDATE()));
+
+;WITH Dates AS
+(
+    SELECT @MinDate AS DateValue
+    UNION ALL
+    SELECT DATEADD(DAY, 1, DateValue)
+    FROM Dates
+    WHERE DateValue < @MaxDate
+),
+DailyOccupancy AS
+(
+    SELECT 
+        d.DateValue,
+        COUNT(DISTINCT r.RNumber) AS RoomsOccupied
+    FROM Dates d
+    LEFT JOIN RoomAllocation r
+        ON d.DateValue >= CAST(r.FD AS DATE)
+       AND d.DateValue <  CAST(r.TD AS DATE)
+       AND r.IsActive = 1
+    GROUP BY d.DateValue
+)
+SELECT 
+    CAST(AVG(CAST(RoomsOccupied AS DECIMAL(10,5))) AS DECIMAL(10,5)) AS Value
+FROM DailyOccupancy
+OPTION (MAXRECURSION 0);";
+            var res = await _unitOfWork.GenOperations.GetEntityData<Result>(query);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRoomRevenueData)}");
+            throw;
+        }
+    }
 
     public async Task<IActionResult> GetDashboardRoomOccupancyDataCurrentDate()
     {

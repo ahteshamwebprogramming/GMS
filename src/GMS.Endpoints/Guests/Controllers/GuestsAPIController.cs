@@ -1189,7 +1189,7 @@ Select ar.RNumber RoomNo,
                                                                 )
 	FOR XML PATH(''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 1, '' )),'') as SharedWith
 																
-from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') from RoomAllocation ral where ral.GuestID=@GuestId) and ISNULL(ral.Cancelled, 0) = 0)";
+from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') from RoomAllocation ral where ral.GuestID=@GuestId and ISNULL(ral.Cancelled, 0) = 0)";
             var sParameters = new { @GuestId = GuestId };
             var res = await _unitOfWork.GenOperations.GetTableData<AvailableRoomsForGuestAllocation>(sQuery, sParameters);
             return Ok(res);

@@ -96,6 +96,26 @@ namespace GMS.WebUI.Controllers
             {
                 dto.AverageSellingRate = (Result?)((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingRate).Value;
             }
+            var resAverageSellingRateOverall = await _dashboardAPIController.GetAverageSellingRateOverall();
+            if (resAverageSellingRateOverall != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingRateOverall).StatusCode == 200)
+            {
+                dto.AverageSellingRateOverall = (Result?)((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingRateOverall).Value;
+            }
+            var resAverageSellingRoomsRateOverall_Audit = await _dashboardAPIController.GetAverageSellingRate_Rooms_Audit();
+            if (resAverageSellingRoomsRateOverall_Audit != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingRoomsRateOverall_Audit).StatusCode == 200)
+            {
+                dto.AverageSellingRoomsRateOverall_Audit = (Result?)((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingRoomsRateOverall_Audit).Value;
+            }
+            var resAverageSellingPackegsRateOverall_Audit = await _dashboardAPIController.GetAverageSellingRate_Packages_Audit();
+            if (resAverageSellingPackegsRateOverall_Audit != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingPackegsRateOverall_Audit).StatusCode == 200)
+            {
+                dto.AverageSellingPackagesRateOverall_Audit = (Result?)((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageSellingPackegsRateOverall_Audit).Value;
+            }
+            var resAverageOccupancyYearly = await _dashboardAPIController.AverageOccupancYearly();
+            if (resAverageOccupancyYearly != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageOccupancyYearly).StatusCode == 200)
+            {
+                dto.AverageOccupancyYearly = (Result?)((Microsoft.AspNetCore.Mvc.ObjectResult)resAverageOccupancyYearly).Value;
+            }
             return View(dto);
         }
         public async Task<IActionResult> Default1(int? month, int? year)

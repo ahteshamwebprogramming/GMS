@@ -19,6 +19,10 @@ namespace GMS.Infrastructure.ViewModels.Dashboard
         public RevenueDataADRREVPARPERIODWISE? ADRREVPARCPM { get; set; }
         public RevenueDataADRREVPARPERIODWISE? ADRREVPARCPY { get; set; }
         public Result? AverageSellingRate { get; set; }        
+        public Result? AverageSellingRateOverall { get; set; }        
+        public Result? AverageOccupancyYearly { get; set; }        
+        public Result? AverageSellingRoomsRateOverall_Audit { get; set; }        
+        public Result? AverageSellingPackagesRateOverall_Audit { get; set; }        
         public DateTime? Date { get; set; }        
     }
 }

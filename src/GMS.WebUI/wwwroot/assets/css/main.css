@@ -908,7 +908,6 @@ b {
     padding: 0px 0 !important;
     color: #fff !important;
     margin: 0 !important;
-
     /*background: #FFA55D !important;
     border: #FFA55D solid 1px !important;
     color: #000;
@@ -1357,6 +1356,7 @@ b {
     border-radius: 18px;
     margin-bottom: 15px;
 }
+
 .checkin_btn i {
     font-size: 20px;
 }
@@ -1911,4 +1911,10 @@ tr:nth-child(odd) {
 th {
     background-color: #4CAF50;
     color: white;
+}
+
+
+/* Card CSS styles */
+.card {
+    background: #ffbf69 !important;
 }
