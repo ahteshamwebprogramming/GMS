@@ -1472,6 +1472,24 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
 
                     if (memberDetails != null)
                     {
+                        var roomAllocation = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>(
+                            "Select * from RoomAllocation where GuestID=@GuestId and IsActive=1",
+                            new { @GuestId = inputDTO.Id });
+
+                        if (roomAllocation?.CheckOutDate != null)
+                        {
+                            return BadRequest("Guest is already checked out");
+                        }
+
+                        var settlementExists = await _unitOfWork.GenOperations.IsExists(
+                            "Select 1 from Settlement where IsActive=1 and (GuestId=@GuestId or GuestIdPaxSN1=@GuestId)",
+                            new { @GuestId = inputDTO.Id });
+
+                        if (settlementExists)
+                        {
+                            return BadRequest("Settlement already exists for this guest");
+                        }
+
                         inputDTO.IsCrm = memberDetails.IsCrm;
                         inputDTO.Status = memberDetails.Status;
                         inputDTO.CreationDate = memberDetails.CreationDate;

@@ -27,6 +27,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Accounting", "src\GMS.Endpo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reports", "src\GMS.Endpoints\Reports\Reports.csproj", "{7CE6F27E-E33B-44C0-82C6-1D287017AAA0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{9A40B108-0E19-470C-820F-F161B53B602D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GMS.Endpoints.Tests", "tests\GMS.Endpoints.Tests\GMS.Endpoints.Tests.csproj", "{35620C6F-ED38-4320-A5C9-89D2A2A03E51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +77,10 @@ Global
 		{7CE6F27E-E33B-44C0-82C6-1D287017AAA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CE6F27E-E33B-44C0-82C6-1D287017AAA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CE6F27E-E33B-44C0-82C6-1D287017AAA0}.Release|Any CPU.Build.0 = Release|Any CPU
+                {35620C6F-ED38-4320-A5C9-89D2A2A03E51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {35620C6F-ED38-4320-A5C9-89D2A2A03E51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {35620C6F-ED38-4320-A5C9-89D2A2A03E51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {35620C6F-ED38-4320-A5C9-89D2A2A03E51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -89,6 +97,7 @@ Global
 		{F37E22DA-6DBE-40E5-9117-02BB3235F5EF} = {481FB6D4-C9B6-4CB8-A521-8C51C69601E8}
 		{8F77080E-18F1-40F9-B2BC-53F741497119} = {481FB6D4-C9B6-4CB8-A521-8C51C69601E8}
 		{7CE6F27E-E33B-44C0-82C6-1D287017AAA0} = {481FB6D4-C9B6-4CB8-A521-8C51C69601E8}
+                {35620C6F-ED38-4320-A5C9-89D2A2A03E51} = {9A40B108-0E19-470C-820F-F161B53B602D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B18FDE87-3178-49C7-BB60-AC9E46BAB68B}
