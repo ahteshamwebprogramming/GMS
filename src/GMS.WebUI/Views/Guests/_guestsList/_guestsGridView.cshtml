@@ -19,6 +19,8 @@
                             bool canCheckIn = !isCancelledReservation && item.CheckInStatus == 2;
                             bool canNoShow = !isCancelledReservation && item.CheckInStatus == 2;
                             bool canReview = isCancelledReservation || isCheckedOut;
+                            bool isSettled = item?.IsSettled == true;
+                            bool canShowStayManagementOptions = !isCheckedOut && !isSettled;
                             bool canCancel = !isCancelledReservation && (item.CheckInStatus == 1 || item.CheckInStatus == 2);
                             bool canCheckOut = !isCancelledReservation && item.CheckInStatus == 3;
                         }
@@ -34,18 +36,15 @@
                                         // <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddGuestsPartialView('@item.GroupId')"><i class="bi bi-pencil-fill"></i> Edit</a></li>
                                         // <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeInOutDatePartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change In/Out Dates</a></li>
 
-                                        if (!isCheckedOut)
+                                        if (canShowStayManagementOptions)
                                         {
-                                            if (item.IsSettled == false)
-                                            {
-                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddGuestsPartialView('@item.GroupId')"><i class="bi bi-pencil-fill"></i> Edit</a></li>
-                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeReservationDetailsPartialView('@item.Id')"><i class="bi bi-pencil-fill"></i> Modify Stay </a></li>
-                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change Room</a></li>
-                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeInOutDatePartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change In/Out Dates</a></li>
-                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddServicesPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Add Services</a></li>
-                                                <li><a class="dropdown-item" href="/Guests/GuestSchedule/@item.Id"><i class="bi bi-clock-fill"></i> Schedules</a></li>
-                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal2"><i class="bi bi-file-earmark-arrow-up-fill"></i> Upload</a></li>
-                                            }
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddGuestsPartialView('@item.GroupId')"><i class="bi bi-pencil-fill"></i> Edit</a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeReservationDetailsPartialView('@item.Id')"><i class="bi bi-pencil-fill"></i> Modify Stay </a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change Room</a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeInOutDatePartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change In/Out Dates</a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddServicesPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Add Services</a></li>
+                                            <li><a class="dropdown-item" href="/Guests/GuestSchedule/@item.Id"><i class="bi bi-clock-fill"></i> Schedules</a></li>
+                                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal2"><i class="bi bi-file-earmark-arrow-up-fill"></i> Upload</a></li>
                                         }
                                         <li><a class="dropdown-item" href="/Guests/ReviewMemberDetails/@item.Id" target="_blank"><i class="bi bi-eye-fill"></i> Review</a></li>
                                         <li><a class="dropdown-item" href="/Guests/PrintMemberDetails/@item.Id" target="_blank"><i class="bi bi-printer-fill"></i> Print</a></li>
