@@ -13,6 +13,15 @@
                 foreach (var item in Model.MemberDetailsWithChildren)
                 {
                     <div class="guest_info @(item.PaxCompleted == false ? "guest_info_attention" : "")">
+                        @{
+                            bool isCheckedOut = item.CheckInStatus == 4;
+                            bool isCancelledReservation = item?.Cancelled == true;
+                            bool canCheckIn = !isCancelledReservation && item.CheckInStatus == 2;
+                            bool canNoShow = !isCancelledReservation && item.CheckInStatus == 2;
+                            bool canReview = isCancelledReservation || isCheckedOut;
+                            bool canCancel = !isCancelledReservation && (item.CheckInStatus == 1 || item.CheckInStatus == 2);
+                            bool canCheckOut = !isCancelledReservation && item.CheckInStatus == 3;
+                        }
                         <div class="guest_header">
 
                             <span class="user_icon @(item.PaxCompleted == false ? "user_icon_attention" : "")"><strong>@item.RoomNumber</strong> </span>
@@ -25,21 +34,24 @@
                                         // <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddGuestsPartialView('@item.GroupId')"><i class="bi bi-pencil-fill"></i> Edit</a></li>
                                         // <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeInOutDatePartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change In/Out Dates</a></li>
 
-                                        if (item.IsSettled == false)
+                                        if (!isCheckedOut)
                                         {
-                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddGuestsPartialView('@item.GroupId')"><i class="bi bi-pencil-fill"></i> Edit</a></li>
+                                            if (item.IsSettled == false)
+                                            {
+                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddGuestsPartialView('@item.GroupId')"><i class="bi bi-pencil-fill"></i> Edit</a></li>
+                                            }
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeReservationDetailsPartialView('@item.Id')"><i class="bi bi-pencil-fill"></i> Modify Stay </a></li>
+                                            if (item.IsSettled == false)
+                                            {
+                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change Room</a></li>
+                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeInOutDatePartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change In/Out Dates</a></li>
+                                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddServicesPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Add Services</a></li>
+                                                <li><a class="dropdown-item" href="/Guests/GuestSchedule/@item.Id"><i class="bi bi-clock-fill"></i> Schedules</a></li>
+                                            }
+                                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal2"><i class="bi bi-file-earmark-arrow-up-fill"></i> Upload</a></li>
                                         }
-                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeReservationDetailsPartialView('@item.Id')"><i class="bi bi-pencil-fill"></i> Modify Stay </a></li>
                                         <li><a class="dropdown-item" href="/Guests/ReviewMemberDetails/@item.Id" target="_blank"><i class="bi bi-eye-fill"></i> Review</a></li>
-                                        if (item.IsSettled == false)
-                                        {
-                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddRoomPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change Room</a></li>
-                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="ChangeInOutDatePartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Change In/Out Dates</a></li>
-                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="AddServicesPartialView(@item.Id)"><i class="bi bi-file-earmark-plus-fill"></i> Add Services</a></li>
-                                            <li><a class="dropdown-item" href="/Guests/GuestSchedule/@item.Id"><i class="bi bi-clock-fill"></i> Schedules</a></li>
-                                        }
                                         <li><a class="dropdown-item" href="/Guests/PrintMemberDetails/@item.Id" target="_blank"><i class="bi bi-printer-fill"></i> Print</a></li>
-                                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal2"><i class="bi bi-file-earmark-arrow-up-fill"></i> Upload</a></li>
                                         <li><a class="dropdown-item" href="javascript:void(0)" onclick="BillingPartialView('@item.Id')"><i class="bi bi-cash-stack"></i> Billing</a></li>
                                         @*<li><a class="dropdown-item" href="javascript:void(0)" onclick="SettlementPartialView('@item.Id')"><i class="bi bi-pencil-fill"></i> Settelment</a></li>*@
                                         @*<li><a class="dropdown-item" onclick="OpenFeedbackView(@item.Id)" href="/ReviewAndFeedbacks/Feedback/@item.Id" target="_blank"><i class="bi bi-chat-dots"></i> Feedback</a></li>*@
@@ -77,15 +89,6 @@
                             </ul>
                         </a>
                         <div class="guest_info_bottom_button">
-                            @{
-                                bool isCancelledReservation = item?.Cancelled == true;
-                                bool canCheckIn = !isCancelledReservation && item.CheckInStatus == 2;
-                                bool canNoShow = !isCancelledReservation && item.CheckInStatus == 2;
-                                bool canReview = isCancelledReservation || item.CheckInStatus == 4;
-                                bool canCancel = !isCancelledReservation && (item.CheckInStatus == 1 || item.CheckInStatus == 2);
-                                bool canCheckOut = !isCancelledReservation && item.CheckInStatus == 3;
-                            }
-
                             <div class="button-strip" role="group" aria-label="Guest action buttons">
                                 <button class="btn-icon @(canCheckIn ? string.Empty : "disabled")" type="button" title="Check-in" @(canCheckIn ? string.Empty : "disabled") onclick="OpenCheckInListModalPartialView(@item.Id,'@item.UniqueNo','@item?.CustomerName?.Replace("'", "\\'")','@item.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")')">
                                     <i class="bi bi-door-open"></i>
