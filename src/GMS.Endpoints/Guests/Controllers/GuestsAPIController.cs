@@ -1202,6 +1202,135 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
         }
     }
 
+    public async Task<IActionResult> GetRoomsAvailableForGuestsSharedByRoomType(int GuestId, int RoomTypeId)
+    {
+        try
+        {
+            string sQuery = @"DECLARE @StartDate DATETIME='',@EndDate DATETIME='',@RTypeID INT=0,@Status INT = 1;
+Select @StartDate = (Case when md.DateOfArrival > getdate() then md.DateOfArrival else getdate() end),@EndDate=md.DateOfDepartment from MembersDetails md where Id=@GuestId;
+SELECT @RTypeID = @RoomTypeId;
+                                                            WITH AvailableRooms AS (
+                                                              SELECT r.RNumber
+                                                              FROM Rooms r
+                                                              WHERE r.RTypeID = @RTypeID
+                                                                AND r.Status = @Status
+                                                                AND NOT EXISTS (
+                                                                  SELECT 1
+                                                                  FROM RoomLock rl
+                                                                  WHERE rl.Status = 1
+                                                                    AND rl.[Type] IN ('Lock', 'Hold')
+                                                                    AND (
+                                                                          (rl.Rooms IS NOT NULL AND rl.Rooms = r.RNumber)
+                                                                       OR (rl.Rooms IS NULL AND rl.RType = r.RTypeID)
+                                                                        )
+                                                                    AND (
+                                                                          (rl.FD IS NULL OR CAST(rl.FD AS DATE) <= CAST(@EndDate AS DATE))
+                                                                      AND (rl.ED IS NULL OR CAST(rl.ED AS DATE) >= CAST(@StartDate AS DATE))
+                                                                        )
+                                                                )
+                                                                AND r.RNumber NOT IN (
+                                                                  SELECT isnull(ra.RNumber,'')
+                                                                  FROM RoomAllocation ra
+                                                                  WHERE ra.IsActive = 1 and ISNULL(ra.Cancelled, 0) = 0 and ra.Shared=2
+                                                                    AND (
+                                                                        @StartDate BETWEEN ISNULL(CheckInDate, FD) AND ISNULL(CheckOutDate, TD)  
+                                                                        OR 
+                                                                        @EndDate BETWEEN ISNULL(CheckInDate, FD) AND ISNULL(CheckOutDate, TD)
+                                                                        OR
+                                                                        ISNULL(CheckInDate, FD) BETWEEN @StartDate AND @EndDate  
+                                                                        OR
+                                                                        ISNULL(CheckOutDate, TD) BETWEEN @StartDate AND @EndDate
+                                                                    )
+                                                                )
+
+)
+Select ar.RNumber RoomNo,
+	isnull((STUFF((
+	Select '-' + md.CustomerName from RoomAllocation ra Left Join MembersDetails md on ra.GuestID = md.Id where ra.RNumber= ar.RNumber and ISNULL(ra.Cancelled, 0) = 0 and ar.Rnumber in (
+                                                                  SELECT isnull(ra1.RNumber,'')
+                                                                  FROM RoomAllocation ra1																  
+                                                                  WHERE ra1.IsActive = 1 and ISNULL(ra1.Cancelled, 0) = 0
+                                                                    AND (
+                                                                        @StartDate BETWEEN ISNULL(ra.CheckInDate, ra.FD) AND ISNULL(ra.CheckOutDate, ra.TD)  
+                                                                        OR 
+                                                                        @EndDate BETWEEN ISNULL(ra.CheckInDate, ra.FD) AND ISNULL(ra.CheckOutDate, ra.TD)
+                                                                        OR
+                                                                        ISNULL(ra.CheckInDate, ra.FD) BETWEEN @StartDate AND @EndDate  
+                                                                        OR
+                                                                        ISNULL(ra.CheckOutDate, ra.TD) BETWEEN @StartDate AND @EndDate
+                                                                    )
+                                                                )
+	FOR XML PATH(''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 1, '' )),'') as SharedWith
+																
+from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') from RoomAllocation ral where ral.GuestID=@GuestId and ISNULL(ral.Cancelled, 0) = 0)";
+            var sParameters = new { @GuestId = GuestId, @RoomTypeId = RoomTypeId };
+            var res = await _unitOfWork.GenOperations.GetTableData<AvailableRoomsForGuestAllocation>(sQuery, sParameters);
+            return Ok(res);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRoomsAvailableForGuestsSharedByRoomType)}");
+            throw;
+        }
+    }
+
+    public async Task<IActionResult> GetRoomsAvailableForGuestsNonSharedByRoomType(int GuestId, int RoomTypeId)
+    {
+        try
+        {
+            string sQuery = @"DECLARE @StartDate DATETIME='',@EndDate DATETIME='',@RTypeID INT=0,@Status INT = 1;
+                            Select @StartDate = (Case when md.DateOfArrival > getdate() then md.DateOfArrival else getdate() end),@EndDate=md.DateOfDepartment from MembersDetails md where Id=@GuestId;
+                            SELECT @RTypeID = @RoomTypeId;
+                                                            WITH AvailableRooms AS (
+                                                              SELECT r.RNumber
+                                                              FROM Rooms r
+                                                              WHERE r.RTypeID = @RTypeID
+                                                                AND r.Status = @Status
+                                                                AND NOT EXISTS (
+                                                                  SELECT 1
+                                                                  FROM RoomLock rl
+                                                                  WHERE rl.Status = 1
+                                                                    AND rl.[Type] IN ('Lock', 'Hold')
+                                                                    AND (
+                                                                          (rl.Rooms IS NOT NULL AND rl.Rooms = r.RNumber)
+                                                                       OR (rl.Rooms IS NULL AND rl.RType = r.RTypeID)
+                                                                        )
+                                                                    AND (
+                                                                          (rl.FD IS NULL OR CAST(rl.FD AS DATE) <= CAST(@EndDate AS DATE))
+                                                                      AND (rl.ED IS NULL OR CAST(rl.ED AS DATE) >= CAST(@StartDate AS DATE))
+                                                                        )
+                                                                )
+                                                                AND r.RNumber NOT IN (
+                                                                  SELECT isnull(ra.RNumber,'')
+                                                                  FROM RoomAllocation ra
+                                                                  WHERE ra.IsActive = 1
+                                                                    AND ISNULL(ra.Cancelled, 0) = 0
+                                                                    AND (
+                                                                        @StartDate BETWEEN ISNULL(CheckInDate, FD) AND ISNULL(CheckOutDate, TD)  
+                                                                        OR 
+                                                                        @EndDate BETWEEN ISNULL(CheckInDate, FD) AND ISNULL(CheckOutDate, TD)
+                                                                        OR
+                                                                        ISNULL(CheckInDate, FD) BETWEEN @StartDate AND @EndDate  
+                                                                        OR
+                                                                        ISNULL(CheckOutDate, TD) BETWEEN @StartDate AND @EndDate
+                                                                    )
+                                                                )
+
+                                                            )
+                                                            Select RNumber RoomNo from AvailableRooms";
+            var sParameters = new { @GuestId = GuestId, @RoomTypeId = RoomTypeId };
+            var res = await _unitOfWork.GenOperations.GetTableData<AvailableRoomsForGuestAllocation>(sQuery, sParameters);
+            return Ok(res);
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRoomsAvailableForGuestsNonSharedByRoomType)}");
+            throw;
+        }
+    }
+
     public async Task<IActionResult> UpdateGuests(MembersDetailsDTO inputDTO)
     {
         try
@@ -2611,18 +2740,23 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
     {
         try
         {
-            string sQuery = @"--Select Id from MembersDetails where GroupId=(Select GroupId from MembersDetails where Id=@GuestID)
-                            --Select * from RoomAllocation where GuestID in (Select Id from MembersDetails where GroupId=(Select GroupId from MembersDetails where Id=@GuestID))
-                            Update ra set ra.RNumber=@RoomNumber,ra.Shared=1 from RoomAllocation ra where ra.GuestID in ((Select Id from MembersDetails where GroupId=(Select GroupId from MembersDetails where Id=@GuestID))) 
+            // Update RoomType in MembersDetails for all group members
+            if (inputDTO.Rtype > 0)
+            {
+                string updateMembersQuery = @"Update md set md.RoomType=@RoomTypeId from MembersDetails md where md.GroupId=(Select GroupId from MembersDetails where Id=@GuestID)";
+                var updateMembersParam = new { @GuestID = inputDTO.GuestId, @RoomTypeId = inputDTO.Rtype };
+                await _unitOfWork.GenOperations.ExecuteQuery(updateMembersQuery, updateMembersParam);
+            }
 
-                            Select * from RoomAllocation where GuestID in (Select Id from MembersDetails where GroupId=(Select GroupId from MembersDetails where Id=@GuestID))";
-            var sParam = new { @GuestID = inputDTO.GuestId, @RoomNumber = inputDTO.Rnumber };
-            var res = await _unitOfWork.GenOperations.GetTableData<RoomAllocationDTO>(sQuery, sParam);
+            // Update RoomAllocation for all group members
+            string sQuery = @"Update ra set ra.RNumber=@RoomNumber, ra.Rtype=@RoomTypeId, ra.Shared=1 from RoomAllocation ra where ra.GuestID in ((Select Id from MembersDetails where GroupId=(Select GroupId from MembersDetails where Id=@GuestID)))";
+            var sParam = new { @GuestID = inputDTO.GuestId, @RoomNumber = inputDTO.Rnumber, @RoomTypeId = inputDTO.Rtype ?? 0 };
+            await _unitOfWork.GenOperations.ExecuteQuery(sQuery, sParam);
             return Ok();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(AllocateRoomToAllGroup)}");
             throw;
         }
     }
@@ -2630,6 +2764,14 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
     {
         try
         {
+            // Update RoomType in MembersDetails
+            if (inputDTO.Rtype > 0)
+            {
+                string updateMembersQuery = @"Update MembersDetails set RoomType=@RoomTypeId where Id=@GuestId";
+                var updateMembersParam = new { @GuestId = inputDTO.GuestId, @RoomTypeId = inputDTO.Rtype };
+                await _unitOfWork.GenOperations.ExecuteQuery(updateMembersQuery, updateMembersParam);
+            }
+
             string sQuery = @"Select * from RoomAllocation where GuestID=@GuestId";
             var sParam = new { @GuestID = inputDTO.GuestId };
 
@@ -2637,6 +2779,7 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
             if (ra != null)
             {
                 ra.Rnumber = inputDTO.Rnumber;
+                ra.Rtype = inputDTO.Rtype ?? ra.Rtype;
                 ra.Shared = 1;
                 await _unitOfWork.RoomAllocation.UpdateAsync(ra);
                 return Ok();
@@ -2647,7 +2790,7 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
 
                 RoomAllocation roomAllocation = new RoomAllocation();
                 roomAllocation.Rnumber = inputDTO.Rnumber;
-                roomAllocation.Rtype = mem?.RoomType ?? 0;
+                roomAllocation.Rtype = inputDTO.Rtype ?? mem?.RoomType ?? 0;
                 roomAllocation.GuestId = inputDTO.GuestId;
                 roomAllocation.Fd = mem?.DateOfArrival;
                 roomAllocation.Td = mem?.DateOfDepartment;
@@ -2664,7 +2807,7 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(ChangeRoomForCurrentGuestWithSharingStatus)}");
             throw;
         }
     }
@@ -2672,6 +2815,14 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
     {
         try
         {
+            // Update RoomType in MembersDetails
+            if (inputDTO.Rtype > 0)
+            {
+                string updateMembersQuery = @"Update MembersDetails set RoomType=@RoomTypeId where Id=@GuestId";
+                var updateMembersParam = new { @GuestId = inputDTO.GuestId, @RoomTypeId = inputDTO.Rtype };
+                await _unitOfWork.GenOperations.ExecuteQuery(updateMembersQuery, updateMembersParam);
+            }
+
             string sQuery = @"Select * from RoomAllocation where GuestID=@GuestId";
             var sParam = new { @GuestID = inputDTO.GuestId };
 
@@ -2679,6 +2830,7 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
             if (ra != null)
             {
                 ra.Rnumber = inputDTO.Rnumber;
+                ra.Rtype = inputDTO.Rtype ?? ra.Rtype;
                 ra.Shared = 2;
                 await _unitOfWork.RoomAllocation.UpdateAsync(ra);
                 return Ok();
@@ -2691,7 +2843,7 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
                 {
                     RoomAllocation roomAllocation = new RoomAllocation();
                     roomAllocation.Rnumber = inputDTO.Rnumber;
-                    roomAllocation.Rtype = memberDetails.RoomType;
+                    roomAllocation.Rtype = inputDTO.Rtype ?? memberDetails.RoomType ?? 0;
                     roomAllocation.GuestId = memberDetails.Id;
                     roomAllocation.Fd = memberDetails.DateOfArrival;
                     roomAllocation.Td = memberDetails.DateOfDepartment;
@@ -2709,7 +2861,7 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            _logger.LogError(ex, $"Error in retriving Attendance {nameof(ChangeRoomForCurrentGuestWithNonSharingStatus)}");
             throw;
         }
     }

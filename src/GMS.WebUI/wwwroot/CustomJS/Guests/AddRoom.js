@@ -4,64 +4,63 @@
 
 });
 
-function initOnRoomAdd() {
-    //$("#exampleModal").find("[name='ddlAvailableRoomsSharedStatus']").change(function () {
-    //    let SharedStatus = $(this).val();
-    //    BlockUI();
-    //    let inputDTO = {};
-    //    inputDTO.Shared = SharedStatus;
-    //    inputDTO.GuestId = $("#exampleModal").find("[name='GuestId']").val();
-    //    $.ajax({
-    //        type: "POST",
-    //        url: "/Guests/GetAvailableRoomsForGuestAllocation",
-    //        contentType: 'application/json',
-    //        data: JSON.stringify(inputDTO),
-    //        success: function (data) {
-    //            UnblockUI();
-    //            let ctrl = $("#exampleModal").find("[name='ddlAvailableRoomsShared']");
-    //            ctrl.empty();
-    //            ctrl.append('<option value="0">Select Room</option>');
-    //            if (data != null) {
-    //                for (var i = 0; i < data.length; i++) {
-    //                    ctrl.append('<option value="' + data[i].roomNo + '">Room No - ' + data[i].roomNo + (data[i].shared == true ? " Shared With(" + data[i].sharedWith + ")" : "") + '</option>');
-    //                }
-    //            }
-    //        },
-    //        error: function (error) {
-    //            /* $erroralert("Transaction Failed!", error.responseText + '!');*/
-    //            UnblockUI();
-    //        }
-    //    });
+function loadRoomsByRoomTypeAndSharing() {
+    let RoomTypeId = $("#exampleModal").find("[name='ddlRoomType']").val();
+    let SharedStatus = $("#exampleModal").find("[name='ddlAvailableRoomsSharedStatus']").val();
+    let GuestId = $("#exampleModal").find("[name='GuestId']").val();
 
-    //});
-    $("#exampleModal").find("[name='ddlAvailableRoomsSharedStatus']").change(function () {
-        let SharedStatus = $(this).val();
-        BlockUI();
-        let inputDTO = {};
-        inputDTO.Shared = SharedStatus;
-        inputDTO.GuestId = $("#exampleModal").find("[name='GuestId']").val();
-        $.ajax({
-            type: "POST",
-            url: "/Guests/GetRoomsAvailableForGuestsSharedNew",
-            contentType: 'application/json',
-            data: JSON.stringify(inputDTO),
-            success: function (data) {
-                UnblockUI();
-                let ctrl = $("#exampleModal").find("[name='ddlAvailableRoomsShared']");
-                ctrl.empty();
-                ctrl.append('<option value="0">Select Room</option>');
-                if (data != null) {
-                    for (var i = 0; i < data.length; i++) {
-                        ctrl.append('<option value="' + data[i].roomNo + '">' + data[i].roomNo + ((data[i].sharedWith == null || data[i].sharedWith == "") ? "" : "(" + data[i].sharedWith + ")") + '</option>');
-                    }
+    if (RoomTypeId == 0 || RoomTypeId == null || RoomTypeId == "") {
+        let ctrl = $("#exampleModal").find("[name='ddlAvailableRoomsShared']");
+        ctrl.empty();
+        ctrl.append('<option value="0">Select Room</option>');
+        return;
+    }
+
+    if (SharedStatus == 0 || SharedStatus == null || SharedStatus == "") {
+        let ctrl = $("#exampleModal").find("[name='ddlAvailableRoomsShared']");
+        ctrl.empty();
+        ctrl.append('<option value="0">Select Room</option>');
+        return;
+    }
+
+    BlockUI();
+    let inputDTO = {};
+    inputDTO.Rtype = RoomTypeId;
+    inputDTO.Shared = SharedStatus;
+    inputDTO.GuestId = GuestId;
+    
+    $.ajax({
+        type: "POST",
+        url: "/Guests/GetRoomsAvailableForGuestsByRoomType",
+        contentType: 'application/json',
+        data: JSON.stringify(inputDTO),
+        success: function (data) {
+            UnblockUI();
+            let ctrl = $("#exampleModal").find("[name='ddlAvailableRoomsShared']");
+            ctrl.empty();
+            ctrl.append('<option value="0">Select Room</option>');
+            if (data != null) {
+                for (var i = 0; i < data.length; i++) {
+                    ctrl.append('<option value="' + data[i].roomNo + '">' + data[i].roomNo + ((data[i].sharedWith == null || data[i].sharedWith == "") ? "" : "(" + data[i].sharedWith + ")") + '</option>');
                 }
-            },
-            error: function (error) {
-                /* $erroralert("Transaction Failed!", error.responseText + '!');*/
-                UnblockUI();
             }
-        });
+        },
+        error: function (error) {
+            UnblockUI();
+            $erroralert("Transaction Failed!", error.responseText + '!');
+        }
+    });
+}
 
+function initOnRoomAdd() {
+    // Handle RoomType change
+    $("#exampleModal").find("[name='ddlRoomType']").change(function () {
+        loadRoomsByRoomTypeAndSharing();
+    });
+
+    // Handle Sharing status change
+    $("#exampleModal").find("[name='ddlAvailableRoomsSharedStatus']").change(function () {
+        loadRoomsByRoomTypeAndSharing();
     });
 }
 
@@ -216,7 +215,8 @@ function AllocateRoom_New() {
 function ChangeRoomForAllGroup() {
     var inputDTO = {
         Rnumber: $("#exampleModal").find("[name='ddlAvailableRoomsShared']").val(),
-        GuestId: $("#exampleModal").find("[name='GuestId']").val()
+        GuestId: $("#exampleModal").find("[name='GuestId']").val(),
+        Rtype: $("#exampleModal").find("[name='ddlRoomType']").val()
     };
     BlockUI();
     $.ajax({
@@ -247,7 +247,8 @@ function ChangeRoomForCurrentGuestWithSharingStatus(Shared) {
     var inputDTO = {
         Rnumber: $("#exampleModal").find("[name='ddlAvailableRoomsShared']").val(),
         GuestId: $("#exampleModal").find("[name='GuestId']").val(),
-        Shared: Shared
+        Shared: Shared,
+        Rtype: $("#exampleModal").find("[name='ddlRoomType']").val()
     };
     BlockUI();
     $.ajax({
@@ -277,7 +278,8 @@ function ChangeRoomForCurrentGuestWithSharingStatus(Shared) {
 function ChangeRoomForCurrentGuestWithNonSharingStatus() {
     var inputDTO = {
         Rnumber: $("#exampleModal").find("[name='ddlAvailableRoomsShared']").val(),
-        GuestId: $("#exampleModal").find("[name='GuestId']").val()
+        GuestId: $("#exampleModal").find("[name='GuestId']").val(),
+        Rtype: $("#exampleModal").find("[name='ddlRoomType']").val()
     };
     BlockUI();
     $.ajax({

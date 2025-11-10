@@ -892,6 +892,31 @@ public class GuestsController : Controller
         return Ok(dto);
     }
 
+    public async Task<IActionResult> GetRoomsAvailableForGuestsByRoomType([FromBody] RoomAllocationDTO inputDTO)
+    {
+        List<AvailableRoomsForGuestAllocation>? dto = new List<AvailableRoomsForGuestAllocation>();
+        if (inputDTO != null && inputDTO.GuestId > 0 && inputDTO.Rtype > 0)
+        {
+            if (inputDTO.Shared == 1)
+            {
+                var roomNumbers = await _guestsAPIController.GetRoomsAvailableForGuestsSharedByRoomType(inputDTO.GuestId ?? 0, inputDTO.Rtype ?? 0);
+                if (roomNumbers != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).StatusCode == 200)
+                {
+                    dto = (List<AvailableRoomsForGuestAllocation>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).Value;
+                }
+            }
+            else
+            {
+                var roomNumbers = await _guestsAPIController.GetRoomsAvailableForGuestsNonSharedByRoomType(inputDTO.GuestId ?? 0, inputDTO.Rtype ?? 0);
+                if (roomNumbers != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).StatusCode == 200)
+                {
+                    dto = (List<AvailableRoomsForGuestAllocation>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomNumbers).Value;
+                }
+            }
+        }
+        return Ok(dto);
+    }
+
     public async Task<IActionResult> AddRoomPartialView([FromBody] MembersDetailsDTO inputDTO)
     {
         MembersDetailsDTO? membersDetailsDTO = new MembersDetailsDTO();
@@ -944,8 +969,12 @@ public class GuestsController : Controller
                 viewModel.MembersDetailWithChild = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
             }
 
-
-
+            // Load RoomTypes
+            var roomTypes = await _roomTypeAPIController.List();
+            if (roomTypes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomTypes).StatusCode == 200)
+            {
+                viewModel.RoomTypes = (List<RoomTypeDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)roomTypes).Value;
+            }
 
             //var sharedStatusRes = await _guestsAPIController.GetAvailableRoomsSharedStatusForGuest(inputDTO.Id);
             //if (sharedStatusRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)sharedStatusRes).StatusCode == 200)

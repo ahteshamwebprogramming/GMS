@@ -31,31 +31,55 @@
                     </table>
                 </div>
                 <form class="general_form">
-                    @* <div class="mb-3">
-                    <label class="form-label">Room Number</label>
-                    <input type="text" class="form-control">
-                    </div> *@
                     <input type="hidden" value="@Model?.MembersDetails?.Id" name="GuestId" />
-                    <div class="mb-3">
-                        <label>Sharing</label>
-                        <select class="form-control" name="ddlAvailableRoomsSharedStatus">
-                            <option value="0">Select</option>
-                            @* <option value="1">Yes</option>
-                            <option value="2">No</option> *@
-                            @{
-                                if (Model != null && Model.RoomAllocationDetails != null)
-                                {
-                                    if (Model.RoomAllocationDetails.Shared != null)
+                    <div class="mb-3 row">
+                        <div class="col-md-4">
+                            <label>Room Type</label>
+                            <select class="form-control" name="ddlRoomType" id="ddlRoomType">
+                                <option value="0">Select Room Type</option>
+                                @{
+                                    int? currentRoomTypeId = Model?.MembersDetails?.RoomType;
+                                    if (Model != null && Model.RoomTypes != null)
                                     {
-                                        if (Model.RoomAllocationDetails.Shared == 1)
+                                        foreach (var item in Model.RoomTypes)
                                         {
-                                            <option selected value="1">Yes</option>
-                                            <option value="2">No</option>
+                                            if (item.Id == currentRoomTypeId)
+                                            {
+                                                <option selected value="@item.Id">@item.Rtype</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@item.Id">@item.Rtype</option>
+                                            }
                                         }
-                                        else if (Model.RoomAllocationDetails.Shared == 2)
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Sharing</label>
+                            <select class="form-control" name="ddlAvailableRoomsSharedStatus">
+                                <option value="0">Select</option>
+                                @{
+                                    if (Model != null && Model.RoomAllocationDetails != null)
+                                    {
+                                        if (Model.RoomAllocationDetails.Shared != null)
                                         {
-                                            <option value="1">Yes</option>
-                                            <option selected value="2">No</option>
+                                            if (Model.RoomAllocationDetails.Shared == 1)
+                                            {
+                                                <option selected value="1">Yes</option>
+                                                <option value="2">No</option>
+                                            }
+                                            else if (Model.RoomAllocationDetails.Shared == 2)
+                                            {
+                                                <option value="1">Yes</option>
+                                                <option selected value="2">No</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="1">Yes</option>
+                                                <option value="2">No</option>
+                                            }
                                         }
                                         else
                                         {
@@ -69,29 +93,23 @@
                                         <option value="2">No</option>
                                     }
                                 }
-                                else
-                                {
-                                    <option value="1">Yes</option>
-                                    <option value="2">No</option>
-                                }
-                            }
-
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label>Select Room</label>
-                        <select class="form-control" name="ddlAvailableRoomsShared">
-                            <option value="0">Select Room</option>
-                            @{
-                                if (Model != null && Model.AvailableRoomsForGuestAllocationList != null)
-                                {
-                                    foreach (var item in Model.AvailableRoomsForGuestAllocationList)
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Select Room</label>
+                            <select class="form-control" name="ddlAvailableRoomsShared">
+                                <option value="0">Select Room</option>
+                                @{
+                                    if (Model != null && Model.AvailableRoomsForGuestAllocationList != null)
                                     {
-                                        <option value="@item.RoomNo">@item.RoomNo @(String.IsNullOrEmpty(item.SharedWith) ? "" : "(" + @item.SharedWith + ")")</option>
+                                        foreach (var item in Model.AvailableRoomsForGuestAllocationList)
+                                        {
+                                            <option value="@item.RoomNo">@item.RoomNo @(String.IsNullOrEmpty(item.SharedWith) ? "" : "(" + @item.SharedWith + ")")</option>
+                                        }
                                     }
                                 }
-                            }
-                        </select>
+                            </select>
+                        </div>
                     </div>
                 </form>
             </div>
