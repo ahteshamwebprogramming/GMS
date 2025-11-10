@@ -220,19 +220,25 @@ namespace GMS.Services
             {
                 const string query = @"
             MERGE INTO Rates AS target
-            USING (VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate, @PlanId)) 
-                  AS source (RoomTypeId, Date, Price, MinRate, MaxRate,PlanId)
-            ON target.RoomTypeId = source.RoomTypeId 
-               AND target.PlanId = source.PlanId 
-               AND target.Date = source.Date 
+            USING (VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate, @PlanId, @CancellationDays, @StopSell, @CloseOnArrival, @RestrictStay, @MinimumNights, @MaximumNights))
+                  AS source (RoomTypeId, Date, Price, MinRate, MaxRate, PlanId, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights)
+            ON target.RoomTypeId = source.RoomTypeId
+               AND target.PlanId = source.PlanId
+               AND target.Date = source.Date
             WHEN MATCHED THEN
                 UPDATE SET Price = source.Price,
                            MinRate = source.MinRate,
                            MaxRate = source.MaxRate,
-                           PlanId = source.PlanId
+                           PlanId = source.PlanId,
+                           CancellationDays = source.CancellationDays,
+                           StopSell = source.StopSell,
+                           CloseOnArrival = source.CloseOnArrival,
+                           RestrictStay = source.RestrictStay,
+                           MinimumNights = source.MinimumNights,
+                           MaximumNights = source.MaximumNights
             WHEN NOT MATCHED THEN
-                INSERT (RoomTypeId, Date, Price, MinRate, MaxRate,PlanId)
-                VALUES (source.RoomTypeId, source.Date, source.Price, source.MinRate, source.MaxRate, source.PlanId);";
+                INSERT (RoomTypeId, Date, Price, MinRate, MaxRate, PlanId, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights)
+                VALUES (source.RoomTypeId, source.Date, source.Price, source.MinRate, source.MaxRate, source.PlanId, source.CancellationDays, source.StopSell, source.CloseOnArrival, source.RestrictStay, source.MinimumNights, source.MaximumNights);";
 
 
                 var rateData = new List<object>();
@@ -248,7 +254,13 @@ namespace GMS.Services
                             Price = rate.SaleRate,
                             MinRate = rate.MinimumRate,
                             MaxRate = rate.MaximumRate,
-                            PlanId = channelId
+                            PlanId = channelId,
+                            CancellationDays = rate.CancellationDays,
+                            StopSell = rate.StopSell ?? false,
+                            CloseOnArrival = rate.CloseOnArrival ?? false,
+                            RestrictStay = rate.RestrictStay ?? false,
+                            MinimumNights = rate.MinimumNights,
+                            MaximumNights = rate.MaximumNights
                         });
                     }
                 }
@@ -289,19 +301,25 @@ namespace GMS.Services
             {
                 const string query = @"
             MERGE INTO Rates AS target
-            USING (VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate, @PlanId)) 
-                  AS source (RoomTypeId, Date, Price, MinRate, MaxRate,PlanId)
-            ON target.RoomTypeId = source.RoomTypeId 
-               AND target.PlanId = source.PlanId 
-               AND target.Date = source.Date 
+            USING (VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate, @PlanId, @CancellationDays, @StopSell, @CloseOnArrival, @RestrictStay, @MinimumNights, @MaximumNights))
+                  AS source (RoomTypeId, Date, Price, MinRate, MaxRate, PlanId, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights)
+            ON target.RoomTypeId = source.RoomTypeId
+               AND target.PlanId = source.PlanId
+               AND target.Date = source.Date
             WHEN MATCHED THEN
                 UPDATE SET Price = source.Price,
                            MinRate = source.MinRate,
                            MaxRate = source.MaxRate,
-                           PlanId = source.PlanId
+                           PlanId = source.PlanId,
+                           CancellationDays = source.CancellationDays,
+                           StopSell = source.StopSell,
+                           CloseOnArrival = source.CloseOnArrival,
+                           RestrictStay = source.RestrictStay,
+                           MinimumNights = source.MinimumNights,
+                           MaximumNights = source.MaximumNights
             WHEN NOT MATCHED THEN
-                INSERT (RoomTypeId, Date, Price, MinRate, MaxRate,PlanId)
-                VALUES (source.RoomTypeId, source.Date, source.Price, source.MinRate, source.MaxRate, source.PlanId);";
+                INSERT (RoomTypeId, Date, Price, MinRate, MaxRate, PlanId, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights)
+                VALUES (source.RoomTypeId, source.Date, source.Price, source.MinRate, source.MaxRate, source.PlanId, source.CancellationDays, source.StopSell, source.CloseOnArrival, source.RestrictStay, source.MinimumNights, source.MaximumNights);";
 
 
                 var rateData = new List<object>();
@@ -327,7 +345,13 @@ namespace GMS.Services
                             Price = rate.SaleRate,
                             MinRate = rate.MinimumRate,
                             MaxRate = rate.MaximumRate,
-                            PlanId = channelId
+                            PlanId = channelId,
+                            CancellationDays = rate.CancellationDays,
+                            StopSell = rate.StopSell ?? false,
+                            CloseOnArrival = rate.CloseOnArrival ?? false,
+                            RestrictStay = rate.RestrictStay ?? false,
+                            MinimumNights = rate.MinimumNights,
+                            MaximumNights = rate.MaximumNights
                         });
                     }
                 }
