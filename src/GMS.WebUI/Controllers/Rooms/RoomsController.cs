@@ -344,7 +344,7 @@ public class RoomsController : Controller
                     {
                         return Json(new { success = false, message = "Selected rates contain invalid values" });
                     }
-                    await _bulkRateAPIController.UpdateBulkRatesAsync(model.ChannelId, model.FromDate, model.ToDate, selectedRates);
+                    await _bulkRateAPIController.UpdateBulkRatesAsync(model.ChannelId, model.FromDate, model.ToDate, selectedRates, model.SelectedDaysList ?? "");
                     return Json(new { success = true, message = "Selected rates updated successfully" });
                 }
                 return Json(new { success = false, message = "No rates selected for update" });

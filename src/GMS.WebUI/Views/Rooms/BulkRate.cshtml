@@ -181,6 +181,19 @@
                                            min="@Model.FromDate.ToString("yyyy-MM-dd")"
                                            max="@Model.FromDate.AddDays(364).ToString("yyyy-MM-dd")" onchange="updateDateRange('tab1')" />
                                 </div>
+                                <div class="controlsForm" style="width:inherit">
+                                    <label>Days of Week</label>
+                                    <div class="day-checkboxes">
+                                        <label class="day-checkbox"><input type="checkbox" name="SelectedDays" value="All" checked> All</label>
+                                        <label class="day-checkbox"><input type="checkbox" name="SelectedDays" value="Monday" checked> Mo</label>
+                                        <label class="day-checkbox"><input type="checkbox" name="SelectedDays" value="Tuesday" checked> Tu</label>
+                                        <label class="day-checkbox"><input type="checkbox" name="SelectedDays" value="Wednesday" checked> We</label>
+                                        <label class="day-checkbox"><input type="checkbox" name="SelectedDays" value="Thursday" checked> Th</label>
+                                        <label class="day-checkbox"><input type="checkbox" name="SelectedDays" value="Friday" checked> Fr</label>
+                                        <label class="day-checkbox"><input type="checkbox" name="SelectedDays" value="Saturday" checked> Sa</label>
+                                        <label class="day-checkbox"><input type="checkbox" name="SelectedDays" value="Sunday" checked> Su</label>
+                                    </div>
+                                </div>
                                 <div class="controlsForm" name="CopyFromDiv" style="display:none">
                                     <label>Copy From</label>
                                     <select class="form-control" name="CopyFrom" id="CopyFrom">
@@ -206,6 +219,7 @@
                                 <input type="hidden" name="ChannelId" value="@Model.ChannelId" />
                                 <input type="hidden" id="ratesFromDate" name="FromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
                                 <input type="hidden" id="ratesToDate" name="ToDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" name="SelectedDaysList" id="SelectedDaysList" value="" />
                                 <input type="hidden" name="activeTab" value="tab1" />
                                 <div class="resposive_table">
                                     <table class="ratesUpdated w-100 table" width="100%">
@@ -665,6 +679,7 @@
 ['tab_PR', 'tab1', 'tab2', 'tab3', 'tab4'].forEach(tabId => {
     handleDaySelection(tabId);
     handleChannelChange(tabId);
+    updateSelectedDays(tabId);
 });
 
 
@@ -688,8 +703,7 @@ function handleDaySelection(tabId) {
             }
         }
         
-        var activeTabId = $('.nav-tabs .nav-link.active').attr('id').replace('-tab', '');
-        updateSelectedDays(activeTabId);
+        updateSelectedDays(tabId);
     });
 }
 
