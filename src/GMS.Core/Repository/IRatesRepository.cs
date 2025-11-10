@@ -8,7 +8,7 @@ public interface IRatesRepository : IDapperRepository<Rates>
     Task<bool> UpdateRatesAsync(RatesUpdateViewModel model);
 
     Task UpdateBulkInventoryAsync(BulkUpdateViewModel model);
-    Task UpdateBulkRatesAsync(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates);
+    Task UpdateBulkRatesAsync(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates, string selectedDaysList);
     Task UpdateBulkRatesAsyncPackages(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates,string selectedDaysList);
 
     Task SaveRoomPercentagesAsync(List<RoomPercentageData> percentageData, DateTime fromDate, DateTime toDate);

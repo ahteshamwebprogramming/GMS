@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using GMS.Core.Entities;
+using System;
 using GMS.Core.Repository;
 using GMS.Infrastructure.Models.Rooms;
 using GMS.Infrastructure.ViewModels.Rooms;
@@ -7,6 +8,7 @@ using GMS.Services.DBContext;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GMS.Services
@@ -243,7 +245,7 @@ namespace GMS.Services
             }
         }
 
-        public async Task UpdateBulkRatesAsync(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates)
+        public async Task UpdateBulkRatesAsync(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates, string selectedDaysList)
         {
             //using var connection = _connectionFactory.CreateConnection();
             //connection.Open();
@@ -281,11 +283,28 @@ namespace GMS.Services
 
 
                 var rateData = new List<object>();
+                var selectedDays = string.IsNullOrWhiteSpace(selectedDaysList)
+                    ? new List<string>()
+                    : selectedDaysList
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(day => day.Trim())
+                        .Where(day => !string.IsNullOrWhiteSpace(day))
+                        .ToList();
+                var includeAllDays = selectedDays.Any(day => string.Equals(day, "All", StringComparison.OrdinalIgnoreCase));
                 var days = (toDate - fromDate).Days + 1;
                 foreach (var rate in rates)
                 {
                     for (var date = fromDate; date <= toDate; date = date.AddDays(1))
                     {
+                        if (selectedDays.Any() && !includeAllDays)
+                        {
+                            var dayName = date.DayOfWeek.ToString();
+                            var isSelectedDay = selectedDays.Any(day => string.Equals(day, dayName, StringComparison.OrdinalIgnoreCase));
+                            if (!isSelectedDay)
+                            {
+                                continue;
+                            }
+                        }
                         rateData.Add(new
                         {
                             RoomTypeId = rate.RoomTypeId,
@@ -362,17 +381,25 @@ namespace GMS.Services
 
 
                 var rateData = new List<object>();
-                var selectedDays = selectedDaysList?.Split(',')?.ToList() ?? new List<string>();
+                var selectedDays = string.IsNullOrWhiteSpace(selectedDaysList)
+                    ? new List<string>()
+                    : selectedDaysList
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(day => day.Trim())
+                        .Where(day => !string.IsNullOrWhiteSpace(day))
+                        .ToList();
+                var includeAllDays = selectedDays.Any(day => string.Equals(day, "All", StringComparison.OrdinalIgnoreCase));
                 //var days = (toDate - fromDate).Days + 1;
                 foreach (var rate in rates)
                 {
                     for (var date = fromDate; date <= toDate; date = date.AddDays(1))
                     {
                         // Skip dates that don't match selected days (unless "All" is selected)
-                        if (selectedDays.Any() && !selectedDays.Contains("All"))
+                        if (selectedDays.Any() && !includeAllDays)
                         {
                             var dayName = date.DayOfWeek.ToString();
-                            if (!selectedDays.Contains(dayName))
+                            var isSelectedDay = selectedDays.Any(day => string.Equals(day, dayName, StringComparison.OrdinalIgnoreCase));
+                            if (!isSelectedDay)
                             {
                                 continue;
                             }

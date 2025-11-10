@@ -367,11 +367,11 @@ public class BulkRateAPIController : ControllerBase
             throw;
         }
     }
-    public async Task<bool> UpdateBulkRatesAsync(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates)
+    public async Task<bool> UpdateBulkRatesAsync(int channelId, DateTime fromDate, DateTime toDate, List<RoomRateBulkUpdate> rates, string selectedDaysList)
     {
         try
         {
-            await _unitOfWork.Rates.UpdateBulkRatesAsync(channelId, fromDate, toDate, rates);
+            await _unitOfWork.Rates.UpdateBulkRatesAsync(channelId, fromDate, toDate, rates, selectedDaysList);
             return true;
         }
         catch (Exception ex)
