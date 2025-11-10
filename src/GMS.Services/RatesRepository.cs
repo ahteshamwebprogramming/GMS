@@ -84,13 +84,36 @@ namespace GMS.Services
                 if (updates.Any())
                 {
                     const string updateQuery = @"
-                UPDATE Rates 
-                SET Price = @Price, MinRate = @MinRate, MaxRate = @MaxRate 
+                UPDATE Rates
+                SET Price = @Price,
+                    MinRate = @MinRate,
+                    MaxRate = @MaxRate,
+                    CancellationDays = @CancellationDays,
+                    StopSell = @StopSell,
+                    CloseOnArrival = @CloseOnArrival,
+                    RestrictStay = @RestrictStay,
+                    MinimumNights = @MinimumNights,
+                    MaximumNights = @MaximumNights
                 WHERE Id = @Id AND RoomTypeId = @RoomTypeId";
 
                     foreach (var batch in updates.Chunk(batchSize))
                     {
-                        await connection.ExecuteAsync(updateQuery, batch, transaction);
+                        var parameters = batch.Select(rate => new
+                        {
+                            rate.Id,
+                            rate.RoomTypeId,
+                            rate.Price,
+                            rate.MinRate,
+                            rate.MaxRate,
+                            rate.CancellationDays,
+                            rate.StopSell,
+                            rate.CloseOnArrival,
+                            rate.RestrictStay,
+                            rate.MinimumNights,
+                            rate.MaximumNights
+                        });
+
+                        await connection.ExecuteAsync(updateQuery, parameters, transaction);
                     }
                 }
 
@@ -98,12 +121,28 @@ namespace GMS.Services
                 if (inserts.Any())
                 {
                     const string insertQuery = @"
-                INSERT INTO Rates (RoomTypeId, Date, Price, MinRate, MaxRate,PlanId)
-                VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate,@PlanId)";
+                INSERT INTO Rates (RoomTypeId, Date, Price, MinRate, MaxRate, PlanId, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights)
+                VALUES (@RoomTypeId, @Date, @Price, @MinRate, @MaxRate, @PlanId, @CancellationDays, @StopSell, @CloseOnArrival, @RestrictStay, @MinimumNights, @MaximumNights)";
 
                     foreach (var batch in inserts.Chunk(batchSize))
                     {
-                        await connection.ExecuteAsync(insertQuery, batch, transaction);
+                        var parameters = batch.Select(rate => new
+                        {
+                            rate.RoomTypeId,
+                            rate.Date,
+                            rate.Price,
+                            rate.MinRate,
+                            rate.MaxRate,
+                            rate.PlanId,
+                            rate.CancellationDays,
+                            rate.StopSell,
+                            rate.CloseOnArrival,
+                            rate.RestrictStay,
+                            rate.MinimumNights,
+                            rate.MaximumNights
+                        });
+
+                        await connection.ExecuteAsync(insertQuery, parameters, transaction);
                     }
                 }
 
