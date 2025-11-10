@@ -15,5 +15,11 @@ namespace GMS.Core.Entities
         public decimal MaxRate { get; set; }
         public string? OTAID { get; set; }
         public decimal? PlanId { get; set; }
+        public int? CancellationDays { get; set; }
+        public bool? StopSell { get; set; }
+        public bool? CloseOnArrival { get; set; }
+        public bool? RestrictStay { get; set; }
+        public int? MinimumNights { get; set; }
+        public int? MaximumNights { get; set; }
     }
 }

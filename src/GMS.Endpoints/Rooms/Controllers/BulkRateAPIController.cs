@@ -129,9 +129,9 @@ public class BulkRateAPIController : ControllerBase
         foreach (var roomType in roomTypes)
         {
             var rates = await _unitOfWork.GenOperations.GetTableData<RatesDTO>(
-                @"SELECT Id, RoomTypeId, Date, Price ,MinRate, MaxRate
-              FROM Rates 
-              WHERE RoomTypeId = @RoomTypeId 
+                @"SELECT Id, RoomTypeId, Date, Price ,MinRate, MaxRate, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights
+              FROM Rates
+              WHERE RoomTypeId = @RoomTypeId
               AND Date BETWEEN @StartDate AND @EndDate",
                 new { RoomTypeId = roomType.Id, StartDate = startDate, EndDate = endDate });
 
@@ -166,11 +166,11 @@ public class BulkRateAPIController : ControllerBase
         foreach (var roomType in roomTypes)
         {
             var rates = await _unitOfWork.GenOperations.GetTableData<RatesDTO>(
-                @"SELECT Id, RoomTypeId, Date, Price, MinRate, MaxRate
+                @"SELECT Id, RoomTypeId, Date, Price, MinRate, MaxRate, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights
                         FROM Rates
-                        WHERE RoomTypeId = @RoomTypeId 
+                        WHERE RoomTypeId = @RoomTypeId
                           AND PlanId = @PlanId
-                          AND Date = 
+                          AND Date =
                               (
                                 SELECT TOP 1 Date
                                 FROM Rates

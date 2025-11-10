@@ -71,8 +71,8 @@ public class RoomRateAPIController : ControllerBase
 
             foreach (var roomType in roomTypes)
             {
-                string rateQuery = @"SELECT Id, RoomTypeId, Date, Price ,MinRate, MaxRate
-                                  FROM Rates 
+                string rateQuery = @"SELECT Id, RoomTypeId, Date, Price ,MinRate, MaxRate, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights
+                                  FROM Rates
                                   WHERE RoomTypeId = @RoomTypeId and PlanId=@PlanId
                                   AND Date BETWEEN @StartDate AND @EndDate";
                 var rateParam = new { RoomTypeId = roomType.Id, StartDate = startDate, EndDate = endDate, @PlanId = PlanId };
@@ -106,9 +106,9 @@ public class RoomRateAPIController : ControllerBase
 
             foreach (var roomType in roomTypes)
             {
-                string rateQuery = @"SELECT Id, RoomTypeId, Date, Price ,MinRate, MaxRate
-                                  FROM Rates 
-                                  WHERE RoomTypeId = @RoomTypeId 
+                string rateQuery = @"SELECT Id, RoomTypeId, Date, Price ,MinRate, MaxRate, CancellationDays, StopSell, CloseOnArrival, RestrictStay, MinimumNights, MaximumNights
+                                  FROM Rates
+                                  WHERE RoomTypeId = @RoomTypeId
                                   AND Date BETWEEN @StartDate AND @EndDate";
                 var rateParam = new { RoomTypeId = roomType.Id, StartDate = startDate, EndDate = endDate };
                 var rates = await _unitOfWork.GenOperations.GetTableData<RatesDTO>(rateQuery, rateParam);
