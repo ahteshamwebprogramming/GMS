@@ -105,6 +105,26 @@ function loadTabData(tabId) {
                                         <input type="number" id="saleRate-${index}" name="Rates[${index}].SaleRate" value="${item.saleRate || ''}" min="0" step="0.01" style="width: 80px;" onblur="validateRate('saleRate-${index}', 'minRate-${index}', 'maxRate-${index}')" />
                                         <input type="hidden" name="Rates[${index}].RoomTypeId" value="${item.roomTypeId}" />
                                     </td>
+                                    <td><input type="number" name="Rates[${index}].CancellationDays" value="${item.cancellationDays || ''}" min="0" step="1" style="width: 80px;" /></td>
+                                    <td>
+                                        <div class="toggle-container">
+                                            <input type="hidden" name="Rates[${index}].StopSell" value="false" />
+                                            <input type="checkbox" id="rate-stopSell-${index}" name="Rates[${index}].StopSell" value="true" ${item.stopSell === true ? 'checked' : ''} class="toggle-checkbox">
+                                            <label for="rate-stopSell-${index}" class="toggle-label">
+                                                <span class="toggle-circle"></span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="hidden" name="Rates[${index}].CloseOnArrival" value="false" />
+                                        <input type="checkbox" id="rate-closeOnArrival-${index}" name="Rates[${index}].CloseOnArrival" value="true" ${item.closeOnArrival ? 'checked' : ''}>
+                                    </td>
+                                    <td>
+                                        <input type="hidden" name="Rates[${index}].RestrictStay" value="false" />
+                                        <input type="checkbox" id="rate-restrictStay-${index}" name="Rates[${index}].RestrictStay" value="true" ${item.restrictStay ? 'checked' : ''}>
+                                    </td>
+                                    <td><input type="number" name="Rates[${index}].MinimumNights" value="${item.minimumNights || ''}" min="0" step="1" style="width: 80px;" /></td>
+                                    <td><input type="number" name="Rates[${index}].MaximumNights" value="${item.maximumNights || ''}" min="0" step="1" style="width: 80px;" /></td>
                                 </tr>`;
                 });
             }

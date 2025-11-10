@@ -246,7 +246,13 @@ public class RoomsController : Controller
             RoomTypeName = r.RoomTypeName,
             SaleRate = r.DailyRates.FirstOrDefault()?.Price,
             MinimumRate = r.DailyRates.FirstOrDefault()?.MinRate,
-            MaximumRate = r.DailyRates.FirstOrDefault()?.MaxRate
+            MaximumRate = r.DailyRates.FirstOrDefault()?.MaxRate,
+            CancellationDays = r.DailyRates.FirstOrDefault()?.CancellationDays,
+            StopSell = r.DailyRates.FirstOrDefault()?.StopSell,
+            CloseOnArrival = r.DailyRates.FirstOrDefault()?.CloseOnArrival,
+            RestrictStay = r.DailyRates.FirstOrDefault()?.RestrictStay,
+            MinimumNights = r.DailyRates.FirstOrDefault()?.MinimumNights,
+            MaximumNights = r.DailyRates.FirstOrDefault()?.MaximumNights
         }).ToList();
         return Json(rates);
     }
@@ -262,7 +268,13 @@ public class RoomsController : Controller
             RoomTypeName = r.RoomTypeName,
             SaleRate = r.DailyRates.FirstOrDefault()?.Price,
             MinimumRate = r.DailyRates.FirstOrDefault()?.MinRate,
-            MaximumRate = r.DailyRates.FirstOrDefault()?.MaxRate
+            MaximumRate = r.DailyRates.FirstOrDefault()?.MaxRate,
+            CancellationDays = r.DailyRates.FirstOrDefault()?.CancellationDays,
+            StopSell = r.DailyRates.FirstOrDefault()?.StopSell,
+            CloseOnArrival = r.DailyRates.FirstOrDefault()?.CloseOnArrival,
+            RestrictStay = r.DailyRates.FirstOrDefault()?.RestrictStay,
+            MinimumNights = r.DailyRates.FirstOrDefault()?.MinimumNights,
+            MaximumNights = r.DailyRates.FirstOrDefault()?.MaximumNights
         }).ToList();
         return Json(rates);
     }
@@ -324,7 +336,11 @@ public class RoomsController : Controller
                     if (!selectedRates.All(r => (r.MinimumRate.HasValue && r.MinimumRate >= 0) &&
                         (r.MaximumRate == null || r.MaximumRate >= 0) &&
                         (r.SaleRate.HasValue && r.SaleRate >= 0 && r.SaleRate >= r.MinimumRate &&
-                        (r.MaximumRate == null || r.SaleRate <= r.MaximumRate))))
+                        (r.MaximumRate == null || r.SaleRate <= r.MaximumRate)) &&
+                        (r.CancellationDays == null || r.CancellationDays >= 0) &&
+                        (r.MinimumNights == null || r.MinimumNights >= 0) &&
+                        (r.MaximumNights == null || r.MaximumNights >= 0) &&
+                        (!r.MinimumNights.HasValue || !r.MaximumNights.HasValue || r.MinimumNights <= r.MaximumNights)))
                     {
                         return Json(new { success = false, message = "Selected rates contain invalid values" });
                     }
@@ -342,7 +358,11 @@ public class RoomsController : Controller
                     if (!selectedRates.All(r => (r.MinimumRate.HasValue && r.MinimumRate >= 0) &&
                         (r.MaximumRate == null || r.MaximumRate >= 0) &&
                         (r.SaleRate.HasValue && r.SaleRate >= 0 && r.SaleRate >= r.MinimumRate &&
-                        (r.MaximumRate == null || r.SaleRate <= r.MaximumRate))))
+                        (r.MaximumRate == null || r.SaleRate <= r.MaximumRate)) &&
+                        (r.CancellationDays == null || r.CancellationDays >= 0) &&
+                        (r.MinimumNights == null || r.MinimumNights >= 0) &&
+                        (r.MaximumNights == null || r.MaximumNights >= 0) &&
+                        (!r.MinimumNights.HasValue || !r.MaximumNights.HasValue || r.MinimumNights <= r.MaximumNights)))
                     {
                         return Json(new { success = false, message = "Selected rates contain invalid values" });
                     }

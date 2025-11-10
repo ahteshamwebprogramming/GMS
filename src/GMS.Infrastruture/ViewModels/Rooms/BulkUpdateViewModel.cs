@@ -31,6 +31,12 @@ namespace GMS.Infrastructure.ViewModels.Rooms
         public decimal? SaleRate { get; set; }
         public decimal? MinimumRate { get; set; }
         public decimal? MaximumRate { get; set; }
+        public int? CancellationDays { get; set; }
+        public bool? StopSell { get; set; }
+        public bool? CloseOnArrival { get; set; }
+        public bool? RestrictStay { get; set; }
+        public int? MinimumNights { get; set; }
+        public int? MaximumNights { get; set; }
         public bool IsSelected { get; set; }
     }
     public class RoomInventoryBulkUpdate
