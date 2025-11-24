@@ -1833,6 +1833,15 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
                     var updated = await _unitOfWork.RoomAllocation.UpdateAsync(roomAllocationExisting);
                     if (updated)
                     {
+                        try
+                        {
+                            await PostChargesToAuditBySP(inputDTO.GuestId ?? default(int));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO.GuestId} during room update in {nameof(AllocateRoom)}");
+                            // Continue execution even if audit revenue fails - room allocation should not fail
+                        }
                         return Ok("Room Updated Successfully");
                     }
                 }
@@ -1846,7 +1855,19 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
             inputDTO.IsActive = 1;
 
             inputDTO.Id = await _unitOfWork.RoomAllocation.AddAsync(_mapper.Map<RoomAllocation>(inputDTO));
-            if (inputDTO.Id > 0) { return Ok(inputDTO); }
+            if (inputDTO.Id > 0)
+            {
+                try
+                {
+                    await PostChargesToAuditBySP(inputDTO.GuestId ?? default(int));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO.GuestId} during room allocation in {nameof(AllocateRoom)}");
+                    // Continue execution even if audit revenue fails - room allocation should not fail
+                }
+                return Ok(inputDTO);
+            }
             else { return BadRequest("Some error has occurred while assigning room"); }
         }
         catch (Exception ex)
@@ -2752,6 +2773,18 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
             string sQuery = @"Update ra set ra.RNumber=@RoomNumber, ra.Rtype=@RoomTypeId, ra.Shared=1 from RoomAllocation ra where ra.GuestID in ((Select Id from MembersDetails where GroupId=(Select GroupId from MembersDetails where Id=@GuestID)))";
             var sParam = new { @GuestID = inputDTO.GuestId, @RoomNumber = inputDTO.Rnumber, @RoomTypeId = inputDTO.Rtype ?? 0 };
             await _unitOfWork.GenOperations.ExecuteQuery(sQuery, sParam);
+            
+            try
+            {
+                // Call stored procedure once for the group (it processes all guests in the group)
+                await PostChargesToAuditBySP(inputDTO.GuestId ?? default(int));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO.GuestId} during group room allocation in {nameof(AllocateRoomToAllGroup)}");
+                // Continue execution even if audit revenue fails - room allocation should not fail
+            }
+            
             return Ok();
         }
         catch (Exception ex)
@@ -2833,6 +2866,15 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
                 ra.Rtype = inputDTO.Rtype ?? ra.Rtype;
                 ra.Shared = 2;
                 await _unitOfWork.RoomAllocation.UpdateAsync(ra);
+                try
+                {
+                    await PostChargesToAuditBySP(inputDTO.GuestId ?? default(int));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO.GuestId} during room change in {nameof(ChangeRoomForCurrentGuestWithNonSharingStatus)}");
+                    // Continue execution even if audit revenue fails - room change should not fail
+                }
                 return Ok();
             }
             else
@@ -2853,6 +2895,15 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
                     roomAllocation.Id = await _unitOfWork.RoomAllocation.AddAsync(roomAllocation);
                     if (roomAllocation.Id > 0)
                     {
+                        try
+                        {
+                            await PostChargesToAuditBySP(inputDTO.GuestId ?? default(int));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO.GuestId} during room allocation in {nameof(ChangeRoomForCurrentGuestWithNonSharingStatus)}");
+                            // Continue execution even if audit revenue fails - room allocation should not fail
+                        }
                         return Ok("");
                     }
                 }
@@ -3634,6 +3685,20 @@ OPTION (MAXRECURSION 100);";
                 inputDTO.Id = await _unitOfWork.Payment.AddAsync(_mapper.Map<Payment>(inputDTO));
                 if (inputDTO.Id > 0)
                 {
+                    try
+                    {
+                        // Call stored procedure to update audit revenue after payment
+                        int guestIdForAudit = inputDTO?.GuestId ?? 0;
+                        if (guestIdForAudit > 0)
+                        {
+                            await PostChargesToAuditBySP(guestIdForAudit);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO?.GuestId} during payment save in {nameof(SavePaymentData)}");
+                        // Continue execution even if audit revenue fails - payment save should not fail
+                    }
                     return Ok(inputDTO);
                 }
             }
@@ -3843,7 +3908,21 @@ OPTION (MAXRECURSION 100);";
 
                         await PostBulkDataToAudit(1);
 
-
+                        try
+                        {
+                            // Call stored procedure to update audit revenue after settlement
+                            // Using GuestIdPaxSN1 as it's the primary guest ID used for settlement
+                            int guestIdForAudit = inputDTO?.GuestIdPaxSN1 ?? inputDTO?.GuestId ?? 0;
+                            if (guestIdForAudit > 0)
+                            {
+                                await PostChargesToAuditBySP(guestIdForAudit);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO?.GuestIdPaxSN1 ?? inputDTO?.GuestId} during settlement in {nameof(SaveSettlementInformation)}");
+                            // Continue execution even if audit revenue fails - settlement should not fail
+                        }
 
                         return Ok("Settlement saved successfully");
                     }

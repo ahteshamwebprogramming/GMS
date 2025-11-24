@@ -615,6 +615,16 @@ public class GuestsController : Controller
                         var roomAllocated = await _guestsAPIController.AllocateRoom(roomAllocationDTO);
                         if (roomAllocated != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomAllocated).StatusCode == 200)
                         {
+                            try
+                            {
+                                inputDTO.LoggedInUser = Convert.ToInt32(User.FindFirstValue("Id"));
+                                await _guestsAPIController.PostChargesToAuditBySP(inputDTO.Id);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO.Id} during manual room allocation in {nameof(SaveMemberDetails)}");
+                                // Continue execution even if audit revenue fails - guest registration should not fail
+                            }
                             return res;
                         }
                     }
@@ -1550,10 +1560,22 @@ public class GuestsController : Controller
                 dto.MemberDetailsWithChildren = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).Value;
             }
             dto.AccountSettled = await _guestsAPIController.IsAccountSettled(inputDTO?.Id ?? 0);
+            
+            // Call stored procedure to update audit revenue when billing is opened
+            try
+            {
+                int guestIdForAudit = inputDTO?.Id ?? 0;
+                if (guestIdForAudit > 0)
+                {
+                    await _guestsAPIController.PostChargesToAuditBySP(guestIdForAudit);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO?.Id} when opening billing in {nameof(BillingPartialView)}");
+                // Continue execution even if audit revenue fails - billing view should still load
+            }
         }
-
-
-
 
         return PartialView("_guestsList/_billing", dto);
     }

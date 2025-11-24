@@ -691,7 +691,20 @@ public class CRMController : Controller
 
                         if (resInputDTO != null && resInputDTO.opt == "Add")
                         {
-                            await _guestsAPIController.AutoRoomAssign(inputDTO);
+                            bool roomAssigned = await _guestsAPIController.AutoRoomAssign(inputDTO);
+                            if (roomAssigned)
+                            {
+                                try
+                                {
+                                    inputDTO.LoggedInUser = Convert.ToInt32(User.FindFirstValue("Id"));
+                                    await _guestsAPIController.PostChargesToAuditBySP(inputDTO.Id);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO.Id} in {nameof(SaveMemberDetailsCRM)}");
+                                    // Continue execution even if audit revenue fails - guest registration should not fail
+                                }
+                            }
                         }
 
 
@@ -718,6 +731,16 @@ public class CRMController : Controller
                         var roomAllocated = await _guestsAPIController.AllocateRoom(roomAllocationDTO);
                         if (roomAllocated != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)roomAllocated).StatusCode == 200)
                         {
+                            try
+                            {
+                                inputDTO.LoggedInUser = Convert.ToInt32(User.FindFirstValue("Id"));
+                                await _guestsAPIController.PostChargesToAuditBySP(inputDTO.Id);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO.Id} during manual room allocation in {nameof(SaveMemberDetailsCRM)}");
+                                // Continue execution even if audit revenue fails - guest registration should not fail
+                            }
                             return res;
                         }
                     }

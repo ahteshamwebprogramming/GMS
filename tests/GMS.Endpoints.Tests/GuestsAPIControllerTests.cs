@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace GMS.Endpoints.Tests;
@@ -37,8 +38,8 @@ public class GuestsAPIControllerTests
         _unitOfWorkMock.SetupGet(u => u.RoomAllocation).Returns(_roomAllocationRepositoryMock.Object);
 
         _billingRepositoryMock
-            .Setup(b => b.GetTableData<GMS.Infrastructure.Models.Accounting.BillingDTO>(It.IsAny<string>(), It.IsAny<object>()))
-            .ReturnsAsync(new List<GMS.Infrastructure.Models.Accounting.BillingDTO>());
+            .Setup(b => b.GetTableData<GMS.Infrastructure.Models.Guests.BillingDTO>(It.IsAny<string>(), It.IsAny<object>()))
+            .ReturnsAsync(new List<GMS.Infrastructure.Models.Guests.BillingDTO>());
         _billingRepositoryMock
             .Setup(b => b.RunSQLCommand(It.IsAny<string>(), It.IsAny<object>()))
             .ReturnsAsync(true);
