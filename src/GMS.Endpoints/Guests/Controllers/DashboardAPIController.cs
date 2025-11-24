@@ -609,16 +609,16 @@ ORDER BY D.TheDate, RTM.ID;
                             ),
                             -- MTD: Month to Date
                             MTDRevenue AS (
-                                SELECT SUM(Charges) AS MTD FROM AuditedRevenue 
-                                WHERE Date >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1) 
-                                  AND Date <= CAST(GETDATE() AS DATE)
+                                SELECT SUM(Charges) AS MTD FROM AuditedRevenue
+                                WHERE CAST(Date AS DATE) >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1)
+                                  AND CAST(Date AS DATE) <= CAST(GETDATE() AS DATE)
                                   AND IsActive = 1 AND ChargesCategory = 'RoomCharges'
                             ),
                             -- YTD: Year to Date
                             YTDRevenue AS (
-                                SELECT SUM(Charges) AS YTD FROM AuditedRevenue 
-                                WHERE Date >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1) 
-                                  AND Date <= CAST(GETDATE() AS DATE)
+                                SELECT SUM(Charges) AS YTD FROM AuditedRevenue
+                                WHERE CAST(Date AS DATE) >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1)
+                                  AND CAST(Date AS DATE) <= CAST(GETDATE() AS DATE)
                                   AND IsActive = 1 AND ChargesCategory = 'RoomCharges'
                             ),
                             -- CPD: Change from Previous Day
@@ -687,16 +687,16 @@ ORDER BY D.TheDate, RTM.ID;
                             ),
                             -- MTD: Month to Date
                             MTDRevenue AS (
-                                SELECT SUM(Charges) AS MTD FROM AuditedRevenue 
-                                WHERE Date >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1) 
-                                  AND Date <= CAST(GETDATE() AS DATE)
+                                SELECT SUM(Charges) AS MTD FROM AuditedRevenue
+                                WHERE CAST(Date AS DATE) >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1)
+                                  AND CAST(Date AS DATE) <= CAST(GETDATE() AS DATE)
                                   AND IsActive = 1 AND ChargesCategory in ('PackageSystem','Package')
                             ),
                             -- YTD: Year to Date
                             YTDRevenue AS (
-                                SELECT SUM(Charges) AS YTD FROM AuditedRevenue 
-                                WHERE Date >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1) 
-                                  AND Date <= CAST(GETDATE() AS DATE)
+                                SELECT SUM(Charges) AS YTD FROM AuditedRevenue
+                                WHERE CAST(Date AS DATE) >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1)
+                                  AND CAST(Date AS DATE) <= CAST(GETDATE() AS DATE)
                                   AND IsActive = 1 AND ChargesCategory in ('PackageSystem','Package')
                             ),
                             -- CPD: Change from Previous Day
@@ -765,16 +765,16 @@ ORDER BY D.TheDate, RTM.ID;
                             ),
                             -- MTD: Month to Date
                             MTDRevenue AS (
-                                SELECT SUM(Charges) AS MTD FROM AuditedRevenue 
-                                WHERE Date >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1) 
-                                  AND Date <= CAST(GETDATE() AS DATE)
+                                SELECT SUM(Charges) AS MTD FROM AuditedRevenue
+                                WHERE CAST(Date AS DATE) >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1)
+                                  AND CAST(Date AS DATE) <= CAST(GETDATE() AS DATE)
                                   AND IsActive = 1 AND ChargesCategory not in ('PackageSystem','Package','RoomCharges')
                             ),
                             -- YTD: Year to Date
                             YTDRevenue AS (
-                                SELECT SUM(Charges) AS YTD FROM AuditedRevenue 
-                                WHERE Date >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1) 
-                                  AND Date <= CAST(GETDATE() AS DATE)
+                                SELECT SUM(Charges) AS YTD FROM AuditedRevenue
+                                WHERE CAST(Date AS DATE) >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1)
+                                  AND CAST(Date AS DATE) <= CAST(GETDATE() AS DATE)
                                   AND IsActive = 1 AND ChargesCategory not in ('PackageSystem','Package','RoomCharges')
                             ),
                             -- CPD: Change from Previous Day
