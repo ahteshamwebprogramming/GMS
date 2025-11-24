@@ -81,6 +81,33 @@ BookedCounts AS (
     JOIN OccupiedRooms O
       ON D.TheDate BETWEEN CAST(O.StartDate AS DATE) AND CAST(O.EndDate AS DATE)
     GROUP BY D.TheDate, O.RTypeID
+),
+RoomLocks AS (
+    SELECT
+        D.TheDate,
+        R.RTypeID,
+        R.RNumber
+    FROM Dates D
+    JOIN Rooms R ON R.Status = 1
+    JOIN RoomLock RL
+      ON RL.Status = 1
+     AND RL.[Type] IN ('Lock', 'Hold')
+     AND (
+            (RL.Rooms IS NOT NULL AND RL.Rooms = R.RNumber)
+         OR (RL.Rooms IS NULL AND RL.RType = R.RTypeID)
+        )
+     AND (
+            (RL.FD IS NULL OR CAST(RL.FD AS DATE) <= D.TheDate)
+        AND (RL.ED IS NULL OR CAST(RL.ED AS DATE) >= D.TheDate)
+        )
+),
+LockedCounts AS (
+    SELECT
+        TheDate,
+        RTypeID,
+        COUNT(DISTINCT RNumber) AS LockedRooms
+    FROM RoomLocks
+    GROUP BY TheDate, RTypeID
 )
 SELECT 
     D.TheDate,
@@ -98,6 +125,8 @@ CROSS JOIN RoomTypeCounts RTC
 JOIN RoomType RTM ON RTC.RTypeID = RTM.ID
 LEFT JOIN BookedCounts B
     ON D.TheDate = B.TheDate AND RTC.RTypeID = B.RTypeID
+LEFT JOIN LockedCounts L
+    ON D.TheDate = L.TheDate AND RTC.RTypeID = L.RTypeID
 ORDER BY D.TheDate, RTM.ID;
 ";
             var res = await _unitOfWork.GenOperations.GetTableData<RoomOccupancyData>(query, new { @Date = date });
