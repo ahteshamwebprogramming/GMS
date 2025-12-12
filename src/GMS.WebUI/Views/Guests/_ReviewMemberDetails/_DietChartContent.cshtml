@@ -1,0 +1,81 @@
+@model GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild
+
+<div class="col-xs-12 box-form" style="background: #fff; padding: 20px; border-radius: 5px;">
+    <form class="general_form">
+        <div class="col-xs-12 box-form">
+            <div class="col-xs-12">
+                <div class="col-xs-2 padding0 right">
+                    <label class="control-label">Registration No.</label>
+                </div>
+                <div class="col-xs-4 padding0 right">
+                    <input name="lblrgid" type="text" id="lblrgid" class="form-control" value="@(Model?.RegistrationNumber)">
+                </div>
+                <div class="col-xs-2 padding0 right">
+                    <label class="control-label">Name</label>
+                </div>
+                <div class="col-xs-4 padding0 right">
+                    <input name="txtname" type="text" id="txtname" class="form-control" value="@(Model?.CustomerName)">
+                </div>
+                <div class="clearfix"></div>
+                <div class="col-xs-2 padding0 right">
+                    <label class="control-label">Gender</label>
+                </div>
+                <div class="col-xs-2 padding0">
+                    <table id="chkGender" class="checkbox mychkbox">
+                        <tbody>
+                            <tr>
+                                <td><input id="chkGender_0" type="checkbox" name="chkGender$0" @(Model?.GenderName == "Male" ? "checked" : "") onclick="UncheckOthers(this);" value="Male"><label for="chkGender_0">Male</label></td>
+                                <td><input id="chkGender_1" type="checkbox" name="chkGender$1" @(Model?.GenderName == "Female" ? "checked" : "") onclick="UncheckOthers(this);" value="Female"><label for="chkGender_1">Female</label></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-xs-1 padding0 right">
+                    <label class="control-label">Age</label>
+                </div>
+                <div class="col-xs-1 padding0 right">
+                    <input name="txtage" type="text" id="txtage" class="form-control" value="@(Model?.Age)">
+                </div>
+                <div class="col-xs-2 padding0 right">
+                    <label class="control-label">Diagnosis</label>
+                </div>
+                <div class="col-xs-4 padding0 right">
+                    <input type="text" name="" class="form-control">
+                </div>
+                <div class="responsive_table">
+                    <table class="table table-bordered tBl">
+                        <thead>
+                            <tr>
+                                <th><center>Date</center></th>
+                                <th><center>Before Breakfast 7:00 – 7:30am</center></th>
+                                <th><center>Breakfast 8:30 – 10:00am</center></th>
+                                <th>Snacks 4:00 – 5:00pm</th>
+                                <th>Dinner 6:30 – 8:30pm</th>
+                                <th>Before Bed 9:00 – 10:00</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < 10; i++)
+                            {
+                                <tr>
+                                    <td><input type="text" name="" class="txt-bottom"></td>
+                                    <td><input type="text" name="" class="txt-bottom"></td>
+                                    <td><input type="text" name="" class="txt-bottom"></td>
+                                    <td><input type="text" name="" class="txt-bottom"></td>
+                                    <td><input type="text" name="" class="txt-bottom"></td>
+                                    <td><input type="text" name="" class="txt-bottom"></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-xs-12" style="height: 10px"></div>
+            </div>
+        </div>
+    </form>
+    <div style="margin-top: 20px;">
+        <button type="button" onclick="window.print()" class="btn btn-secondary">Print</button>
+        <button type="button" class="btn btn-primary">Save</button>
+    </div>
+</div>
+

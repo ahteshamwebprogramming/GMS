@@ -258,29 +258,59 @@ public class GuestsAPIController : ControllerBase
     {
         try
         {
-            string squery = @"Select * from Settlement s where GuestId in (
-                                SELECT md.Id
-                                --, md.CustomerName, md.GroupId, ra.Rnumber
-                                FROM MembersDetails md
-                                INNER JOIN RoomAllocation ra ON md.Id = ra.GuestID AND ra.IsActive = 1 and md.Status=1
-                                WHERE md.GroupId = (
-                                    SELECT md2.GroupId
-                                    FROM MembersDetails md2
-                                    WHERE md2.Id = @GuestId and md2.Status=1
-                                )
-                                AND ra.Rnumber = (
-                                    SELECT ra2.Rnumber
-                                    FROM RoomAllocation ra2
-                                    WHERE ra2.GuestID = @GuestId AND ra2.IsActive = 1
-                                )
-                                ) and s.isactive=1;";
-            var res = await _unitOfWork.GenOperations.GetEntityCount(squery, new { @GuestId = GuestId });
-            if (res > 0)
+            string squery = @"Select s.*, 
+                            (SELECT TOP 1 IsApproved FROM CreditDebitNoteAccount 
+                             WHERE SettlementId = s.Id 
+                             AND TransactionType = 'Debit' 
+                             AND IsActive = 1 
+                             ORDER BY CreatedDate DESC) AS DebitNoteIsApproved
+                            from Settlement s where (s.GuestId = @GuestId 
+                                 OR s.GuestId in (
+                                     SELECT md.Id
+                                     FROM MembersDetails md
+                                     INNER JOIN RoomAllocation ra ON md.Id = ra.GuestID AND ra.IsActive = 1 and md.Status=1
+                                     WHERE md.GroupId = (
+                                         SELECT md2.GroupId
+                                         FROM MembersDetails md2
+                                         WHERE md2.Id = @GuestId and md2.Status=1
+                                     )
+                                     AND ra.Rnumber = (
+                                         SELECT TOP 1 ra2.Rnumber
+                                         FROM RoomAllocation ra2
+                                         WHERE ra2.GuestID = @GuestId AND ra2.IsActive = 1
+                                         ORDER BY ra2.Id DESC
+                                     )
+                                 )) and s.isactive=1;";
+            var settlement = await _unitOfWork.GenOperations.GetEntityData<SettlementDTO>(squery, new { @GuestId = GuestId });
+            
+            if (settlement != null)
             {
-                return true;
+                // Check if there's a debit note (regardless of Status)
+                bool hasDebitNote = (settlement.DebitAmount ?? 0) > 0 && !string.IsNullOrEmpty(settlement.DebitNoteNumber);
+                
+                if (hasDebitNote)
+                {
+                    // There's a debit note - check if it's approved
+                    if (settlement.DebitNoteIsApproved == true)
+                    {
+                        // Debit note is approved - allow checkout
+                        return true;
+                    }
+                    else
+                    {
+                        // Debit note is not approved - cannot checkout
+                        return false;
+                    }
+                }
+                else
+                {
+                    // No debit note - settlement is complete, allow checkout
+                    return true;
+                }
             }
             else
             {
+                // No settlement exists - cannot checkout
                 return false;
             }
         }
@@ -1611,7 +1641,7 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
                         }
 
                         var settlementExists = await _unitOfWork.GenOperations.IsExists(
-                            "Select 1 from Settlement where IsActive=1 and (GuestId=@GuestId or GuestIdPaxSN1=@GuestId)",
+                            "Select 1 from Settlement where IsActive=1 and GuestId=@GuestId",
                             new { @GuestId = inputDTO.Id });
 
                         if (settlementExists)
@@ -2624,7 +2654,7 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
     {
         try
         {
-            string sQuery = "Select * from TaskMaster where IsDeleted=0 and IsActive=1 and isnull(Readonly,0)=0 order by Taskname asc";
+            string sQuery = "Select * from TaskMaster where IsDeleted=0 and IsActive=1 order by Taskname asc";
             var res = await _unitOfWork.TaskMaster.GetTableData<TaskMasterDTO>(sQuery);
             return Ok(res);
         }
@@ -3034,7 +3064,8 @@ where GuestID in (Select Id from MembersDetails where GroupId = (Select GroupId 
     {
         try
         {
-            string query = @"Select Id,PaymentMethodName Code from PaymentMethod where IsActive=1";
+            // Exclude PaymentMethod with Code 'DN' from dropdown, but include NULL codes
+            string query = @"Select Id,PaymentMethodName Code,PaymentMethodCode from PaymentMethod where IsActive=1 AND (PaymentMethodCode IS NULL OR PaymentMethodCode != 'DN')";
             //var parameter = new { @Id = GuestId };
             var res = await _unitOfWork.GenOperations.GetTableData<GuaranteeCodeDTO>(query);
             return Ok(res);
@@ -3676,12 +3707,94 @@ OPTION (MAXRECURSION 100);";
         }
     }
 
+    public async Task<IActionResult> ValidateCreditNote(string creditNoteCode, int guestId)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(creditNoteCode))
+            {
+                return BadRequest(new { isValid = false, message = "Credit note number is required" });
+            }
+
+            string query = @"Select * from CreditDebitNoteAccount 
+                            where Code = @Code 
+                            and TransactionType = 'Credit' 
+                            and IsActive = 1";
+            var param = new { @Code = creditNoteCode };
+            var creditNote = await _unitOfWork.CreditDebitNoteAccount.GetEntityData<CreditDebitNoteAccountDTO>(query, param);
+
+            if (creditNote == null)
+            {
+                return Ok(new { isValid = false, message = "Invalid credit note number" });
+            }
+
+            // Check if expired
+            if (creditNote.CodeValidity.HasValue && creditNote.CodeValidity.Value < DateTime.Now)
+            {
+                return Ok(new { isValid = false, message = "Credit note is expired", isExpired = true });
+            }
+
+            // Check if there's balance available
+            double balanceAmount = creditNote.BalanceAmount ?? 0;
+            if (balanceAmount <= 0)
+            {
+                return Ok(new { isValid = false, message = "Credit note has no balance available" });
+            }
+
+            return Ok(new 
+            { 
+                isValid = true, 
+                message = "Valid credit note", 
+                balanceAmount = balanceAmount,
+                creditNoteId = creditNote.Id
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in validating credit note {nameof(ValidateCreditNote)}");
+            return BadRequest(new { isValid = false, message = "Error validating credit note" });
+        }
+    }
+
     public async Task<IActionResult> SavePaymentData(PaymentDTO inputDTO)
     {
         try
         {
             if (inputDTO != null)
             {
+                // Check if payment method is Credit Note (CN)
+                string paymentMethodQuery = @"Select PaymentMethodCode from PaymentMethod where Id = @Id";
+                var paymentMethodParam = new { @Id = inputDTO.PaymentMode };
+                var paymentMethodCode = await _unitOfWork.GenOperations.GetEntityData<string>(paymentMethodQuery, paymentMethodParam);
+
+                int? creditNoteId = null;
+                double? creditNoteAmount = null;
+
+                if (paymentMethodCode == "CN" && !string.IsNullOrWhiteSpace(inputDTO.ReferenceNumber))
+                {
+                    // Validate and update credit note
+                    string creditNoteQuery = @"Select * from CreditDebitNoteAccount 
+                                               where Code = @Code 
+                                               and TransactionType = 'Credit' 
+                                               and IsActive = 1";
+                    var creditNoteParam = new { @Code = inputDTO.ReferenceNumber };
+                    var creditNote = await _unitOfWork.CreditDebitNoteAccount.GetEntityData<CreditDebitNoteAccountDTO>(creditNoteQuery, creditNoteParam);
+
+                    if (creditNote != null)
+                    {
+                        creditNoteId = creditNote.Id;
+                        creditNoteAmount = inputDTO.Amount;
+
+                        // Update UsedAmount and BalanceAmount
+                        creditNote.UsedAmount = (creditNote.UsedAmount ?? 0) + (inputDTO.Amount ?? 0);
+                        creditNote.BalanceAmount = (creditNote.BalanceAmount ?? 0) - (inputDTO.Amount ?? 0);
+                        creditNote.ModifiedDate = DateTime.Now;
+                        creditNote.ModifiedBy = inputDTO.CreatedBy;
+
+                        await _unitOfWork.CreditDebitNoteAccount.UpdateAsync(_mapper.Map<CreditDebitNoteAccount>(creditNote));
+                    }
+                }
+
                 inputDTO.Id = await _unitOfWork.Payment.AddAsync(_mapper.Map<Payment>(inputDTO));
                 if (inputDTO.Id > 0)
                 {
@@ -3776,17 +3889,36 @@ OPTION (MAXRECURSION 100);";
     {
         try
         {
-            string sQuery = @"With GuestIds as(SELECT GuestID FROM RoomAllocation WHERE GuestID IN (SELECT Id FROM MembersDetails WHERE GroupId = (SELECT GroupId FROM MembersDetails WHERE Id = @GuestId))AND RNumber = (SELECT TOP 1 RNumber FROM RoomAllocation WHERE GuestID = @GuestId ORDER BY Id DESC ))
-                            Select 
+            // For billing popup display: return true if settlement exists (regardless of DN approval)
+            // The view will show the appropriate message based on DebitNoteIsApproved
+            string squery = @"Select s.*, 
+                            (SELECT TOP 1 IsApproved FROM CreditDebitNoteAccount 
+                             WHERE SettlementId = s.Id 
+                             AND TransactionType = 'Debit' 
+                             AND IsActive = 1 
+                             ORDER BY CreatedDate DESC) AS DebitNoteIsApproved
+                            from Settlement s where (s.GuestId = @GuestId 
+                                 OR s.GuestId in (
+                                     SELECT md.Id
+                                     FROM MembersDetails md
+                                     INNER JOIN RoomAllocation ra ON md.Id = ra.GuestID AND ra.IsActive = 1 and md.Status=1
+                                     WHERE md.GroupId = (
+                                         SELECT md2.GroupId
+                                         FROM MembersDetails md2
+                                         WHERE md2.Id = @GuestId and md2.Status=1
+                                     )
+                                     AND ra.Rnumber = (
+                                         SELECT TOP 1 ra2.Rnumber
+                                         FROM RoomAllocation ra2
+                                         WHERE ra2.GuestID = @GuestId AND ra2.IsActive = 1
+                                         ORDER BY ra2.Id DESC
+                                     )
+                                 )) and s.isactive=1;";
+            var settlement = await _unitOfWork.GenOperations.GetEntityData<SettlementDTO>(squery, new { @GuestId = GuestId });
             
-                            p.* 
-                            from 
-                            Settlement p
-                            
-                            where GuestId in (Select GuestId from GuestIds) and IsActive=1";
-            var sParam = new { @GuestId = GuestId };
-            var res = await _unitOfWork.GenOperations.IsExists(sQuery, sParam);
-            return res;
+            // For billing popup: return true if settlement exists (view will handle the message)
+            // For checkout: AccountSettled method handles the approval check
+            return settlement != null;
         }
         catch (Exception ex)
         {
@@ -3842,7 +3974,37 @@ OPTION (MAXRECURSION 100);";
     {
         try
         {
-            string sQuery = @"Select * from Settlement where GuestId=@GuestId and IsActive=1";
+            // Find settlement for the guest - check GuestId and also check for guests in same group/room
+            string sQuery = @"Select s.*, 
+                            (SELECT TOP 1 IsApproved FROM CreditDebitNoteAccount 
+                             WHERE SettlementId = s.Id 
+                             AND TransactionType = 'Debit' 
+                             AND IsActive = 1 
+                             ORDER BY CreatedDate DESC) AS DebitNoteIsApproved,
+                            (SELECT TOP 1 IsRecovered FROM CreditDebitNoteAccount 
+                             WHERE SettlementId = s.Id 
+                             AND TransactionType = 'Debit' 
+                             AND IsActive = 1 
+                             ORDER BY CreatedDate DESC) AS DebitNoteIsRecovered
+                            from Settlement s where s.IsActive=1 
+                            AND (s.GuestId = @GuestId 
+                                 OR s.GuestId IN (
+                                     SELECT md.Id
+                                     FROM MembersDetails md
+                                     INNER JOIN RoomAllocation ra ON md.Id = ra.GuestID AND ra.IsActive = 1 and md.Status=1
+                                     WHERE md.GroupId = (
+                                         SELECT md2.GroupId
+                                         FROM MembersDetails md2
+                                         WHERE md2.Id = @GuestId and md2.Status=1
+                                     )
+                                     AND ra.Rnumber = (
+                                         SELECT TOP 1 ra2.Rnumber
+                                         FROM RoomAllocation ra2
+                                         WHERE ra2.GuestID = @GuestId AND ra2.IsActive = 1
+                                         ORDER BY ra2.Id DESC
+                                     )
+                                 )
+                            )";
             var sParam = new { @GuestId = GuestId };
             var res = await _unitOfWork.GenOperations.GetEntityData<SettlementDTO>(sQuery, sParam);
             return Ok(res);
@@ -3850,6 +4012,22 @@ OPTION (MAXRECURSION 100);";
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Error in retriving Attendance {nameof(SavePaymentData)}");
+            throw;
+        }
+    }
+
+    public async Task<IActionResult> GetCreditNoteData(int GuestId)
+    {
+        try
+        {
+            string sQuery = @"Select * from CreditDebitNoteAccount where GuestId=@GuestId and TransactionType='Credit' and IsActive=1 ORDER BY CreatedDate DESC";
+            var sParam = new { @GuestId = GuestId };
+            var res = await _unitOfWork.GenOperations.GetTableData<CreditDebitNoteAccountDTO>(sQuery, sParam);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in retrieving credit note data {nameof(GetCreditNoteData)}");
             throw;
         }
     }
@@ -3876,66 +4054,212 @@ OPTION (MAXRECURSION 100);";
             double totalPayment = paymentRes.Sum(x => x.Amount) ?? 0;
 
             double balance = totalAmount - totalPayment;
+            double debitAmount = inputDTO?.DebitAmount ?? 0;
 
-            if ((balance + inputDTO?.Refund + inputDTO?.CreditAmount) == 0)
+            // Updated validation: balance + refund + credit - debit = 0
+            // OR if debit note is being created, allow partial settlement
+            double calculatedSettlementSum = balance + (inputDTO?.Refund ?? 0) + (inputDTO?.CreditAmount ?? 0) - debitAmount;
+            bool isCompleteSettlement = Math.Abs(calculatedSettlementSum) < 0.01;
+            bool isPartialSettlementWithDebit = debitAmount > 0 && Math.Abs(calculatedSettlementSum) < 0.01;
+
+            if (isCompleteSettlement || isPartialSettlementWithDebit)
             {
+                // Check if settlement already exists - prevent duplicate entries
                 if (settlementExists)
                 {
-                    return BadRequest("Settlement already exists for this guest");
+                    // Check if debit note already exists for this settlement
+                    var existingSettlement = await _unitOfWork.GenOperations.GetEntityData<Settlement>(sQuerySettlement, sParam);
+                    if (existingSettlement != null && isPartialSettlementWithDebit)
+                    {
+                        string checkDebitNoteQuery = @"SELECT * FROM CreditDebitNoteAccount 
+                                                    WHERE SettlementId = @SettlementId 
+                                                    AND TransactionType = 'Debit' 
+                                                    AND IsActive = 1";
+                        var existingDebitNote = await _unitOfWork.GenOperations.GetEntityData<CreditDebitNoteAccount>(checkDebitNoteQuery, new { @SettlementId = existingSettlement.Id });
+                        
+                        if (existingDebitNote != null)
+                        {
+                            return BadRequest("Debit Note already exists for this settlement. Please refresh the page.");
+                        }
+                    }
+                    else if (!isPartialSettlementWithDebit)
+                    {
+                        return BadRequest("Settlement already exists for this guest");
+                    }
+                }
+                
+                if (inputDTO != null)
+                {
+                    inputDTO.InvoiceNumber = await GenerateNextInvoiceNumberAsync();
+                    //return BadRequest("");
+                }
+
+                // If updating existing settlement with debit note, update it; otherwise create new
+                int insertedId;
+                if (settlementExists && isPartialSettlementWithDebit)
+                {
+                    // Get existing settlement and update it
+                    var existingSettlement = await _unitOfWork.GenOperations.GetEntityData<Settlement>(sQuerySettlement, sParam);
+                    if (existingSettlement != null)
+                    {
+                        // Check if debit note already exists to prevent duplicates
+                        string checkDebitNoteQuery = @"SELECT * FROM CreditDebitNoteAccount 
+                                                    WHERE SettlementId = @SettlementId 
+                                                    AND TransactionType = 'Debit' 
+                                                    AND IsActive = 1";
+                        var existingDebitNote = await _unitOfWork.GenOperations.GetEntityData<CreditDebitNoteAccount>(checkDebitNoteQuery, new { @SettlementId = existingSettlement.Id });
+                        
+                        if (existingDebitNote != null)
+                        {
+                            return BadRequest("Debit Note already exists for this settlement. Please refresh the page.");
+                        }
+                        
+                        existingSettlement.DebitAmount = debitAmount;
+                        string debitNoteNumber = inputDTO?.DebitNoteNumber;
+                        // Only regenerate if empty or if it's a temporary number (checking for timestamp pattern or invalid format)
+                        // Proper format is DN-YYYY-XXXXXX (14 characters), temporary numbers from JS might be shorter or have different patterns
+                        if (string.IsNullOrWhiteSpace(debitNoteNumber) || 
+                            (debitNoteNumber.StartsWith("DN-") && (debitNoteNumber.Length < 14 || !System.Text.RegularExpressions.Regex.IsMatch(debitNoteNumber, @"^DN-\d{4}-\d{6}$"))))
+                        {
+                            debitNoteNumber = await GenerateNextDebitNoteNumberAsync();
+                        }
+                        existingSettlement.DebitNoteNumber = debitNoteNumber; // Save debit note number
+                        existingSettlement.Status = 1; // Partial
+                        existingSettlement.ModifiedDate = DateTime.Now;
+                        await _unitOfWork.Settlement.UpdateAsync(existingSettlement);
+                        insertedId = existingSettlement.Id;
+                    }
+                    else
+                    {
+                        return BadRequest("Existing settlement not found for update.");
+                    }
                 }
                 else
                 {
-                    if (inputDTO != null)
-                    {
-                        inputDTO.InvoiceNumber = await GenerateNextInvoiceNumberAsync();
-                        //return BadRequest("");
-                    }
+                    insertedId = await _unitOfWork.Settlement.AddAsync(_mapper.Map<Settlement>(inputDTO));
+                }
 
-                    int insertedId = await _unitOfWork.Settlement.AddAsync(_mapper.Map<Settlement>(inputDTO));
-                    if (insertedId > 0)
+                if (insertedId > 0)
+                {
+                    // Create Credit Note if CreditAmount > 0
+                    if (inputDTO?.CreditAmount > 0)
                     {
                         CreditDebitNoteAccountDTO creditDebitNoteAccountDTO = new CreditDebitNoteAccountDTO();
 
-                        creditDebitNoteAccountDTO.Code = inputDTO?.NoteNumber;
+                        creditDebitNoteAccountDTO.Code = inputDTO?.NoteNumber ?? await GenerateNextCreditNoteNumberAsync();
                         creditDebitNoteAccountDTO.Amount = inputDTO?.CreditAmount;
                         creditDebitNoteAccountDTO.CodeValidity = inputDTO?.ValidTill;
                         creditDebitNoteAccountDTO.CreatedDate = DateTime.Now;
                         creditDebitNoteAccountDTO.CreatedBy = inputDTO.CreatedBy;
                         creditDebitNoteAccountDTO.IsActive = true;
                         creditDebitNoteAccountDTO.TransactionType = "Credit";
+                        creditDebitNoteAccountDTO.GuestId = inputDTO?.GuestId;
+                        creditDebitNoteAccountDTO.SettlementId = insertedId;
+                        creditDebitNoteAccountDTO.UsedAmount = 0;
+                        creditDebitNoteAccountDTO.BalanceAmount = inputDTO?.CreditAmount;
+                        creditDebitNoteAccountDTO.IsApproved = true; // Credit notes are auto-approved
+                        creditDebitNoteAccountDTO.ApprovedOn = DateTime.Now;
 
                         await _unitOfWork.CreditDebitNoteAccount.AddAsync(_mapper.Map<CreditDebitNoteAccount>(creditDebitNoteAccountDTO));
-
-                        await PostBulkDataToAudit(1);
-
-                        try
-                        {
-                            // Call stored procedure to update audit revenue after settlement
-                            // Using GuestIdPaxSN1 as it's the primary guest ID used for settlement
-                            int guestIdForAudit = inputDTO?.GuestIdPaxSN1 ?? inputDTO?.GuestId ?? 0;
-                            if (guestIdForAudit > 0)
-                            {
-                                await PostChargesToAuditBySP(guestIdForAudit);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO?.GuestIdPaxSN1 ?? inputDTO?.GuestId} during settlement in {nameof(SaveSettlementInformation)}");
-                            // Continue execution even if audit revenue fails - settlement should not fail
-                        }
-
-                        return Ok("Settlement saved successfully");
                     }
-                    else
+
+                    // Create Debit Note if DebitAmount > 0
+                    if (debitAmount > 0)
                     {
-                        return BadRequest("Error occurred while settling account");
+                        CreditDebitNoteAccountDTO debitNoteAccountDTO = new CreditDebitNoteAccountDTO();
+
+                        string debitNoteNumber = inputDTO?.DebitNoteNumber;
+                        // Only regenerate if empty or if it's a temporary number (checking for timestamp pattern or invalid format)
+                        // Proper format is DN-YYYY-XXXXXX (14 characters), temporary numbers from JS might be shorter or have different patterns
+                        if (string.IsNullOrWhiteSpace(debitNoteNumber) || 
+                            (debitNoteNumber.StartsWith("DN-") && (debitNoteNumber.Length < 14 || !System.Text.RegularExpressions.Regex.IsMatch(debitNoteNumber, @"^DN-\d{4}-\d{6}$"))))
+                        {
+                            debitNoteNumber = await GenerateNextDebitNoteNumberAsync();
+                        }
+                        debitNoteAccountDTO.Code = debitNoteNumber;
+                        debitNoteAccountDTO.Amount = debitAmount;
+                        debitNoteAccountDTO.CodeValidity = inputDTO?.DebitNoteValidTill; // Estimated recovery date for debit notes
+                        debitNoteAccountDTO.CreatedDate = DateTime.Now;
+                        debitNoteAccountDTO.CreatedBy = inputDTO.CreatedBy;
+                        debitNoteAccountDTO.IsActive = true;
+                        debitNoteAccountDTO.TransactionType = "Debit";
+                        debitNoteAccountDTO.GuestId = inputDTO?.GuestId;
+                        debitNoteAccountDTO.SettlementId = insertedId;
+                        debitNoteAccountDTO.UsedAmount = 0;
+                        debitNoteAccountDTO.BalanceAmount = debitAmount;
+                        debitNoteAccountDTO.IsApproved = false; // Debit notes require approval
+                        debitNoteAccountDTO.IsRecovered = false; // Not recovered yet
+
+                        await _unitOfWork.CreditDebitNoteAccount.AddAsync(_mapper.Map<CreditDebitNoteAccount>(debitNoteAccountDTO));
+                        
+                        // Update settlement status to indicate partial completion and save debit note number
+                        string settlementUpdateQuery = @"SELECT * FROM Settlement WHERE Id = @SettlementId AND IsActive = 1";
+                        var settlement = await _unitOfWork.GenOperations.GetEntityData<Settlement>(settlementUpdateQuery, new { @SettlementId = insertedId });
+                        if (settlement != null)
+                        {
+                            settlement.Status = 1; // 1 = Partial (pending debit note approval)
+                            settlement.DebitNoteNumber = debitNoteNumber; // Save debit note number to settlement
+                            settlement.DebitAmount = debitAmount; // Ensure debit amount is saved
+                            await _unitOfWork.Settlement.UpdateAsync(settlement);
+                        }
                     }
 
+                    await PostBulkDataToAudit(1);
+
+                    try
+                    {
+                        // Call stored procedure to update audit revenue after settlement
+                        // Using GuestIdPaxSN1 as it's the primary guest ID used for settlement
+                        int guestIdForAudit = inputDTO?.GuestIdPaxSN1 ?? inputDTO?.GuestId ?? 0;
+                        if (guestIdForAudit > 0)
+                        {
+                            await PostChargesToAuditBySP(guestIdForAudit);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error calling InsertAuditRevenueForGuest stored procedure for GuestId: {inputDTO?.GuestIdPaxSN1 ?? inputDTO?.GuestId} during settlement in {nameof(SaveSettlementInformation)}");
+                        // Continue execution even if audit revenue fails - settlement should not fail
+                    }
+
+                    if (debitAmount > 0)
+                    {
+                        return Ok("Settlement saved successfully! Debit Note has been sent for approval. Settlement will be completed once the debit note is approved and recovered.");
+                    }
+                    return Ok("Settlement saved successfully");
+                }
+                else
+                {
+                    return BadRequest("Error occurred while settling account");
                 }
             }
             else
             {
-                return BadRequest("Settlement amount is not equal to zero");
+                double refund = inputDTO?.Refund ?? 0;
+                double credit = inputDTO?.CreditAmount ?? 0;
+                double debit = inputDTO?.DebitAmount ?? 0;
+                double settlementSum = balance + refund + credit - debit;
+                
+                string errorMessage = $"Cannot complete settlement. Accounts are not balanced.\n\n";
+                errorMessage += $"Current Status:\n";
+                errorMessage += $"• Balance: {balance:F2}\n";
+                errorMessage += $"• Refund: {refund:F2}\n";
+                errorMessage += $"• Credit Note: {credit:F2}\n";
+                errorMessage += $"• Debit Note: {debit:F2}\n";
+                errorMessage += $"• Total: {settlementSum:F2}\n\n";
+                
+                if (settlementSum > 0)
+                {
+                    errorMessage += $"To complete settlement, add a Debit Note of {Math.Abs(settlementSum):F2} or add additional payment of {Math.Abs(settlementSum):F2}.";
+                }
+                else
+                {
+                    errorMessage += $"To complete settlement, add a Refund of {Math.Abs(settlementSum):F2} or adjust the Credit Note or Debit Note amount.";
+                }
+                
+                errorMessage += "\n\nNote: Settlement requires Balance + Refund + Credit - Debit = 0";
+                
+                return BadRequest(errorMessage);
             }
 
         }
@@ -4060,7 +4384,96 @@ OPTION (MAXRECURSION 100);";
         return newInvoiceNumber;
     }
 
+    public async Task<string> GenerateNextCreditNoteNumberAsync()
+    {
+        string prefix = "CN-";
+        string year = DateTime.Now.ToString("yyyy");
 
+        string creditNoteQuery = @"SELECT TOP 1 Code 
+                            FROM CreditDebitNoteAccount 
+                            WHERE Code LIKE @Pattern 
+                            ORDER BY Code DESC";
+
+        string pattern = $"{prefix}{year}-%";
+        var lastCreditNote = await _unitOfWork.GenOperations.GetEntityData<string>(creditNoteQuery, new { Pattern = pattern });
+
+        int newSerial = 1;
+        if (!string.IsNullOrEmpty(lastCreditNote) && lastCreditNote.StartsWith($"{prefix}{year}-"))
+        {
+            // Extract the sequential number part (after CN-YYYY-)
+            string serialPart = lastCreditNote.Substring($"{prefix}{year}-".Length);
+            if (int.TryParse(serialPart, out int lastSerial))
+            {
+                newSerial = lastSerial + 1;
+            }
+        }
+
+        string newCreditNoteNumber;
+        bool exists;
+
+        do
+        {
+            newCreditNoteNumber = $"{prefix}{year}-{newSerial.ToString("D6")}";
+
+            // Check if credit note number already exists
+            string checkQuery = "SELECT * FROM CreditDebitNoteAccount WHERE Code = @Code";
+            exists = await _unitOfWork.GenOperations.IsExists(checkQuery, new { Code = newCreditNoteNumber });
+
+            if (exists)
+            {
+                newSerial++;
+            }
+
+        } while (exists);
+
+        return newCreditNoteNumber;
+    }
+
+    public async Task<string> GenerateNextDebitNoteNumberAsync()
+    {
+        string prefix = "DN-";
+        string year = DateTime.Now.ToString("yyyy");
+
+        string debitNoteQuery = @"SELECT TOP 1 Code 
+                            FROM CreditDebitNoteAccount 
+                            WHERE Code LIKE @Pattern 
+                            AND TransactionType = 'Debit'
+                            ORDER BY Code DESC";
+
+        string pattern = $"{prefix}{year}-%";
+        var lastDebitNote = await _unitOfWork.GenOperations.GetEntityData<string>(debitNoteQuery, new { Pattern = pattern });
+
+        int newSerial = 1;
+        if (!string.IsNullOrEmpty(lastDebitNote) && lastDebitNote.StartsWith($"{prefix}{year}-"))
+        {
+            // Extract the sequential number part (after DN-YYYY-)
+            string serialPart = lastDebitNote.Substring($"{prefix}{year}-".Length);
+            if (int.TryParse(serialPart, out int lastSerial))
+            {
+                newSerial = lastSerial + 1;
+            }
+        }
+
+        string newDebitNoteNumber;
+        bool exists;
+
+        do
+        {
+            newDebitNoteNumber = $"{prefix}{year}-{newSerial.ToString("D6")}";
+
+            // Check if debit note number already exists
+            string checkQuery = "SELECT * FROM CreditDebitNoteAccount WHERE Code = @Code";
+            exists = await _unitOfWork.GenOperations.IsExists(checkQuery, new { Code = newDebitNoteNumber });
+
+            if (exists)
+            {
+                newSerial++;
+            }
+
+        } while (exists);
+
+        return newDebitNoteNumber;
+    }
 
     public async Task<IActionResult> GetAllGuestsInRoom(int GuestId)
     {

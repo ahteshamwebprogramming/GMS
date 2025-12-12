@@ -32,11 +32,22 @@ $(document).ready(function () {
     //});
 });
 
+$.extend(true, $.blockUI.defaults, {
+    css: {},
+    blockMsgClass: 'preloader'
+});
+
 var myspinner1 = '<div class="preloader" id="preloader"><img src="/assets/img/loader.gif"></div>';
 
 var myspinner = '<div class="spinner-border spinner-border-lg text-primary" role="status"><span class="visually-hidden"> Loading...</span></div>';
 function BlockUI() {
-    $.blockUI({ message: myspinner1 });
+    $.blockUI({ 
+        message: myspinner1,
+        baseZ: 1060,
+        css: {
+            zIndex: 1060
+        }
+    });
 }
 function UnblockUI() {
     $.unblockUI();
@@ -198,3 +209,51 @@ function numberToWords(num) {
 
 // Example usage:
 console.log(numberToWords(1000));  // Output: "one thousand"
+
+// FullCalendar Popover Close Button Fix
+// Global handler to force-close FullCalendar popover when X button is clicked
+// Properly closes the popover and allows FullCalendar to recreate it on next "+ more" click
+(function() {
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPopoverHandler);
+    } else {
+        initPopoverHandler();
+    }
+
+    function initPopoverHandler() {
+        document.addEventListener('click', function (e) {
+            const closeBtn = e.target.closest('.fc-popover-close');
+            if (!closeBtn) return;
+
+            const popover = closeBtn.closest('.fc-popover');
+            if (!popover) return;
+
+            // Prevent default behavior and stop propagation
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Use setTimeout to allow FullCalendar to process the click first
+            setTimeout(function() {
+                // Check if popover still exists and has a parent
+                if (popover && popover.parentNode) {
+                    // Remove the popover from the DOM
+                    try {
+                        popover.parentNode.removeChild(popover);
+                        
+                        // Trigger a resize event to help FullCalendar reset its state
+                        // This ensures FullCalendar knows the popover is gone
+                        if (typeof window !== 'undefined') {
+                            var resizeEvent = window.document.createEvent('UIEvents');
+                            resizeEvent.initUIEvent('resize', true, false, window, 0);
+                            window.dispatchEvent(resizeEvent);
+                        }
+                    } catch (err) {
+                        // Silently handle any errors during removal
+                        console.debug('Popover already removed:', err);
+                    }
+                }
+            }, 50); // Increased timeout to ensure FullCalendar processes first
+        }, true); // Use capture phase to catch the event early
+    }
+})();

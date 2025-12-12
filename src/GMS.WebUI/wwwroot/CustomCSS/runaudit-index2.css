@@ -1,0 +1,214 @@
+.bg-primary2 {
+    background-color: #7b584f !important;
+}
+
+.pb-21 {
+    padding-bottom: 9.5rem !important;
+}
+
+.pt-10 {
+    padding-top: 4rem !important;
+}
+
+.rounded-2 {
+    border-radius: .375rem !important;
+}
+
+.bg-light-primary {
+    /* background-color: #f2eae0 !important; */
+}
+
+.text-primary2 {
+    /* color: #6ebcb7 !important; */
+}
+
+.icon-shape {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.icon-md {
+    height: 2.5rem;
+    line-height: 2.5rem;
+    width: 2.5rem;
+}
+
+
+.mt-n22 {
+    margin-top: -10rem !important;
+}
+
+.audit-text {
+    color: #fff;
+    padding-top: 1rem;
+    position: relative;
+    z-index: 10;
+}
+
+.cards-overlap {
+    margin-top: 0rem !important;
+    position: relative;
+    z-index: 5;
+}
+
+.card {
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* soft shadow */
+    margin-bottom: 0px;
+}
+
+    .card h4 {
+        font-size: 18px !important;
+    }
+
+
+
+.cardItems {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+    .cardItems:hover {
+        transform: translateY(-5px);
+    }
+
+.card-header {
+    background: linear-gradient(135deg, #a47063, #7b584f);
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .card-header h4 {
+        margin: 0;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .card-header span {
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+.card-body {
+    padding: 20px;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.95rem;
+}
+
+    .item:last-child {
+        border-bottom: none;
+    }
+
+.label {
+    color: #444;
+}
+
+.value {
+    font-weight: 700;
+    color: #111;
+    letter-spacing: 0.5px;
+}
+
+    .value span {
+        font-size: 0.75rem;
+        color: #777;
+        margin-left: 4px;
+        font-weight: 600;
+    }
+
+.owl-stage-outer {
+    padding: 10px 0
+}
+
+.owl-carousel .owl-nav {
+    display: inline-block;
+}
+
+    .owl-carousel .owl-nav button {
+        background: #6EBCB7 !important;
+        height: 30px;
+        width: 30px;
+    }
+
+.owl-theme .owl-nav {
+    text-align: center;
+    width: 100%;
+}
+
+.owl-dots {
+    display: none;
+}
+
+.fistCr .owl-stage-outer {
+    padding: 0 !important
+}
+
+.btn-runaudit {
+    background: transparent;
+    font-size: 44px;
+    height: 100px;
+    width: 500px;
+    border: 2px solid #ffbf69;
+    color: #ffbf69 !important;
+    transition: transform 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-runaudit:hover {
+    background: transparent !important;
+    border: 2px solid #ffbf69 !important;
+    color: #ffbf69 !important;
+    transform: scale(1.05);
+}
+
+.btn-runaudit:focus,
+.btn-runaudit:active {
+    background: transparent !important;
+    border: 2px solid #ffbf69 !important;
+    color: #ffbf69 !important;
+}
+
+/* Running state - when button is disabled and showing spinner */
+.btn-runaudit.btn-running,
+.btn-runaudit:disabled {
+    background: rgba(255, 191, 105, 0.1) !important;
+    border: 2px solid #ffbf69 !important;
+    color: #ffbf69 !important;
+    cursor: not-allowed !important;
+    opacity: 0.9 !important;
+    transform: none !important;
+}
+
+.btn-runaudit.btn-running:hover,
+.btn-runaudit:disabled:hover {
+    background: rgba(255, 191, 105, 0.1) !important;
+    transform: none !important;
+}
+
+/* Spinner styling inside the button */
+.btn-runaudit .spinner-border {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    border-width: 0.25em !important;
+    vertical-align: middle;
+    margin-right: 0.75rem;
+}
+

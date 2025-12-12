@@ -1,0 +1,217 @@
+@model GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild
+
+<link href="~/assets/calender/calendar.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+<link href="~/CustomCSS/Guests/SchedulesContent.css" rel="stylesheet" />
+
+<div class="schedules-container">
+    <div class="guest-info-header mb-4">
+        <div class="guest-header-main">
+            <div class="guest-name-section">
+                <h2 class="guest-uhid">@(Model?.UHID ?? "N/A")</h2>
+                <h3 class="guest-name">@Model?.CustomerName</h3>
+                <div class="guest-dates">
+                    @if (Model?.DateOfArrival != null && Model?.DateOfDepartment != null)
+                    {
+                        <span class="date-badge">
+                            <i class="bi bi-calendar-check"></i> @Model.DateOfArrival.Value.ToString("dd/MMM/yyyy") - @Model.DateOfDepartment.Value.ToString("dd/MMM/yyyy")
+                        </span>
+                    }
+                    else if (Model?.DateOfArrival != null)
+                    {
+                        <span class="date-badge">
+                            <i class="bi bi-calendar-check"></i> @Model.DateOfArrival.Value.ToString("dd/MMM/yyyy")
+                        </span>
+                    }
+                </div>
+            </div>
+            <div class="room-info-section">
+                <div class="room-type-badge">
+                    <i class="bi bi-door-open"></i> @Model?.RoomTypeName
+                </div>
+                @if (!string.IsNullOrEmpty(Model?.RoomNumber))
+                {
+                    <div class="room-number-badge">
+                        <i class="bi bi-door-closed"></i> @Model.RoomNumber
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" id="guestCheckinDate" value="@Model?.DateOfArrival?.ToString("yyyy-MM-dd HH:mm")" />
+    <input type="hidden" id="guestCheckoutDate" value="@Model?.DateOfDepartment?.ToString("yyyy-MM-dd HH:mm")" />
+    <input type="hidden" id="GuestSchedule_GuestId" value="@Model?.Id" />
+
+    <div class="cal_box">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+@*Create Event Modal*@
+<div class="modal fade" id="crtevents" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" asp-action="CreateEvent" asp-controller="Calendar" method="post" enctype="multipart/form-data" id="AddSchedule">
+                    <div class="row" id="eventTitle">
+                        <div class="col-4">
+                            <label>Task Name</label>
+                            <select class="form-control" name="TaskId" placeholder="Task Name" onchange="GetEmployeeByTaskId(this)">
+                                <option value="0"></option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label>Resource</label>
+                            <select class="form-control" name="ResourceId">
+                                <option value="0"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4 mt-3">
+                            <label>Therapist 1</label>
+                            <select class="form-control" name="EmployeeId1">
+                                <option value="0"></option>
+                            </select>
+                        </div>
+                        <div class="col-4 mt-3">
+                            <label>Therapist 2</label>
+                            <select class="form-control" name="EmployeeId2">
+                                <option value="0"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 col-lg-4 mt-3">
+                            <label>Start Date</label>
+                            <div class="form-group position-relative dateCalWrapper">
+                                <input type="date" class="form-control time" id="StartDate" name="StartDate" placeholder="" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4 mt-3">
+                            <label>Start Time</label>
+                            <div class="form-group position-relative dateCalWrapper">
+                                <input type="time" class="form-control time" id="begintime" name="StartTime" placeholder="" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4 mt-3">
+                            <label>Duration</label>
+                            <input id="durationPicker" type="text" placeholder="Select duration" class="form-control" name="Duration">
+                            <input type="hidden" id="selectedDuration" />
+                        </div>
+                        <div class="col-sm-6 col-lg-4 mt-3">
+                            <label>End Date</label>
+                            <div class="form-group position-relative dateCalWrapper">
+                                <input type="text" class="form-control time" id="EndDate" name="EndDate" placeholder="" readonly />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4 mt-3">
+                            <label>End Time</label>
+                            <div class="form-group">
+                                <input type="time" class="form-control time" id="endtime" name="EndTime" placeholder="End Time" readonly />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-lg-4 mt-3">
+                            <label>X</label>
+                            <div class="form-group">
+                                <input type="number" class="form-control" id="NoOfDays" name="NoOfDays" placeholder="" value="1" min="1" max="1" />
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" value="" name="ScheduleId" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnadd" onclick="CreateEvent()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* daterangepicker, flatpickr, and FullCalendar are already loaded in _Layout.cshtml *@
+<script>
+    // Wait for jQuery and all dependencies to be ready before loading scripts
+    (function() {
+        var scriptsLoaded = false;
+        var maxRetries = 100; // 5 seconds max wait time (100 * 50ms)
+        var retryCount = 0;
+
+        function waitForDependencies(callback) {
+            retryCount++;
+            
+            // Check if jQuery is available
+            if (typeof jQuery === 'undefined' || typeof window.jQuery === 'undefined') {
+                if (retryCount < maxRetries) {
+                    setTimeout(function() { waitForDependencies(callback); }, 50);
+                } else {
+                    console.error('jQuery failed to load after maximum retries');
+                }
+                return;
+            }
+
+            // Check for FullCalendar (loaded in layout)
+            if (typeof FullCalendar === 'undefined') {
+                if (retryCount < maxRetries) {
+                    setTimeout(function() { waitForDependencies(callback); }, 50);
+                } else {
+                    console.error('FullCalendar failed to load after maximum retries');
+                }
+                return;
+            }
+
+            // Check for moment.js (loaded in layout)
+            if (typeof moment === 'undefined') {
+                if (retryCount < maxRetries) {
+                    setTimeout(function() { waitForDependencies(callback); }, 50);
+                } else {
+                    console.error('moment.js failed to load after maximum retries');
+                }
+                return;
+            }
+
+            // All dependencies are ready
+            callback();
+        }
+
+        function loadScript(src, callback) {
+            // Check if script is already loaded
+            var existingScript = document.querySelector('script[src="' + src + '"]');
+            if (existingScript) {
+                if (callback) callback();
+                return;
+            }
+
+            var script = document.createElement('script');
+            script.src = src;
+            script.async = false;
+            script.onload = callback || function() {};
+            script.onerror = function() {
+                console.error('Failed to load script: ' + src);
+            };
+            document.head.appendChild(script);
+        }
+
+        // Start waiting for dependencies
+        waitForDependencies(function() {
+            if (scriptsLoaded) return;
+            scriptsLoaded = true;
+
+            // Load scripts sequentially after dependencies are confirmed
+            loadScript('@Url.Content("~/assets/calender/calendar.js")', function() {
+                loadScript('@Url.Content("~/CustomJS/Guests/GuestSchedule.js")', function() {
+                    loadScript('@Url.Content("~/CustomJS/Guests/SchedulesContent.js")', function() {
+                        // All scripts loaded successfully
+                    });
+                });
+            });
+        });
+    })();
+</script>

@@ -1,6 +1,10 @@
-﻿function GetRoomList(RoomId = 0) {
+﻿let selectedRooms = [];
+let activeChecklistRooms = [];
+
+function GetRoomList(RoomId = 0) {
     let inputDTO = {}
     inputDTO.Id = RoomId;
+    inputDTO.EnableSelection = true;
     BlockUI();
     $.ajax({
         type: "POST",
@@ -12,6 +16,7 @@
         success: function (data, textStatus, jqXHR) {
             UnblockUI();
             $('#div_ListPartial').html(data);
+            initRoomSelectionGrid();
         },
         error: function (result) {
             //UnblockUI();
@@ -20,9 +25,18 @@
     });
 }
 
-function OpenCheckList(Id) {
+function OpenCheckList(Id, roomNumber = "", roomsCollection = null) {
     let inputDTO = {}
-    inputDTO.Id = Id;
+    let collection = [];
+    if (Array.isArray(roomsCollection) && roomsCollection.length > 0) {
+        collection = roomsCollection;
+    }
+    else {
+        const displayNumber = roomNumber && roomNumber !== "" ? roomNumber : Id;
+        collection = [{ id: Id, number: displayNumber }];
+    }
+    activeChecklistRooms = collection;
+    inputDTO.Id = collection[0]?.id ?? Id;
     BlockUI();
     $.ajax({
         type: "POST",
@@ -41,6 +55,7 @@ function OpenCheckList(Id) {
                 // Set the checked state for all checkboxes in tbody
                 $("#GrvdCheckIn tbody input[type='checkbox']").prop("checked", isChecked);
             });
+            updateSelectedRoomsLabel();
         },
         error: function (result) {
             //UnblockUI();
@@ -64,6 +79,22 @@ function SubmitRoomCheckList() {
         $erroralert("Action Missing!", 'Please review the action items!');
         return;
     }
+    const roomsToClean = activeChecklistRooms.length
+        ? activeChecklistRooms.map(room => room.id)
+        : [];
+    if (!roomsToClean.length) {
+        const fallbackRoomId = parseInt($("#CheckInListModal").find("[name='RID']").val());
+        if (fallbackRoomId) {
+            roomsToClean.push(fallbackRoomId);
+        }
+    }
+    if (!roomsToClean.length) {
+        $erroralert("Action Missing!", 'Please select room(s) to clean!');
+        return;
+    }
+    inputDTO["RoomIds"] = roomsToClean;
+    inputDTO["RID"] = roomsToClean[0];
+
     BlockUI();
     $.ajax({
         type: "POST",
@@ -74,7 +105,12 @@ function SubmitRoomCheckList() {
             UnblockUI();
             $successalert("", "Room Cleaned Successfully!");
             $("#CheckInListModal").find(".btn-close").click();
-            GuestsListPartialView();
+            const cleanedRoomIds = roomsToClean;
+            selectedRooms = selectedRooms.filter(room => !cleanedRoomIds.includes(room.id));
+            activeChecklistRooms = [];
+            updateSelectedRoomsLabel();
+            updateBulkCleanControls();
+            GetRoomList();
         },
         error: function (error) {
             UnblockUI();
@@ -262,6 +298,111 @@ function HoldRoom(Id, Rnumber) {
         }
     });
 }
+
+function initRoomSelectionGrid() {
+    const $tableWrapper = $('#div_ListPartial');
+    const $checkboxes = $tableWrapper.find('.room-select');
+    if (!$checkboxes.length) {
+        selectedRooms = [];
+        updateBulkCleanControls();
+        return;
+    }
+
+    const currentIds = $checkboxes.map(function () {
+        return parseInt($(this).data('room-id'));
+    }).get().filter(id => !isNaN(id));
+    selectedRooms = selectedRooms.filter(room => currentIds.includes(room.id));
+
+    $checkboxes.each(function () {
+        const roomId = parseInt($(this).data('room-id'));
+        const isSelected = selectedRooms.some(room => room.id === roomId);
+        $(this).prop('checked', isSelected);
+    });
+
+    $checkboxes.off('change').on('change', function () {
+        const roomId = parseInt($(this).data('room-id'));
+        const roomNumber = $(this).data('room-number');
+        if (isNaN(roomId)) {
+            return;
+        }
+        const displayNumber = roomNumber && roomNumber !== "" ? roomNumber : roomId;
+        if ($(this).is(':checked')) {
+            if (!selectedRooms.some(room => room.id === roomId)) {
+                selectedRooms.push({ id: roomId, number: displayNumber });
+            }
+        } else {
+            selectedRooms = selectedRooms.filter(room => room.id !== roomId);
+        }
+        syncSelectAllState();
+        updateBulkCleanControls();
+    });
+
+    const $selectAll = $('#selectAllRooms');
+    if ($selectAll.length) {
+        $selectAll.prop('checked', false).prop('indeterminate', false);
+        $selectAll.off('change').on('change', function () {
+            const isChecked = $(this).is(':checked');
+            $checkboxes.each(function () {
+                $(this).prop('checked', isChecked).trigger('change');
+            });
+        });
+    }
+    syncSelectAllState();
+    updateBulkCleanControls();
+}
+
+function syncSelectAllState() {
+    const $selectAll = $('#selectAllRooms');
+    const $checkboxes = $('#div_ListPartial').find('.room-select');
+    if (!$selectAll.length) {
+        return;
+    }
+    if (!$checkboxes.length) {
+        $selectAll.prop('checked', false).prop('indeterminate', false);
+        return;
+    }
+    const checkedCount = $checkboxes.filter(':checked').length;
+    const totalCount = $checkboxes.length;
+    $selectAll.prop('checked', checkedCount === totalCount && totalCount > 0);
+    $selectAll.prop('indeterminate', checkedCount > 0 && checkedCount < totalCount);
+}
+
+function updateBulkCleanControls() {
+    const hasSelection = selectedRooms.length > 0;
+    const selectedText = hasSelection ? selectedRooms.map(room => room.number).join(', ') : 'None';
+    const $button = $('#btnCleanSelectedRooms');
+    const $summary = $('#selectedRoomsSummary');
+
+    if ($button.length) {
+        $button.prop('disabled', !hasSelection);
+    }
+    if ($summary.length) {
+        $summary.text(selectedText);
+    }
+}
+
+function updateSelectedRoomsLabel() {
+    const $label = $("#CheckInListModal").find("#selectedRoomsLabel");
+    if (!$label.length) {
+        return;
+    }
+    const rooms = activeChecklistRooms.length ? activeChecklistRooms.map(room => room.number).join(', ') : "--";
+    $label.text(rooms || "--");
+}
+
+$(document).on('click', '#btnCleanSelectedRooms', function () {
+    if (!selectedRooms.length) {
+        $erroralert("Action Missing!", "Please select room(s) to clean.");
+        return;
+    }
+    const roomSnapshot = selectedRooms.map(room => ({ id: room.id, number: room.number }));
+    OpenCheckList(roomSnapshot[0].id, roomSnapshot[0].number, roomSnapshot);
+});
+
+$(document).on('hidden.bs.modal', '#CheckInListModal', function () {
+    activeChecklistRooms = [];
+    updateSelectedRoomsLabel();
+});
 
 function UnlockRoom(Id, Rnumber) {
     let inputDTO = {};

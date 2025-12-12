@@ -1,3 +1,8 @@
-﻿<div class="header">
-    <img src="~/assets/feedback/icons/logo_123.png" alt="NAAD Logo" class="logo">
+﻿@using GMS.Infrastructure.Models.Masters
+@{
+    var operations = ViewBag.Operations as OperationsDTO;
+    var logoPath = !string.IsNullOrWhiteSpace(operations?.LogoFilePath) ? operations.LogoFilePath : "~/assets/feedback/icons/logo_123.png";
+}
+<div class="header">
+    <img src="@Url.Content(logoPath)" alt="Logo" class="logo">
 </div>

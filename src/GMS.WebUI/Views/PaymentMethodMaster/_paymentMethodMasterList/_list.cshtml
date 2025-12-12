@@ -3,7 +3,8 @@
     <table class="table">
         <thead class="table-dark">
             <tr>
-                <th scope="col">Name</th>                
+                <th scope="col">Name</th>
+                <th scope="col">Code</th>
                 <th scope="col" width="300">Actions</th>
             </tr>
         </thead>
@@ -14,7 +15,8 @@
                     foreach (var item in Model.PaymentMethods)
                     {
                         <tr>
-                            <td scope="row">@item.PaymentMethodName</td>                            
+                            <td scope="row">@item.PaymentMethodName</td>
+                            <td>@(item.PaymentMethodCode ?? "-")</td>
                             <td>
                                 <div class="actions_btns">
                                     @{

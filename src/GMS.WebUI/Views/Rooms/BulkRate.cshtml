@@ -112,7 +112,7 @@
     if (days > 365) { days = 365; Model.ToDate = Model.FromDate.AddDays(364); }
 }
 <div class="admin_wrapper">
-    @Html.Partial("_services/_leftNavigationServices")
+    <partial name="_services/_leftNavigationServices" />
     <div class="right_container">
 
 
@@ -642,7 +642,7 @@
         <!-- filtered rooms end-->
     </div>
 
-    @Html.Partial("_bottomNavigation1")
+    <partial name="_bottomNavigation1" />
 </div>
 @section Scripts {
     <script src="~/customjs/rates/bulkrate.js"></script>

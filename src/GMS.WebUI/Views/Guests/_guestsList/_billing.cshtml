@@ -309,14 +309,15 @@
 </style>
 <input type="button" id="btnBillingModal" style="display:none" data-bs-toggle="modal" data-bs-target="#BillingModal" value="button test" />
 <div class="modal fade" id="BillingModal" tabindex="-1" aria-labelledby="BillingModal" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl" style="width: 1568px;max-width: 1500px;">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="width: 90%; max-width: 1200px;">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="BillingModalLabel">Billing</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-
+                @* Content container for switching between billing and settlement *@
+                <div id="billingModalContent">
                 @{
                     var grossAmountRow = Model?.BillingDataList?.FirstOrDefault(x => x.ServiceType == "GrossAmount");
                     var invoiceTo = !string.IsNullOrWhiteSpace(grossAmountRow?.BillingTo) ? grossAmountRow?.BillingTo : Model?.MembersWithAttributes?.CustomerName;
@@ -344,7 +345,27 @@
                                     @{
                                         if (Model != null && Model.AccountSettled == true)
                                         {
-                                            <span class="headingInfo">Settled</span>
+                                            // Check if settlement has debit note
+                                            if (Model.SettlementDTO != null && Model.SettlementDTO.DebitAmount > 0 && !string.IsNullOrEmpty(Model.SettlementDTO.DebitNoteNumber))
+                                            {
+                                                // Check if debit note is approved
+                                                bool isDebitNoteApproved = Model.SettlementDTO.DebitNoteIsApproved == true;
+                                                string debitNoteNumber = Model.SettlementDTO.DebitNoteNumber ?? "";
+                                                double debitAmount = Model.SettlementDTO.DebitAmount ?? 0;
+                                                
+                                                if (!isDebitNoteApproved)
+                                                {
+                                                    <span class="headingInfo">Settled with Debit of - @debitAmount.ToString("N2")<br />(@debitNoteNumber) <span style="color: red;">Pending for Approval</span></span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="headingInfo">Settled - (@debitNoteNumber)</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="headingInfo">Settled</span>
+                                            }
                                         }
                                         else
                                         {
@@ -857,8 +878,11 @@
                         </div>
                     </div>
                 </div>
+                </div> @* End billingModalContent *@
+                @* Settlement content will be loaded here *@
+                <div id="settlementModalContent" style="display: none;"></div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" id="billingModalFooter">
                 <input type="hidden" name="GuestId" value="@Model?.MembersWithAttributes?.Id" />
                 <input type="hidden" name="GuestIdPaxSN1" value="@(guestIdPaxSno1)" />
 
@@ -873,13 +897,21 @@
                         <button type="button" class="btn btn-primary" onclick="GetPackagesForBilling(@Model?.MembersWithAttributes?.Id)"> <i class="bi bi-plus-lg"></i> Package</button>
                         <button type="button" class="btn btn-primary" onclick="PaymentPartialView(@Model?.MembersWithAttributes?.Id, 'add')"> <i class="bi bi-plus-lg"></i> Payment</button>
 
-                        <button type="button" class="btn btn-primary" onclick="SettlementPartialView(@Model?.MembersWithAttributes?.Id,@guestIdPaxSno1)"> <i class="bi bi-gear-wide-connected"></i> Settle</button>
+                        <button type="button" class="btn btn-primary" onclick="openSettlement(@Model?.MembersWithAttributes?.Id,@guestIdPaxSno1)"> <i class="bi bi-gear-wide-connected"></i> Settle</button>
                         <button type="button" class="btn btn-primary" onclick="SaveBillingData()"> <i class="bi bi-floppy"></i> </button>
                     }
                 }
                 <button type="button" class="btn btn-primary" onclick="printInvoice(@guestIdPaxSno1)"> <i class="bi bi-printer"></i> </button>
+                @if (Model?.SettlementDTO?.CreditAmount > 0)
+                {
+                    <button type="button" class="btn btn-success" onclick="window.open('/Guests/PrintCreditNote/@Model?.MembersWithAttributes?.Id','_blank')"> <i class="bi bi-receipt"></i> Print Credit Note</button>
+                }
                 @* <button type="button" class="btn btn-primary" onclick="SubmitRoomCheckList()"> <i class="bi bi-x-lg"></i> </button> *@
 
+            </div>
+            @* Settlement Footer - Hidden by default, shown when settlement content is displayed *@
+            <div class="modal-footer" id="settlementModalFooter" style="display: none;">
+                <button type="button" class="btn btn-secondary" id="btnBackToBillingFooter" onclick="backToBilling()"> <i class="bi bi-arrow-left"></i> Back to Billing</button>
             </div>
         </div>
     </div>

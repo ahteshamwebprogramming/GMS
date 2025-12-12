@@ -1,4 +1,5 @@
-﻿using GMS.Infrastructure.ViewModels.Reports;
+﻿using GMS.Infrastructure.Models.Accounting;
+using GMS.Infrastructure.ViewModels.Reports;
 
 namespace GMS.Infrastructure.ViewModels.Dashboard
 {
@@ -22,7 +23,8 @@ namespace GMS.Infrastructure.ViewModels.Dashboard
         public Result? AverageSellingRateOverall { get; set; }        
         public Result? AverageOccupancyYearly { get; set; }        
         public Result? AverageSellingRoomsRateOverall_Audit { get; set; }        
-        public Result? AverageSellingPackagesRateOverall_Audit { get; set; }        
+        public Result? AverageSellingPackagesRateOverall_Audit { get; set; }
+        public NightAuditStatusDTO? NightAuditStatus { get; set; }
         public DateTime? Date { get; set; }        
     }
 }

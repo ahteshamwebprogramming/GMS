@@ -4,6 +4,7 @@ using GMS.Endpoints.Guests;
 using GMS.Endpoints.Masters;
 using GMS.Endpoints.Rooms;
 using GMS.Infrastructure.Helper;
+using GMS.Infrastructure.Models.Accounting;
 using GMS.Infrastructure.Models.Guests;
 using GMS.Infrastructure.Models.Masters;
 using GMS.Infrastructure.Models.Rooms;
@@ -188,7 +189,23 @@ public class GuestsController : Controller
         }
         else
         {
-            return BadRequest(new { heading = "Pending Account Settlement", message = "Checkout cannot be processed until all outstanding charges are cleared" });
+            // Check if there's a partial settlement with unapproved debit note
+            var settlementRes = await _guestsAPIController.GetSettlementData(inputDTO1.Id);
+            SettlementDTO? settlement = null;
+            if (settlementRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)settlementRes).StatusCode == 200)
+            {
+                settlement = (SettlementDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)settlementRes).Value;
+            }
+            
+            if (settlement != null && settlement.Status == 1 && settlement.DebitAmount > 0 && settlement.DebitNoteIsApproved != true)
+            {
+                string debitNoteNumber = settlement.DebitNoteNumber ?? "";
+                return BadRequest(new { heading = "Debit Note Pending Approval", message = $"Checkout cannot be processed. Debit Note {debitNoteNumber} is pending approval from accounts." });
+            }
+            else
+            {
+                return BadRequest(new { heading = "Pending Account Settlement", message = "Checkout cannot be processed until all outstanding charges are cleared" });
+            }
         }
 
     }
@@ -1086,7 +1103,7 @@ public class GuestsController : Controller
         }
     }
     [Route("/Guests/ReviewMemberDetails/{GuestId}")]
-    public async Task<IActionResult> ReviewMemberDetails(int? GuestId)
+    public async Task<IActionResult> ReviewMemberDetails(int? GuestId, string section = "Review")
     {
         if (GuestId == null)
         {
@@ -1103,7 +1120,262 @@ public class GuestsController : Controller
                     membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
 
             }
+            ViewBag.Section = section;
+            ViewBag.GuestId = GuestId;
             return View(membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/Documents")]
+    public async Task<IActionResult> Documents(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "Documents";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/Schedules")]
+    public async Task<IActionResult> Schedules(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "Schedules";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/CaseSheet")]
+    public async Task<IActionResult> CaseSheet(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "CaseSheet";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/DietChart")]
+    public async Task<IActionResult> DietChart(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "DietChart";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/DoctorNotes")]
+    public async Task<IActionResult> DoctorNotes(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "DoctorNotes";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/DischargeSummary")]
+    public async Task<IActionResult> DischargeSummary(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "DischargeSummary";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/FollowUpSheet")]
+    public async Task<IActionResult> FollowUpSheet(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "FollowUpSheet";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/GuestEducation")]
+    public async Task<IActionResult> GuestEducation(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "GuestEducation";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/WellnessTherapist")]
+    public async Task<IActionResult> WellnessTherapist(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "WellnessTherapist";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/WorkSheet")]
+    public async Task<IActionResult> WorkSheet(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "WorkSheet";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/WellnessSchedule")]
+    public async Task<IActionResult> WellnessSchedule(int? GuestId)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            ViewBag.Section = "WellnessSchedule";
+            ViewBag.GuestId = GuestId;
+            return View("ReviewMemberDetails", membersDetailsDTOs);
         }
     }
     public async Task<IActionResult> AllocateRoom([FromBody] RoomAllocationDTO inputDTO)
@@ -1559,6 +1831,11 @@ public class GuestsController : Controller
             {
                 dto.MemberDetailsWithChildren = (List<MemberDetailsWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)allGuestsInRoomRes).Value;
             }
+            var settlementRes = await _guestsAPIController.GetSettlementData(inputDTO.Id);
+            if (settlementRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)settlementRes).StatusCode == 200)
+            {
+                dto.SettlementDTO = (SettlementDTO?)((Microsoft.AspNetCore.Mvc.ObjectResult)settlementRes).Value;
+            }
             dto.AccountSettled = await _guestsAPIController.IsAccountSettled(inputDTO?.Id ?? 0);
             
             // Call stored procedure to update audit revenue when billing is opened
@@ -1707,6 +1984,13 @@ public class GuestsController : Controller
         }
     }
     [Authorize]
+    public async Task<IActionResult> ValidateCreditNote(string creditNoteCode, int guestId)
+    {
+        var res = await _guestsAPIController.ValidateCreditNote(creditNoteCode, guestId);
+        return res;
+    }
+
+    [Authorize]
     public async Task<IActionResult> SavePaymentInformation([FromBody] PaymentDTO? inputDTO)
     {
         if (inputDTO != null)
@@ -1756,10 +2040,32 @@ public class GuestsController : Controller
             dto.PaymentsWithAttr = (List<PaymentWithAttr>?)((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).Value;
         }
 
+        SettlementDTO settlementDTO = new SettlementDTO();
+        
+        // Calculate balance to determine if we need credit note or debit note
+        double invoicedAmount = dto.BillingDataList?.Where(x => x.ServiceType == "GrossAmount").FirstOrDefault()?.TotalAmount ?? 0;
+        double paymentCollected = dto.PaymentsWithAttr?.Sum(x => x.Amount) ?? 0;
+        double balance = invoicedAmount - paymentCollected;
+        
+        if (balance < 0)
+        {
+            // Payment > Invoice: Generate credit note number
+            settlementDTO.NoteNumber = await _guestsAPIController.GenerateNextCreditNoteNumberAsync();
+        }
+        else if (balance > 0)
+        {
+            // Payment < Invoice: Generate debit note number
+            settlementDTO.DebitNoteNumber = await _guestsAPIController.GenerateNextDebitNoteNumberAsync();
+        }
+        else
+        {
+            // Balance = 0: Generate credit note number (default)
+            settlementDTO.NoteNumber = await _guestsAPIController.GenerateNextCreditNoteNumberAsync();
+        }
+        
+        dto.SettlementDTO = settlementDTO;
 
-
-
-        return PartialView("_guestsList/_settlement", dto);
+        return PartialView("_guestsList/_SettlementDrawer", dto);
     }
 
     [Authorize]
@@ -1810,6 +2116,27 @@ public class GuestsController : Controller
         if (paymentRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).StatusCode == 200)
         {
             dto.PaymentsWithAttr = (List<PaymentWithAttr>?)((Microsoft.AspNetCore.Mvc.ObjectResult)paymentRes).Value;
+        }
+        return View(dto);
+    }
+
+    [Route("Guests/PrintCreditNote/{Id}")]
+    public async Task<IActionResult> PrintCreditNote(int Id)
+    {
+        GuestsListViewModel? dto = new GuestsListViewModel();
+        var guestRes = await _guestsAPIController.GetGuestByIdWithChild(Id);
+        if (guestRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).StatusCode == 200)
+        {
+            dto.MembersWithAttributes = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)guestRes).Value;
+        }
+        var creditNoteRes = await _guestsAPIController.GetCreditNoteData(Id);
+        if (creditNoteRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)creditNoteRes).StatusCode == 200)
+        {
+            var creditNotes = (List<CreditDebitNoteAccountDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)creditNoteRes).Value;
+            if (creditNotes != null && creditNotes.Any())
+            {
+                dto.CreditNoteAccount = creditNotes.FirstOrDefault();
+            }
         }
         return View(dto);
     }

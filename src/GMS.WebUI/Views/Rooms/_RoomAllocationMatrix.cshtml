@@ -1,0 +1,40 @@
+@model IEnumerable<GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentRow>
+
+@if (Model != null)
+{
+    foreach (var row in Model)
+    {
+        var occupancy = row.OccupancyStatus ?? "Empty";
+        var status = row.Status.ToString();
+        var assignmentClass = row.IsAssigned ? "success" : "warning";
+        var assignmentLabel = row.IsAssigned ? "Assigned" : "Unassigned";
+        var occupancyIcon = occupancy switch
+        {
+            "On Hold" => "bi-pause-circle-fill",
+            "Locked" => "bi-lock-fill",
+            "Occupied" => "bi-door-closed-fill",
+            _ => "bi-door-open-fill"
+        };
+        var assignmentIcon = row.IsAssigned ? "bi-person-check-fill" : "bi-person-dash-fill";
+        var statusIcon = status switch
+        {
+            "InProgress" => "bi-arrow-repeat",
+            "Completed" => "bi-check-circle-fill",
+            "Inspection" => "bi-search",
+            _ => "bi-hourglass-split"
+        };
+        <tr data-room-number="@row.RoomNumber?.ToLower()"
+            data-room-type="@row.RoomType?.ToLower()"
+            data-assigned-to="@row.AssignedTo?.ToLower()"
+            data-status="@status">
+            <td>@row.RoomNumber</td>
+            <td>@row.RoomType</td>
+            <td><span class="hk-pill"><i class="bi @occupancyIcon me-1"></i>@occupancy</span></td>
+            <td><span class="hk-pill @assignmentClass"><i class="bi @assignmentIcon me-1"></i>@assignmentLabel</span></td>
+            <td>@(row.AssignedTo ?? "--")</td>
+            <td><span class="hk-pill progress-@status.ToLowerInvariant()"><i class="bi @statusIcon me-1"></i>@status</span></td>
+            <td>@(row.Notes ?? "--")</td>
+        </tr>
+    }
+}
+

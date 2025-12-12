@@ -1,0 +1,127 @@
+@model GMS.Infrastructure.ViewModels.Accounting.CreditDebitNoteAccountViewModel
+
+<style>
+    /* Calendar button styling for GMS theme (blue/primary) */
+    .btn-calendar-update {
+        border: 1px solid #0d6efd !important;
+        color: #0d6efd !important;
+        background: transparent !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .btn-calendar-update:hover {
+        background: rgba(13, 110, 253, 0.1) !important;
+        border-color: #0b5ed7 !important;
+        color: #0b5ed7 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3) !important;
+    }
+    
+    .btn-calendar-update i {
+        color: #0d6efd !important;
+        transition: color 0.3s ease !important;
+    }
+    
+    .btn-calendar-update:hover i {
+        color: #0b5ed7 !important;
+    }
+    
+    /* Increase badge size in Debit Note table */
+    #DebitNoteAccountTable .badge {
+        font-size: 0.85rem !important;
+        padding: 0.45em 0.7em !important;
+    }
+</style>
+
+<div class="resposive_table" style="overflow-x:scroll">
+    <table class="table" id="DebitNoteAccountTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Code</th>
+                        <th scope="col">Guest Name</th>
+                        <th scope="col">UHID</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Used Amount</th>
+                        <th scope="col">Balance Amount</th>
+                        <th scope="col">Code Validity</th>
+                        <th scope="col">Created Date</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" width="100">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (Model != null && Model.CreditDebitNoteAccountsWithAttr != null && Model.CreditDebitNoteAccountsWithAttr.Any())
+                        {
+                            foreach (var item in Model.CreditDebitNoteAccountsWithAttr)
+                            {
+                                var amount = item.Amount ?? 0;
+                                var balance = item.BalanceAmount ?? 0;
+                                var isValid = item.CodeValidity.HasValue && item.CodeValidity.Value.Date >= DateTime.Today;
+                                var isExpired = item.CodeValidity.HasValue && item.CodeValidity.Value.Date < DateTime.Today;
+                                var isApproved = item.IsApproved ?? false;
+                                var isRecovered = item.IsRecovered ?? false;
+                                
+                                string status = "Pending Approval";
+                                string textClass = "";
+                                string badgeClass = "bg-warning";
+                                
+                                if (isRecovered)
+                                {
+                                    status = "Recovered";
+                                    textClass = "text-success";
+                                    badgeClass = "bg-success";
+                                }
+                                else if (isApproved)
+                                {
+                                    status = "Approved - Pending Recovery";
+                                    textClass = "text-info";
+                                    badgeClass = "bg-info";
+                                }
+                                else
+                                {
+                                    status = "Pending Approval";
+                                    textClass = "text-dark";
+                                    badgeClass = "bg-warning";
+                                }
+                                
+                                <tr class="@textClass">
+                                    <td scope="row">@item.Code</td>
+                                    <td>@item.GuestName</td>
+                                    <td>@item.UHID</td>
+                                    <td>@(item.Amount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.UsedAmount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.BalanceAmount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.CodeValidity?.ToString("dd-MMM-yyyy") ?? "-")</td>
+                                    <td>@(item.CreatedDate?.ToString("dd-MMM-yyyy") ?? "-")</td>
+                                    <td>
+                                        <span class="badge @badgeClass">@status</span>
+                                    </td>
+                                    <td>
+                                        @if (!isApproved)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-success" title="Approve Debit Note" onclick="approveDebitNote(@item.Id, '@item.Code')">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                        }
+                                        @if (isApproved && !isRecovered)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-primary" title="Mark as Recovered" onclick="markDebitNoteAsRecovered(@item.Id, '@item.Code')">
+                                                <i class="bi bi-currency-dollar"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center text-muted">No records found</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+</div>
+

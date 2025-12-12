@@ -1,0 +1,37 @@
+@model GMS.Infrastructure.ViewModels.Rooms.HouseKeeperDashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Housekeeping - Assigned Task";
+    var fetchUrl = Url.Action("HouseKeeperAssignmentsPartial", "Rooms");
+}
+
+<div class="admin_wrapper hk-dashboard hk-worker-dashboard">
+    @Html.Partial("_rooms/_leftNavigationRooms")
+
+    <div id="hkWorkerRoot" class="right_container" data-fetch-url="@fetchUrl">
+        @Html.Partial("_HouseKeeperAssignments", Model)
+    </div>
+
+    @Html.Partial("_HouseKeeperCleanModal", Model)
+    @Html.Partial("_HouseKeeperIssueModal", Model)
+
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/rooms/roomHousekeepingDashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/rooms/houseKeeperDashboard.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.hkWorkerDashboard = {
+            workerId: @Model.WorkerId,
+            workDate: '@Model.WorkDate.ToString("yyyy-MM-dd")',
+            apiBase: '@Url.Content("~/api/RoomHousekeepingAPI")'
+        };
+    </script>
+    <script src="~/customjs/rooms/houseKeeperDashboard.js" asp-append-version="true"></script>
+}
+

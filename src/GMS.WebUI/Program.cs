@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddControllers().AddControllersAsServices();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<DapperDBContext>();
 builder.Services.AddScoped<DapperEHRMSDBContext>();
@@ -24,6 +25,7 @@ SqlMapper.AddTypeHandler(new DapperSqlDateOnlyTypeHandler());
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.Configure<ClientInfo>(builder.Configuration.GetSection("ClientInfo"));
+builder.Services.AddScoped<GMS.WebUI.Services.Rooms.RoomHousekeepingDashboardService>();
 
 builder.Services.AddSession(options =>
 {

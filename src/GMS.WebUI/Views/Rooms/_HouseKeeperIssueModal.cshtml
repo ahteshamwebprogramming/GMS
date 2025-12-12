@@ -1,0 +1,38 @@
+@model GMS.Infrastructure.ViewModels.Rooms.HouseKeeperDashboardViewModel
+
+<div id="hkIssueModalContainer">
+    <div class="modal fade" id="hkIssueModal" tabindex="-1" aria-labelledby="hkIssueModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <p class="hk-eyebrow mb-1 text-uppercase">Report Room Issue</p>
+                        <h5 class="modal-title" id="hkIssueModalLabel">Describe the issue</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <span class="hk-label text-uppercase d-block">Room</span>
+                        <h4 class="mb-0" id="hkIssueRoomLabel">--</h4>
+                    </div>
+                    <div class="alert alert-danger d-none" id="hkIssueError"></div>
+                    <div>
+                        <label class="hk-label text-uppercase" for="hkIssueDetails">Issue Details</label>
+                        <textarea class="form-control" id="hkIssueDetails" rows="4" placeholder="Describe what needs attention"></textarea>
+                        <div class="form-text">This note will be saved to the assignment.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="hkIssueSubmit">
+                        <span class="default-label"><i class="bi bi-flag-fill me-1"></i> Submit Issue</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

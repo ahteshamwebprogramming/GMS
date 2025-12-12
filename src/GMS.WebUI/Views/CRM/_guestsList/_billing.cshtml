@@ -204,7 +204,27 @@
                                     @{
                                         if (Model != null && Model.AccountSettled == true)
                                         {
-                                            <span class="headingInfo">Settled</span>
+                                            // Check if settlement has debit note
+                                            if (Model.SettlementDTO != null && Model.SettlementDTO.DebitAmount > 0 && !string.IsNullOrEmpty(Model.SettlementDTO.DebitNoteNumber))
+                                            {
+                                                // Check if debit note is approved
+                                                bool isDebitNoteApproved = Model.SettlementDTO.DebitNoteIsApproved == true;
+                                                string debitNoteNumber = Model.SettlementDTO.DebitNoteNumber ?? "";
+                                                double debitAmount = Model.SettlementDTO.DebitAmount ?? 0;
+                                                
+                                                if (!isDebitNoteApproved)
+                                                {
+                                                    <span class="headingInfo">Settled with Debit of - @debitAmount.ToString("N2")<br />(@debitNoteNumber) <span style="color: red;">Pending for Approval</span></span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="headingInfo">Settled - (@debitNoteNumber)</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="headingInfo">Settled</span>
+                                            }
                                         }
                                         else
                                         {
@@ -556,6 +576,10 @@
                     }
                 }
                 <button type="button" class="btn btn-primary" onclick="printInvoice(@guestIdPaxSno1)"> <i class="bi bi-printer"></i> </button>
+                @if (Model?.SettlementDTO?.CreditAmount > 0)
+                {
+                    <button type="button" class="btn btn-success" onclick="window.open('/Guests/PrintCreditNote/@Model?.MembersWithAttributes?.Id','_blank')"> <i class="bi bi-receipt"></i> Print Credit Note</button>
+                }
                 @* <button type="button" class="btn btn-primary" onclick="SubmitRoomCheckList()"> <i class="bi bi-x-lg"></i> </button> *@
 
             </div>

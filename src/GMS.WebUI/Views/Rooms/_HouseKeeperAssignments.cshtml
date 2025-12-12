@@ -1,0 +1,182 @@
+@model GMS.Infrastructure.ViewModels.Rooms.HouseKeeperDashboardViewModel
+@using GMS.Infrastructure.ViewModels.Rooms
+@using System.Linq
+@{
+    var assignments = Model.Assignments ?? new List<HousekeepingAssignmentRow>();
+    var workerName = string.IsNullOrWhiteSpace(Model.WorkerName) ? "Housekeeping Associate" : Model.WorkerName;
+    Func<HousekeepingAssignmentStatus, string> statusLabel = status => status switch
+    {
+        HousekeepingAssignmentStatus.InProgress => "In Progress",
+        _ => status.ToString()
+    };
+    Func<HousekeepingAssignmentStatus, string> statusClass = status => status switch
+    {
+        HousekeepingAssignmentStatus.Completed => "success",
+        HousekeepingAssignmentStatus.InProgress => "room-status",
+        HousekeepingAssignmentStatus.Inspection => "warning",
+        _ => string.Empty
+    };
+}
+
+<div class="hk-header card mb-4">
+    <div class="card-body">
+        <div class="hk-header-top d-flex flex-column flex-lg-row justify-content-between gap-3">
+            <div>
+                <p class="hk-eyebrow mb-1 text-uppercase">Housekeeping Person · Assigned Task</p>
+                <h1 class="hk-title mb-1">@workerName</h1>
+                <div class="text-muted small">
+                    <span>@(string.IsNullOrWhiteSpace(Model.EmployeeCode) ? "Employee code unavailable" : $"Emp ID · {Model.EmployeeCode}")</span>
+                    @if (!string.IsNullOrWhiteSpace(Model.Department))
+                    {
+                        <span class="mx-2">|</span>
+                        <span>@Model.Department</span>
+                    }
+                </div>
+            </div>
+            <div class="hk-date-form d-flex flex-column align-items-lg-end gap-2">
+                <label class="hk-label text-uppercase mb-0">Select Date</label>
+                <div class="hk-date-display">
+                    <i class="bi bi-calendar3"></i>
+                    <input type="text"
+                           class="form-control"
+                           id="hkDateDisplay"
+                           readonly
+                           value="@Model.WorkDate.ToString("dd-MMM-yyyy")"
+                           data-current-date="@Model.WorkDate.ToString("yyyy-MM-dd")" />
+                </div>
+            </div>
+        </div>
+        <div class="hk-status-line mt-3">
+            <div class="hk-status-chip">
+                <span>Total Assigned</span>
+                <strong>@Model.TotalAssigned</strong>
+            </div>
+            <div class="hk-status-chip">
+                <span>Completed</span>
+                <strong>@Model.CompletedCount</strong>
+            </div>
+            <div class="hk-status-chip warning">
+                <span>Pending</span>
+                <strong>@(Model.PendingCount + Model.InProgressCount)</strong>
+            </div>
+            <div class="hk-status-chip">
+                <span>Issues / Inspection</span>
+                <strong>@Model.InspectionCount</strong>
+            </div>
+            <div class="hk-date-display ms-lg-auto">
+                <i class="bi bi-clock-history"></i>
+                <span class="fw-semibold">@Model.WorkDate.ToString("dd MMM yyyy")</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="hk-global-alert mb-3" id="hkWorkerToast" hidden></div>
+
+<section class="hk-section card">
+    <div class="hk-section-header d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+            <p class="hk-eyebrow mb-1 text-uppercase">Assigned Rooms</p>
+            <h2 class="hk-section-title m-0">Today's cleaning checklist</h2>
+            <p class="text-muted small mb-0">Tap a card to update its status, log an issue, or open the cleaning checklist.</p>
+        </div>
+        <div class="hk-worker-filters d-flex flex-column flex-xl-row align-items-xl-end gap-2">
+            <div class="w-100">
+                <label class="hk-label text-uppercase">Search</label>
+                <input type="text" class="form-control form-control-sm" id="hkAssignmentSearch" placeholder="Search by room no. or type">
+            </div>
+            <div class="w-100">
+                <label class="hk-label text-uppercase">Status</label>
+                <select class="form-select form-select-sm" id="hkStatusFilter">
+                    <option value="">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="inspection">Inspection</option>
+                </select>
+            </div>
+            <div class="w-100">
+                <label class="hk-label text-uppercase">Occupancy</label>
+                <select class="form-select form-select-sm" id="hkOccupancyFilter">
+                    <option value="">Any</option>
+                    <option value="empty">Empty</option>
+                    <option value="occupied">Occupied</option>
+                    <option value="on hold">On Hold</option>
+                    <option value="locked">Locked</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="hk-room-grid mt-3" id="hkRoomGrid">
+        @foreach (var assignment in assignments.OrderBy(a => a.RoomNumber))
+        {
+            var occupancy = string.IsNullOrWhiteSpace(assignment.OccupancyStatus) ? "Empty" : assignment.OccupancyStatus;
+            var isCompleted = assignment.Status == HousekeepingAssignmentStatus.Completed;
+            <article class="hk-room-card"
+                     data-room-card
+                     data-room-number="@assignment.RoomNumber"
+                     data-room-type="@assignment.RoomType"
+                     data-status="@assignment.Status.ToString().ToLowerInvariant()"
+                     data-occupancy="@occupancy.ToLowerInvariant()">
+                <div class="hk-room-card-header d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="hk-eyebrow mb-1 text-uppercase">Room @assignment.RoomNumber</p>
+                        <h3 class="hk-room-title mb-0">@(!string.IsNullOrWhiteSpace(assignment.RoomType) ? assignment.RoomType : "Room Type TBD")</h3>
+                    </div>
+                    <span class="hk-pill @statusClass(assignment.Status)">
+                        @statusLabel(assignment.Status)
+                    </span>
+                </div>
+                <div class="hk-room-card-body">
+                    <div class="hk-room-meta">
+                        <span class="hk-label text-uppercase">Occupancy</span>
+                        <strong>@occupancy</strong>
+                    </div>
+                    <div class="hk-room-meta">
+                        <span class="hk-label text-uppercase">Assigned To</span>
+                        <strong>@workerName</strong>
+                    </div>
+                    <div class="hk-room-meta">
+                        <span class="hk-label text-uppercase">Notes</span>
+                        <p class="mb-0 text-muted small">@(!string.IsNullOrWhiteSpace(assignment.Notes) ? assignment.Notes : "No notes added yet.")</p>
+                    </div>
+                </div>
+                <div class="hk-room-card-footer d-flex flex-column flex-md-row gap-2">
+                    @if (isCompleted)
+                    {
+                        <button type="button"
+                                class="btn btn-outline-primary flex-fill hk-view-checklist-btn"
+                                data-room-id="@assignment.RoomId"
+                                data-room-number="@assignment.RoomNumber">
+                            View Checklist
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="btn btn-success flex-fill hk-mark-clean-btn"
+                                data-room-id="@assignment.RoomId"
+                                data-room-number="@assignment.RoomNumber">
+                            Mark as Clean
+                        </button>
+                    }
+                    @if (!isCompleted)
+                    {
+                        <button type="button"
+                                class="btn btn-outline-danger flex-fill hk-report-issue-btn"
+                                data-room-id="@assignment.RoomId"
+                                data-room-number="@assignment.RoomNumber">
+                            Report Issue
+                        </button>
+                    }
+                </div>
+            </article>
+        }
+    </div>
+
+    <div class="hk-empty-state text-center @(Model.HasAssignments ? "d-none" : string.Empty)" id="hkAssignmentsEmpty">
+        <i class="bi bi-door-open fs-3 d-block mb-2"></i>
+        You have no rooms assigned for the selected date.
+    </div>
+</section>
+

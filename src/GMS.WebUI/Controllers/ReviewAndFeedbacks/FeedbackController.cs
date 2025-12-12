@@ -1,5 +1,6 @@
 ﻿using Accounting.Controllers;
 using GMS.Endpoints.Guests;
+using GMS.Endpoints.Masters;
 using GMS.Infrastructure.Models.Masters;
 using GMS.Infrastructure.Models.ReviewAndFeedback;
 using GMS.Infrastructure.ViewModels.Guests;
@@ -15,10 +16,12 @@ public class FeedbackController : Controller
 {
     private readonly ILogger<FeedbackController> _logger;
     private readonly FeedbackAPIController _feedbackAPIController;
-    public FeedbackController(ILogger<FeedbackController> logger, FeedbackAPIController feedbackAPIController)
+    private readonly OperationsAPIController _operationsAPIController;
+    public FeedbackController(ILogger<FeedbackController> logger, FeedbackAPIController feedbackAPIController, OperationsAPIController operationsAPIController)
     {
         _logger = logger;
         _feedbackAPIController = feedbackAPIController;
+        _operationsAPIController = operationsAPIController;
     }
 
     [Route("ReviewAndFeedbacks/Feedback/{Id}")]
@@ -29,6 +32,14 @@ public class FeedbackController : Controller
         {
             FeedbackViewModel dto = new FeedbackViewModel();
             dto.GuestId = Id;
+            
+            // Load operations for dynamic content
+            var operationsResponse = await _operationsAPIController.Get();
+            if (operationsResponse is ObjectResult operationsResult && operationsResult.Value is OperationsDTO operations)
+            {
+                ViewBag.Operations = operations;
+            }
+            
             return View(dto);
         }
         else
@@ -50,6 +61,14 @@ public class FeedbackController : Controller
                 dto.FeedbackAttributeList = (List<FeedbackDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)feedbackRes).Value;
             }
             dto.FeedbackResultList = await GetFeedbackResult(Id, "Level2");
+            
+            // Load operations for logo
+            var operationsResponse = await _operationsAPIController.Get();
+            if (operationsResponse is ObjectResult operationsResult && operationsResult.Value is OperationsDTO operations)
+            {
+                ViewBag.Operations = operations;
+            }
+            
             return View(dto);
         }
         else
@@ -104,6 +123,14 @@ public class FeedbackController : Controller
             FeedbackViewModel dto = new FeedbackViewModel();
             dto.FeedbackResultList = await GetFeedbackResult(Id, "Level3");
             dto.GuestId = Id;
+            
+            // Load operations for logo
+            var operationsResponse = await _operationsAPIController.Get();
+            if (operationsResponse is ObjectResult operationsResult && operationsResult.Value is OperationsDTO operations)
+            {
+                ViewBag.Operations = operations;
+            }
+            
             return View(dto);
         }
         else
@@ -131,6 +158,14 @@ public class FeedbackController : Controller
             FeedbackViewModel dto = new FeedbackViewModel();
             dto.FeedbackResultList = await GetFeedbackResult(Id, "Level4");
             dto.GuestId = Id;
+            
+            // Load operations for logo
+            var operationsResponse = await _operationsAPIController.Get();
+            if (operationsResponse is ObjectResult operationsResult && operationsResult.Value is OperationsDTO operations)
+            {
+                ViewBag.Operations = operations;
+            }
+            
             return View(dto);
         }
         else
@@ -146,6 +181,14 @@ public class FeedbackController : Controller
         {
             FeedbackViewModel dto = new FeedbackViewModel();
             dto.GuestId = Id;
+            
+            // Load operations for logo
+            var operationsResponse = await _operationsAPIController.Get();
+            if (operationsResponse is ObjectResult operationsResult && operationsResult.Value is OperationsDTO operations)
+            {
+                ViewBag.Operations = operations;
+            }
+            
             return View(dto);
         }
         else

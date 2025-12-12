@@ -38,7 +38,7 @@
                                 {
                                     foreach (var item in Model.PaymentMethods)
                                     {
-                                        <option value="@item.Id">@item.Code</option>
+                                        <option value="@item.Id" data-payment-method-code="@(item.PaymentMethodCode ?? "")">@item.Code</option>
                                     }
                                 }
                             }
@@ -46,7 +46,7 @@
                     </td>
                     <td class="amount fc-parent text-right"><input type="number" class="form-control-c text-right" value="0" /></td>
                     <td class="date paymentdate fc-parent"><input type="text" class="form-control-c" style="float:left" /></td>
-                    <td class="referencenumber fc-parent"><input type="text" class="form-control-c" style="float:left" /></td>
+                    <td class="referencenumber fc-parent"><input type="text" class="form-control-c" style="float:left" /><div class="credit-note-validation-msg" style="display:none; font-size: 12px; margin-top: 5px;"></div></td>
                     <td class="remarks fc-parent"><input type="text" class="form-control-c" style="float:left" /></td>
                     <td class=""><i style="color:green" class="bi bi-floppy clickabel-icon" onclick="SavePaymentInformation(this)"></i></td>
                 </tr>

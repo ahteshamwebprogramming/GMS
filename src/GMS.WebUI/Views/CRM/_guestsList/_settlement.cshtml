@@ -296,13 +296,13 @@
                                     <th>Balance</th>
                                     <td colspan="2" class="balance">25,000</td>
                                 </tr>
-                                <tr>
+                                <tr class="refund-row" style="display: none;">
                                     <th>Refund</th>
                                     <td colspan="2" class="refund text-right fc-parent"><input type="number" class="form-control-c text-right" value="0" style="width:100%" /></td>
                                 </tr>
-                                <tr>
+                                <tr class="creditamount-row" style="display: none;">
                                     <th>Credit Amount</th>
-                                    <td colspan="2" class="creditamount text-right fc-parent"><input type="number" class="form-control-c text-right" value="0" /></td>
+                                    <td colspan="2" class="creditamount text-right fc-parent"><input type="number" class="form-control-c text-right" value="0" style="width:100%" /></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -310,13 +310,13 @@
                         <div class="row">
                             <div class="col-md-6 form-group inputcreditamount">
                                 <label>Note No.</label>
-                                <input type="text" name="NoteNumber" class="form-control" />
+                                <input type="text" name="NoteNumber" class="form-control" value="@Model?.SettlementDTO?.NoteNumber" readonly />
                             </div>
                             <div class="col-md-6 form-group inputcreditamount">
                                 <label>Valid Till</label>
                                 <input type="text" name="ValidTill" class="form-control" />
                             </div>
-                            <div class="col-md-12 form-group inputrefund">
+                            <div class="col-md-12 form-group inputrefund" style="display: none;">
                                 <label>Refund Remarks</label>
                                 <textarea name="RefundRemarks" class="form-control"></textarea>
                             </div>
@@ -331,6 +331,10 @@
                 <input type="hidden" name="GuestIdPaxSN1" value="@(Model?.MembersWithAttributes?.GuestIdPaxSN1)" />
                 <button type="button" class="btn btn-secondary" onclick="InitiateSettlementAndSave()">Settle</button>
                 <button type="button" class="btn btn-primary" onclick="window.open('/Guests/PrintInvoice/@Model?.MembersWithAttributes?.Id','_blank')">Print Invoice</button>
+                @if (Model?.SettlementDTO?.CreditAmount > 0)
+                {
+                    <button type="button" class="btn btn-success" onclick="window.open('/Guests/PrintCreditNote/@Model?.MembersWithAttributes?.Id','_blank')">Print Credit Note</button>
+                }
             </div>
         </div>
     </div>

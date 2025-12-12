@@ -32,5 +32,6 @@
 
         public string? DocName { get; set; }
         public bool RoomClean { get; set; }
+        public bool EnableSelection { get; set; }
     }
 }

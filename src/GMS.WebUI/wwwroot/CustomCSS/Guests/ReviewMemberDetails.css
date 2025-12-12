@@ -1,0 +1,45 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+    font-size: 14px;
+}
+
+.invoice-header {
+    background-color: #08294b;
+    color: white;
+    padding: 5px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.invoice-title {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.company-details {
+    text-align: right;
+    color: white;
+}
+
+    .company-details h2 {
+        font-size: 22px;
+        margin-bottom: 5px;
+        color: white;
+    }
+
+    .company-details span {
+        font-style: italic;
+        color: #f0c040;
+    }
+    
+    .company-details p {
+        color: white;
+    }
+
+.contact-info {
+    color: #f0c040;
+}
+

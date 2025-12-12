@@ -142,6 +142,7 @@ public class PaymentMethodAPIController : ControllerBase
                 if (paymentMethod != null)
                 {
                     paymentMethod.PaymentMethodName = dto.PaymentMethodName;
+                    paymentMethod.PaymentMethodCode = dto.PaymentMethodCode;
 
 
                     var updated = await _unitOfWork.PaymentMethod.UpdateAsync(paymentMethod);

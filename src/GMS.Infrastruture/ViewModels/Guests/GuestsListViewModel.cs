@@ -1,4 +1,5 @@
-﻿using GMS.Infrastructure.Models.Guests;
+﻿using GMS.Infrastructure.Models.Accounting;
+using GMS.Infrastructure.Models.Guests;
 using GMS.Infrastructure.Models.Masters;
 using GMS.Infrastructure.Models.Rooms;
 using GMS.Infrastructure.ViewModels.Rooms;
@@ -51,4 +52,5 @@ public class GuestsListViewModel
     public List<PaymentWithAttr>? PaymentsWithAttr { get; set; }
     public List<BillingDTO>? BillingDataList { get; set; }
     public bool? AccountSettled { get; set; }
+    public CreditDebitNoteAccountDTO? CreditNoteAccount { get; set; }
 }

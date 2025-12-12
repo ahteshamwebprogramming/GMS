@@ -53,6 +53,25 @@ public static class CommonHelper
         Random _rdm = new Random();
         return _rdm.Next(_min, _max);
     }
+    public static string RandomString(int length, string[]? excludedValues = null)
+    {
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+        var random = new Random();
+        var maxAttempts = 1000; // safety limit to avoid infinite loops
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            string result = new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+
+            if (excludedValues == null || !excludedValues.Contains(result))
+            {
+                return result;
+            }
+        }
+
+        throw new InvalidOperationException("Unable to generate a unique random string after multiple attempts.");
+    }
     public static string RandomString()
     {
         try

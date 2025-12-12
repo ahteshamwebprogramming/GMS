@@ -1,0 +1,73 @@
+@model GMS.Infrastructure.ViewModels.Accounting.CreditDebitNoteAccountViewModel
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="resposive_table" style="overflow-x:scroll">
+            <table class="table styled-table" id="CreditDebitNoteAccountTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Code</th>
+                        <th scope="col">Guest Name</th>
+                        <th scope="col">UHID</th>
+                        <th scope="col">Transaction Type</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Used Amount</th>
+                        <th scope="col">Balance Amount</th>
+                        <th scope="col">Code Validity</th>
+                        <th scope="col">Created Date</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (Model != null && Model.CreditDebitNoteAccountsWithAttr != null && Model.CreditDebitNoteAccountsWithAttr.Any())
+                        {
+                            foreach (var item in Model.CreditDebitNoteAccountsWithAttr)
+                            {
+                                <tr>
+                                    <td scope="row">@item.Code</td>
+                                    <td>@item.GuestName</td>
+                                    <td>@item.UHID</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(item.TransactionType))
+                                        {
+                                            <span class="badge @(item.TransactionType == "Credit" ? "bg-success" : "bg-danger")">
+                                                @item.TransactionType
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>@(item.Amount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.UsedAmount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.BalanceAmount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.CodeValidity?.ToString("dd-MMM-yyyy") ?? "-")</td>
+                                    <td>@(item.CreatedDate?.ToString("dd-MMM-yyyy hh:mm tt") ?? "-")</td>
+                                    <td>
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactive</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center text-muted">No records found</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

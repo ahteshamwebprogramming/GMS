@@ -1,0 +1,116 @@
+.hk-worker-dashboard .hk-room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.hk-worker-dashboard .hk-room-card {
+    border: 1px solid #dfe2ef;
+    border-radius: 12px;
+    background: #fff;
+    padding: 1rem;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.hk-worker-dashboard .hk-room-card-header .hk-room-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #0f1f44;
+}
+
+.hk-worker-dashboard .hk-room-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    flex: 1;
+}
+
+.hk-worker-dashboard .hk-room-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.hk-worker-dashboard .hk-room-meta strong {
+    font-size: 0.95rem;
+    color: #0f1f44;
+}
+
+.hk-worker-dashboard .hk-room-card-footer .btn {
+    border-radius: 8px;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.75rem;
+    min-height: 42px;
+}
+
+.hk-worker-dashboard .hk-room-card-footer {
+    margin-top: auto;
+}
+
+.hk-worker-dashboard .hk-room-card-footer .btn[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.hk-worker-dashboard .hk-worker-filters .form-control,
+.hk-worker-dashboard .hk-worker-filters .form-select {
+    min-width: 180px;
+}
+
+.hk-worker-dashboard .hk-room-card[hidden] {
+    display: none !important;
+}
+
+#hkWorkerRoot.hk-loading {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.hk-clean-modal-list {
+    max-height: 320px;
+    border: 1px solid #e3e6ef;
+    border-radius: 10px;
+    overflow: auto;
+    background: #fff;
+}
+
+.hk-clean-modal-list thead th {
+    background: #f3f4f8;
+}
+
+.hk-clean-modal-list tbody tr:hover {
+    background: #f8fafc;
+}
+
+.hk-clean-summary h4 {
+    font-weight: 600;
+    color: #0f1f44;
+}
+
+#hkCleanChecklistError {
+    font-size: 0.9rem;
+}
+
+.hk-clean-review-meta {
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+    padding-top: 1rem;
+}
+
+.hk-clean-checklist-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 576px) {
+    .hk-worker-dashboard .hk-room-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

@@ -1,0 +1,244 @@
+@model GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild
+
+<div class="col-xs-12 box-form" style="background: #fff; padding: 20px; border-radius: 5px;">
+    <form class="general_form">
+        <div class="col-xs-12 box-form">
+            <div class="clearfix"></div>
+            <div class="col-xs-3 col-xs-offset-6 padding0 right">
+                <label class="control-label">Registration No</label>
+            </div>
+            <div class="col-xs-3 padding0 right">
+                <input name="lblrgid" type="text" id="lblrgid" class="form-control" value="@(Model?.RegistrationNumber)">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Name</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtname" type="text" value="@(Model?.CustomerName)" id="txtname" class="form-control">
+            </div>
+            <div class="col-xs-3 padding0 right">
+                <label class="control-label">Date</label>
+            </div>
+            <div class="col-xs-3 padding0 right">
+                <input type="date" name="" class="form-control" id="txtdate" value="@(DateTime.Now.ToString("yyyy-MM-dd"))">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Age</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtage" type="text" value="@(Model?.Age)" id="txtage" class="form-control">
+            </div>
+            <div class="col-xs-3 padding0 right">
+                <label class="control-label">Gender</label>
+            </div>
+            <div class="col-xs-3 padding0 right" style="margin-top:2px;">
+                <table id="chkGender" class="checkbox mychkbox">
+                    <tbody>
+                        <tr>
+                            <td><input id="chkGender_0" type="checkbox" name="chkGender$0" @(Model?.GenderName == "Male" ? "checked" : "") onclick="UncheckOthers(this);" value="Male"><label for="chkGender_0">Male</label></td>
+                            <td><input id="chkGender_1" type="checkbox" name="chkGender$1" @(Model?.GenderName == "Female" ? "checked" : "") onclick="UncheckOthers(this);" value="Female"><label for="chkGender_1">Female</label></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Occupation</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtoccupation" type="text" id="txtoccupation" class="form-control" value="@(Model?.Occupation)">
+            </div>
+            <div class="col-xs-3 padding0 right">
+                <label class="control-label">Marital Status</label>
+            </div>
+            <div class="col-xs-3 padding0 right">
+                <input name="txtMstatus" type="text" value="@(Model?.MarStatus)" id="txtMstatus" class="form-control">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12">
+                <h4>Permanent Address</h4>
+            </div>
+            <div class="col-xs-10 col-xs-offset-2 padding0 right">
+                <input name="txtaddress" type="text" id="txtaddress" class="form-control" value="@(Model?.Address1)">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">City</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtcity" type="text" id="txtcity" class="form-control" value="@(Model?.City)">
+            </div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">State</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtstate" type="text" id="txtstate" class="form-control" value="@(Model?.State)">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Country of residence</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtreligion" type="text" id="txtreligion" class="form-control" value="@(Model?.Country)">
+            </div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Nationality</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtnatinalty" type="text" id="txtnatinalty" class="form-control" value="@(Model?.Nationality)">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Blood Group</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtBG" type="text" id="txtBG" class="form-control" value="@(Model?.BloodGroup)">
+            </div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Phone No</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input name="txtphno" type="text" id="txtphno" class="form-control" value="@(Model?.MobileNo)">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12">
+                <h4>Present Health Complaints</h4>
+            </div>
+            <div class="col-xs-10 col-xs-offset-2 padding0 right">
+                <textarea class="form-control" rows="4" id="comment"></textarea>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12">
+                <h4>Past History</h4>
+            </div>
+            <div class="col-xs-10 col-xs-offset-2 padding0 right">
+                <textarea class="form-control" rows="4" id="Textarea1"></textarea>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12">
+                <h4>Present Medications if any</h4>
+            </div>
+            <div class="col-xs-10 col-xs-offset-2 padding0 right">
+                <textarea class="form-control" rows="4" id="Textarea2"></textarea>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12">
+                <h4>Surgeries Underwent</h4>
+            </div>
+            <div class="col-xs-10 col-xs-offset-2 padding0 right">
+                <textarea class="form-control" rows="4" id="Textarea3"></textarea>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12">
+                <h4>Family History</h4>
+            </div>
+            <div class="col-xs-10 col-xs-offset-2 padding0 right">
+                <textarea class="form-control" rows="4" id="Textarea4"></textarea>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12 padding0 right">
+                <h4>Vital Data</h4>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Height (Cm)</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Weight (.Kgs)</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">BMI (kg/m2)</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Pulse (Beats / Min)</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2" style="padding:0px;">
+                <label class="control-label">Blood Pressure (mm of Hg)</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="col-xs-2 right" style="padding:0px;">
+                <label class="control-label">Temperature (OC/OF)</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2" style="padding:0px;">
+                <label class="control-label">Respiratory Rate (cycles/min)</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12 padding0 right">
+                <h4>General Physical Examination</h4>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Appearance</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Build</label>
+            </div>
+            <div class="col-xs-4 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0 right">
+                <label class="control-label">Final Diagnosis</label>
+            </div>
+            <div class="col-xs-10 padding0 right">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12 padding0 right">
+                <h4>Declaration</h4>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-12 padding0 right">
+                <p style="margin-top: 2px;text-align: justify;">I affirm that the information above provides a complete and accurate record of my current health and lifestyle, including all known medical conditions and any other information that may be relevant to my engaging in any of the treatments or services at (client). I am aware that all treatments and activities are undertaken at my own risk. I hereby absolutely and irrevocably release (client), its employees, representatives, agents or assignees from any claim, legal or otherwise, from accidents, injuries or outcomes that may occur as a result of my participation in any such activities, programs or treatments.</p>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-xs-2 padding0" style="margin-top: 5px;">
+                <label class="control-label">Signature of Patient</label>
+            </div>
+            <div class="col-xs-3 padding0" style="margin-top: 5px;">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div class="col-xs-2 col-sm-offset-2 padding0 right" style="margin-top:5px;">
+                <label class="control-label">Signature of Doctor</label>
+            </div>
+            <div class="col-xs-3 padding0 right" style="margin-top:5px;">
+                <input type="text" name="" class="form-control">
+            </div>
+            <div id="btndiv" class="col-xs-12 row btn1 right" style="margin-top: 20px;">
+                <div class="col-xs-2 col-xs-offset-3">
+                    <button type="button" onclick="window.print()" class="btn-uppr">Print</button>
+                    <input type="submit" name="btnsave" value="Save" id="btnsave" class="btn-uppr">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+

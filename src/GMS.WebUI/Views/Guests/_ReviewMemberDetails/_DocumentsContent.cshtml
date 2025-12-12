@@ -1,0 +1,46 @@
+@model GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild
+
+<div class="documents-container">
+    <h3>Guest Documents</h3>
+    <p>Document management section for guest: @Model?.CustomerName</p>
+    
+    <div class="document-section">
+        <h4>ID Proof</h4>
+        <p>ID No: @(Model?.Idproof ?? "N/A")</p>
+        @if (Model?.IdProofIssueDate != null)
+        {
+            <p>Issue Date: @Model.IdProofIssueDate.Value.ToString("dd-MMM-yyyy")</p>
+        }
+        @if (Model?.IdProofExpiryDate != null)
+        {
+            <p>Expiry Date: @Model.IdProofExpiryDate.Value.ToString("dd-MMM-yyyy")</p>
+        }
+    </div>
+
+    <div class="document-section">
+        <h4>Passport</h4>
+        <p>Passport No: @(Model?.PassportNo ?? "N/A")</p>
+        @if (Model?.PassportIssueDate != null)
+        {
+            <p>Issue Date: @Model.PassportIssueDate.Value.ToString("dd-MMM-yyyy")</p>
+        }
+        @if (Model?.PassportExpiryDate != null)
+        {
+            <p>Expiry Date: @Model.PassportExpiryDate.Value.ToString("dd-MMM-yyyy")</p>
+        }
+    </div>
+
+    <div class="document-section">
+        <h4>Visa Details</h4>
+        <p>Visa No: @(Model?.VisaDetails ?? "N/A")</p>
+        @if (Model?.VisaIssueDate != null)
+        {
+            <p>Issue Date: @Model.VisaIssueDate.Value.ToString("dd-MMM-yyyy")</p>
+        }
+        @if (Model?.VisaExpiryDate != null)
+        {
+            <p>Expiry Date: @Model.VisaExpiryDate.Value.ToString("dd-MMM-yyyy")</p>
+        }
+    </div>
+</div>
+

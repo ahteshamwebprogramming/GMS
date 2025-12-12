@@ -928,7 +928,10 @@ function OpenCheckOutListModalPartialView(Id, Code, Name, _dateOfDepartment) {
         error: function (error) {
             UnblockUI();
             $sadConfirmation(error.responseJSON.heading, error.responseJSON.message + '!', 'Settle Now', 'sad', function () {
-                BillingPartialView(Id);
+                BillingPartialView(Id).catch(function(err) {
+                    // Handle promise rejection silently or log if needed
+                    console.error('Error opening billing modal:', err);
+                });
             });
         }
     });
@@ -1253,16 +1256,27 @@ function BillingPartialView(Id) {
                 resolve(Id);
             },
             error: function (result) {
-                //UnblockUI();
-                $erroralert("Transaction Failed!", result.responseText);
+                UnblockUI();
+                $erroralert("Transaction Failed!", result.responseText || 'An error occurred while loading billing data.');
                 reject(Id);
             }
         });
     });
 }
-function SettlementPartialView(Id, GuestIdPaxSN1) {
-
-    SaveBillingData().then((d) => {
+// Open Settlement - Switch modal content from billing to settlement
+function openSettlement(Id, GuestIdPaxSN1) {
+    // Ensure billing modal is open
+    var billingModal = bootstrap.Modal.getInstance(document.getElementById('BillingModal'));
+    if (!billingModal) {
+        $('#BillingModal').modal('show');
+        billingModal = bootstrap.Modal.getInstance(document.getElementById('BillingModal'));
+    }
+    
+    // Save billing data silently (suppress success message) before switching to settlement
+    SaveBillingData(true, true).then((d) => {
+        if (d === false) {
+            return;
+        }
         let inputDTO = {}
         inputDTO.Id = Id;
         inputDTO.GuestIdPaxSN1 = GuestIdPaxSN1;
@@ -1276,28 +1290,88 @@ function SettlementPartialView(Id, GuestIdPaxSN1) {
             dataType: "html",
             success: function (data, textStatus, jqXHR) {
                 UnblockUI();
-                $('#div_SettlementPartial').html(data);
-                $("#BillingModal").find(".btn-close").click();
-                $("#btnSettlementModal").click();
+                
+                // Hide billing content and show settlement content
+                $('#billingModalContent').hide();
+                $('#billingModalFooter').hide();
+                $('#settlementModalContent').html(data).show();
+                $('#settlementModalFooter').show();
+                
+                // Update modal title
+                $('#BillingModalLabel').text('Billing Settlement');
+                
+                // Small delay to ensure DOM is ready
+                setTimeout(function() {
+                    // Initialize settlement attributes
+                    if (typeof initSettlementAttributes === 'function') {
+                        initSettlementAttributes();
+                    }
 
-                initSettlementAttributes();
-
-                $("#SettlementModal").find("[name='ValidTill']").datetimepicker({
-                    format: 'd-m-Y',
-                    timepicker: false,
-                });
-                var creditNoteValidity = moment().add(8, 'months').format('DD-MM-YYYY');
-                $("#SettlementModal").find("[name='ValidTill']").val(creditNoteValidity);
+                    // Initialize datetimepicker for credit note validity
+                    var $validTillInput = $("#settlementModalContent").find("[name='ValidTill']");
+                    if ($validTillInput.length) {
+                        // Destroy existing datetimepicker if any
+                        if ($validTillInput.data('xdsoft_datetimepicker')) {
+                            $validTillInput.datetimepicker('destroy');
+                        }
+                        $validTillInput.datetimepicker({
+                            format: 'd-m-Y',
+                            timepicker: false,
+                        });
+                        var creditNoteValidity = moment().add(90, 'days').format('DD-MM-YYYY');
+                        $validTillInput.val(creditNoteValidity);
+                    }
+                }, 100);
             },
             error: function (result) {
-                //UnblockUI();
+                UnblockUI();
                 $erroralert("Transaction Failed!", result.responseText);
             }
         });
-    });
-
-
+    }).catch(() => { });
 }
+
+// Back to Billing - Switch modal content from settlement back to billing
+function backToBilling() {
+    // Hide settlement content and show billing content
+    $('#settlementModalContent').hide().empty();
+    $('#settlementModalFooter').hide();
+    $('#billingModalContent').show();
+    $('#billingModalFooter').show();
+    
+    // Update modal title
+    $('#BillingModalLabel').text('Billing');
+    
+    // Clean up settlement datetimepickers
+    $("#settlementModalContent").find("[name='DebitNoteValidTill']").each(function() {
+        if ($(this).data('xdsoft_datetimepicker')) {
+            $(this).datetimepicker('destroy');
+        }
+    });
+    $("#settlementModalContent").find("[name='ValidTill']").each(function() {
+        if ($(this).data('xdsoft_datetimepicker')) {
+            $(this).datetimepicker('destroy');
+        }
+    });
+}
+
+// Close Settlement - Switch back to billing (same as backToBilling)
+function closeSettlement() {
+    backToBilling();
+}
+
+// Legacy function name for backward compatibility (if needed)
+function SettlementPartialView(Id, GuestIdPaxSN1) {
+    openSettlement(Id, GuestIdPaxSN1);
+}
+
+// When billing modal closes, ensure we're showing billing content (not settlement)
+$(document).on('hidden.bs.modal', '#BillingModal', function () {
+    // Switch back to billing if settlement was showing
+    if ($('#settlementModalContent').is(':visible')) {
+        backToBilling();
+    }
+});
 function AddServicesPartialView(Id) {
     let inputDTO = {}
     inputDTO.Id = Id;

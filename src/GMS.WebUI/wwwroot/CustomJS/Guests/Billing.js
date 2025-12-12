@@ -96,13 +96,117 @@ function setupBillingDetailsToggle() {
     });
 }
 function initPaymentAttributes() {
-    $("#tblPaymentAttributes").find("tbody").find("tr.cal").last().find("td.mode select").chosen({
+    const $row = $("#tblPaymentAttributes").find("tbody").find("tr.cal").last();
+    
+    $row.find("td.mode select").chosen({
         width: '100%'
     });
-    $("#tblPaymentAttributes").find("tbody").find("tr.cal").last().find("td.date input").datetimepicker({
+    $row.find("td.date input").datetimepicker({
         format: 'd-M-Y H:i',
         timepicker: true,
         step: 5
+    });
+
+    // Credit Note handling
+    initCreditNoteHandling($row);
+}
+
+function initCreditNoteHandling($row) {
+    const $paymentMethodSelect = $row.find('td.mode select');
+    const $amountInput = $row.find('td.amount input');
+    const $paymentDateInput = $row.find('td.paymentdate input');
+    const $referenceInput = $row.find('td.referencenumber input');
+    const $validationMsg = $row.find('.credit-note-validation-msg');
+
+    // Handle payment method selection change
+    $paymentMethodSelect.off('change.creditNote').on('change.creditNote', function() {
+        const selectedOption = $(this).find('option:selected');
+        const paymentMethodCode = selectedOption.data('payment-method-code') || '';
+
+        if (paymentMethodCode === 'CN') {
+            // Make amount and payment date readonly
+            $amountInput.prop('readonly', true).css('background-color', '#e9ecef');
+            $paymentDateInput.prop('readonly', true).css('background-color', '#e9ecef');
+            
+            // Set current datetime
+            const currentDateTime = moment().format('DD-MMM-YYYY HH:mm');
+            $paymentDateInput.val(currentDateTime);
+            
+            // Focus on reference field
+            setTimeout(() => {
+                $referenceInput.focus();
+            }, 100);
+        } else {
+            // Remove readonly and reset styles
+            $amountInput.prop('readonly', false).css('background-color', '');
+            $paymentDateInput.prop('readonly', false).css('background-color', '');
+            
+            // Clear validation message
+            $validationMsg.hide().text('');
+        }
+    });
+
+    // Handle reference field input for credit note validation
+    let validationTimeout;
+    $referenceInput.off('input.creditNote blur.creditNote').on('input.creditNote blur.creditNote', function() {
+        const paymentMethodCode = $paymentMethodSelect.find('option:selected').data('payment-method-code') || '';
+        
+        if (paymentMethodCode !== 'CN') {
+            return;
+        }
+
+        const creditNoteCode = $(this).val().trim();
+        $validationMsg.hide().text('');
+
+        if (!creditNoteCode) {
+            return;
+        }
+
+        // Debounce validation
+        clearTimeout(validationTimeout);
+        validationTimeout = setTimeout(() => {
+            validateCreditNote(creditNoteCode, $amountInput, $validationMsg);
+        }, 500);
+    });
+}
+
+function validateCreditNote(creditNoteCode, $amountInput, $validationMsg) {
+    const guestId = $("#BillingModal").find("[name='GuestId']").val() || 0;
+    
+    if (!creditNoteCode) {
+        return;
+    }
+
+    $.ajax({
+        type: "GET",
+        url: `/Guests/ValidateCreditNote`,
+        data: { creditNoteCode: creditNoteCode, guestId: guestId },
+        success: function(response) {
+            if (response.isValid) {
+                // Show success message
+                $validationMsg.removeClass('text-danger').addClass('text-success')
+                    .text(response.message || 'Valid credit note')
+                    .show();
+                
+                // Auto-fill amount
+                if (response.balanceAmount) {
+                    $amountInput.val(parseFloat(response.balanceAmount).toFixed(2));
+                }
+            } else {
+                // Show error message
+                $validationMsg.removeClass('text-success').addClass('text-danger')
+                    .text(response.message || 'Invalid credit note')
+                    .show();
+                
+                // Clear amount
+                $amountInput.val('0');
+            }
+        },
+        error: function(error) {
+            $validationMsg.removeClass('text-success').addClass('text-danger')
+                .text('Error validating credit note')
+                .show();
+        }
     });
 }
 
@@ -311,7 +415,7 @@ function ValidateDiscountOnBilling() {
 
 
 
-function SaveBillingData() {
+function SaveBillingData(allowEmpty, suppressSuccessMessage) {
     return new Promise((resolve, reject) => {
         let gGuestId = $("#BillingModal").find("[name='GuestId']").val()
         let billingList = [];
@@ -406,13 +510,16 @@ function SaveBillingData() {
             data: JSON.stringify(inputDTO),
             success: function (data) {
                 UnblockUI();
-                $successalert("", "Saved Successfully!");
-                $("#BillingModal").find(".btn-close").click();
-                BillingPartialView(gGuestId).then((d) => {
+                // Only show success message if not suppressed (when called from settlement)
+                if (!suppressSuccessMessage) {
+                    $successalert("", "Saved Successfully!");
+                    $("#BillingModal").find(".btn-close").click();
+                    BillingPartialView(gGuestId).then((d) => {
+                        resolve(gGuestId);
+                    });
+                } else {
                     resolve(gGuestId);
-                });
-                //BillingPartialView(gGuestId);
-                //resolve(gGuestId);
+                }
             },
             error: function (error) {
                 $erroralert("Transaction Failed!", error.responseText + '!');
@@ -542,6 +649,11 @@ function PaymentInformationDTO($row) {
     let referenceNumber = $row.find('td.referencenumber input').val();
     let remarks = $row.find('td.remarks input').val();
 
+    // Check if payment method is Credit Note (CN)
+    const selectedOption = $row.find('td.mode select option:selected');
+    const paymentMethodCode = selectedOption.data('payment-method-code') || '';
+    const isCreditNote = paymentMethodCode === 'CN';
+
     let paymentDate = null;
 
     // Format date using moment.js
@@ -566,6 +678,21 @@ function PaymentInformationDTO($row) {
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
         showValidationMsg($row.find('td.amount'), "Enter a valid amount");
         isValid = false;
+    }
+
+    // For Credit Note, validate reference number
+    if (isCreditNote) {
+        if (!referenceNumber || referenceNumber.trim() === '') {
+            showValidationMsg($row.find('td.referencenumber'), "Please enter credit note number");
+            isValid = false;
+        } else {
+            // Check if validation message shows error
+            const $validationMsg = $row.find('.credit-note-validation-msg');
+            if ($validationMsg.hasClass('text-danger') && $validationMsg.is(':visible')) {
+                showValidationMsg($row.find('td.referencenumber'), "Please enter a valid credit note number");
+                isValid = false;
+            }
+        }
     }
 
     if (!isValid) return null;

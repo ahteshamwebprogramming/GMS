@@ -1,0 +1,853 @@
+﻿@model GMS.Infrastructure.ViewModels.Dashboard.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Audit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style type="text/css">
+    .bg-primary2 {
+        background-color: #6EBCB7 !important;
+    }
+
+    .pb-21 {
+        padding-bottom: 9.5rem !important;
+    }
+
+    .pt-10 {
+        padding-top: 4rem !important;
+    }
+
+    .rounded-2 {
+        border-radius: .375rem !important;
+    }
+
+    .bg-light-primary {
+        background-color: #f2eae0 !important;
+    }
+
+    .text-primary2 {
+        color: #6ebcb7 !important;
+    }
+
+    .icon-shape {
+        align-items: center;
+        display: inline-flex;
+        justify-content: center;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .icon-md {
+        height: 2.5rem;
+        line-height: 2.5rem;
+        width: 2.5rem;
+    }
+
+
+    .mt-n22 {
+        margin-top: -10rem !important;
+    }
+
+    .card {
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* soft shadow */
+        margin-bottom: 30px;
+    }
+
+        .card h4 {
+            font-size: 18px !important;
+        }
+
+
+
+    .cardItems {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+        .cardItems:hover {
+            transform: translateY(-5px);
+        }
+
+    .card-header {
+        background: linear-gradient(135deg, #6ebcb7, #14b98f);
+        color: #fff;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .card-header h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .card-header span {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+        font-size: 0.95rem;
+    }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+    .label {
+        color: #444;
+    }
+
+    .value {
+        font-weight: 700;
+        color: #111;
+        letter-spacing: 0.5px;
+    }
+
+        .value span {
+            font-size: 0.75rem;
+            color: #777;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+
+    .owl-stage-outer {
+        padding: 30px 0
+    }
+
+    .owl-carousel .owl-nav {
+        display: inline-block;
+    }
+
+        .owl-carousel .owl-nav button {
+            background: #6EBCB7 !important;
+            height: 30px;
+            width: 30px;
+        }
+
+    .owl-theme .owl-nav {
+        text-align: center;
+        width: 100%;
+    }
+
+    .owl-dots {
+        display: none;
+    }
+
+    .fistCr .owl-stage-outer {
+        padding: 0 !important
+    }
+</style>
+<div class="admin_wrapper">
+    <partial name="_accounting/_leftNavigationAccounting" />
+
+
+    <div class="right_container" style="margin-bottom: 120px;">
+        <span onclick="openNav()" class="menu_opener"><i class="bi bi-list"></i></span>
+
+        <div class="bg-primary2 pt-10 pb-21"></div>
+        <div class="container-fluid mt-n22 px-6">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-12">
+                    <!-- Page header -->
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="mb-2 mb-lg-0">
+                                <h3 class="mb-0  text-white">Audit Report</h3>
+                            </div>
+                            <div class="mb-2 mb-lg-0">
+                                <input type="button" class="btn btn-dark btn-lg" value="Run Audit" onclick="RunAudit()" />
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12 col-md-12 col-12">
+                    <div class="owl-carousel owl-theme mt-5 pb-0 fistCr">
+
+                        <!-- card -->
+                        <div class="card ">
+                            <!-- card body -->
+                            <div class="card-body metric-card">
+                                <!-- heading -->
+                                <div class="d-flex justify-content-between align-items-center
+                    mb-3">
+                                    <div>
+                                        <h4 class="mb-0">Occupancy</h4>
+                                    </div>
+                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                        <i class="bi bi-buildings fs-4"></i>
+                                    </div>
+                                </div>
+                                <!-- project number -->
+                                <div>
+                                    @{
+                                        var dateData = Model?.RoomOccupancyDataList?.ToList();
+                                        double bookedRooms = dateData?.Sum(x => x.BookedRooms) ?? 0;
+                                        var totalRooms = dateData?.Sum(x => x.TotalRooms) ?? 0;
+                                        var totaloccupancypercent = (bookedRooms * 100) / (totalRooms);
+                                    }
+                                    <p class="metric-card__value fw-bold text-end">@(totaloccupancypercent.ToString("F1"))%</p>
+                                    @* <p class="mb-0"><span class="text-dark me-2">@(bookedRooms)</span>Occupied</p> *@
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+
+                        <!-- card -->
+                        <div class="card ">
+                            <!-- card body -->
+                            <div class="card-body metric-card">
+                                <!-- heading -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h4 class="mb-0">Total Revenue</h4>
+                                    </div>
+                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                        <i class="bi bi-credit-card fs-4"></i>
+                                    </div>
+                                </div>
+                                <!-- project number -->
+                                <div>
+                                    @{
+                                        var dateDataRoom = Model?.RoomRevenueDataList?.FirstOrDefault();
+                                        var dateDataFnB = Model?.PackageRevenueDataList?.FirstOrDefault();
+                                        var dateDataUpsell = Model?.UpsellRevenueDataList?.FirstOrDefault();
+                                    }
+                                    <p class="metric-card__value fw-bold text-end">@((dateDataRoom?.TotalRevenue + dateDataFnB?.TotalRevenue + dateDataUpsell?.TotalRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</p>
+                                    @* <p class="mb-0"><span class="text-dark me-2">28</span>Completed</p> *@
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- card -->
+                        <div class="card ">
+                            <!-- card body -->
+                            <div class="card-body metric-card">
+                                <!-- heading -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h4 class="mb-0">Todays Collection</h4>
+                                    </div>
+                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                        <i class="bi bi-cash fs-4"></i>
+                                    </div>
+                                </div>
+                                <!-- project number -->
+                                <div>
+                                    @{
+                                        var datePayment = Model?.PaymentDataList?.FirstOrDefault();
+                                    }
+                                    <p class="metric-card__value fw-bold text-end">@(datePayment?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</p>
+                                    @* <p class="mb-0"><span class="text-dark me-2">1</span>Completed</p> *@
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <!-- card -->
+                        <div class="card ">
+                            <!-- card body -->
+                            <div class="card-body metric-card">
+                                <!-- heading -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h4 class="mb-0">Average Selling Rate</h4>
+                                    </div>
+                                    <div class="icon-shape icon-md bg-light-primary text-primary2 rounded-2">
+                                        <i class="bi bi-plus-slash-minus fs-4"></i>
+                                    </div>
+                                </div>
+                                <!-- project number -->
+                                <div>
+                                    <p class="metric-card__value fw-bold text-end">@(Model?.AverageSellingRate?.Value?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))</p>
+                                    @* <p class="mb-0"><span class="text-success me-2">5%</span>Completed</p> *@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="owl-carousel owl-theme ">
+                        <div class="cardItems">
+                            <div class="card-header">
+                                <h4>Rooms</h4>
+                                <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="item">
+                                    @{
+                                        var totalRoomData = Model?.RoomOccupancyDataList?.ToList();
+                                        var totalRooms1 = totalRoomData?.Sum(x => x.TotalRooms);
+                                    }
+                                    <div class="label">Total</div>
+                                    <div class="value">@(totalRoomData?.Sum(x => x.TotalRooms)) <span>Rooms</span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">Occupied</div>
+                                    <div class="value">@(totalRoomData?.Sum(x => x.BookedRooms)) <span>Rooms</span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">Available</div>
+                                    <div class="value">@(totalRoomData?.Sum(x => x.AvailableRooms)) <span>Rooms</span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">Tidy</div>
+                                    <div class="value">@(totalRoomData?.Sum(x => x.TidyRooms)) <span>Rooms</span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">Checkin</div>
+                                    <div class="value">@(totalRoomData?.Sum(x => x.TodayCheckIns)) <span>Guests</span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">Checkout</div>
+                                    <div class="value">@(totalRoomData?.Sum(x => x.TodayCheckOuts)) <span>Guests</span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">No Show</div>
+                                    <div class="value">xx <span>Guests</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        @{
+                            if (Model != null && Model.RoomOccupancyDataList != null)
+                            {
+                                var roomTypesIds = Model.RoomOccupancyDataList.GroupBy(x => x.ID).ToList();
+                                foreach (var roomTypeId in roomTypesIds)
+                                {
+                                    var roomType = Model.RoomOccupancyDataList.Where(x => x.ID == roomTypeId.Key).FirstOrDefault();
+                                    <div class="cardItems">
+                                        <div class="card-header">
+                                            <h4>@(roomType?.RType)</h4>
+                                            <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="item">
+                                                <div class="label">Total</div>
+                                                <div class="value">@(roomType?.TotalRooms) <span>Rooms</span></div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="label">Occupied</div>
+                                                <div class="value">@(roomType?.BookedRooms) <span>Rooms</span></div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="label">Available</div>
+                                                <div class="value">@(roomType?.AvailableRooms) <span>Rooms</span></div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="label">Tidy</div>
+                                                <div class="value">@(roomType?.TidyRooms) <span>Rooms</span></div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="label">Checkin</div>
+                                                <div class="value">@(roomType?.TodayCheckIns) <span>Guests</span></div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="label">Checkout</div>
+                                                <div class="value">@(roomType?.TodayCheckIns) <span>Guests</span></div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="label">No Show</div>
+                                                <div class="value">x <span>Rooms</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                }
+                            }
+                        }
+
+
+
+                    </div>
+                    @{
+                        var roomRevenue = Model?.RoomRevenueDataList?.FirstOrDefault();
+                        var fnbRevenue = Model?.PackageRevenueDataList?.FirstOrDefault();
+                        var upsellRevenue = Model?.UpsellRevenueDataList?.FirstOrDefault();
+                    }
+                    <div class="owl-carousel owl-theme ">
+                        <div class="cardItems">
+                            <div class="card-header">
+                                <h4>Total Revenue</h4>
+                                <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="item">
+                                    <div class="label">Today</div>
+                                    <div class="value">@((roomRevenue?.TotalRevenue + fnbRevenue?.TotalRevenue + upsellRevenue?.TotalRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">MTD</div>
+                                    <div class="value">@((roomRevenue?.MTDRevenue + fnbRevenue?.MTDRevenue + upsellRevenue?.MTDRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">YTD</div>
+                                    <div class="value">@((roomRevenue?.YTDRevenue + fnbRevenue?.YTDRevenue + upsellRevenue?.YTDRevenue)?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                @{
+                                    var totalRevenueCPDChange = (roomRevenue?.CPD_Change + fnbRevenue?.CPD_Change + upsellRevenue?.CPD_Change) ?? 0;
+                                    string totalRevenueCPDClass = totalRevenueCPDChange > 0 ? "text-success" : totalRevenueCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string totalRevenueCPDArrow = totalRevenueCPDChange > 0 ? "↑" : totalRevenueCPDChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPD <span style="color:blue;font-size:12px;">(Change from previous day)</span></div>
+                                    <div class="value @(totalRevenueCPDClass)">@(totalRevenueCPDChange.ToString("P1")) @(totalRevenueCPDArrow)</div>
+                                </div>
+                                @{
+                                    var totalRevenueCPMChange = (roomRevenue?.CPM_Change + fnbRevenue?.CPM_Change + upsellRevenue?.CPM_Change) ?? 0;
+                                    string totalRevenueCPMClass = totalRevenueCPMChange > 0 ? "text-success" : totalRevenueCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string totalRevenueCPMArrow = totalRevenueCPMChange > 0 ? "↑" : totalRevenueCPMChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPM <span style="color:blue;font-size:12px;">(Change from previous month)</span></div>
+                                    <div class="value @(totalRevenueCPMClass)">
+                                        @(totalRevenueCPMChange.ToString("P1")) @(totalRevenueCPMArrow)<span></span>
+                                    </div>
+                                </div>
+                                @{
+                                    var totalRevenueCPYChange = (roomRevenue?.CPY_Change + fnbRevenue?.CPY_Change + upsellRevenue?.CPY_Change) ?? 0;
+                                    string totalRevenueCPYClass = totalRevenueCPYChange > 0 ? "text-success" : totalRevenueCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string totalRevenueCPYArrow = totalRevenueCPYChange > 0 ? "↑" : totalRevenueCPYChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPY <span style="color:blue;font-size:12px;">(Change from previous year)</span></div>
+                                    <div class="value @(totalRevenueCPYClass)">
+                                        @(totalRevenueCPYChange.ToString("P1")) @(totalRevenueCPYArrow)<span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @{
+                            var cpdChange = roomRevenue?.CPD_Change ?? 0;
+                            string cpdClass = cpdChange > 0 ? "text-success" : cpdChange < 0 ? "text-danger" : "text-muted";
+                            string cpdArrow = cpdChange > 0 ? "↑" : cpdChange < 0 ? "↓" : "→";
+                        }
+                        <div class="cardItems">
+                            <div class="card-header">
+                                <h4>Room Revenue</h4>
+                                <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="item">
+                                    <div class="label">Today</div>
+                                    <div class="value">
+                                        @(roomRevenue?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
+                                    </div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">MTD</div>
+                                    <div class="value">
+                                        @(roomRevenue?.MTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
+                                    </div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">YTD</div>
+                                    <div class="value">
+                                        @(roomRevenue?.YTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN")))
+                                    </div>
+                                </div>
+                                @{
+                                    var roomRevenueCPDChange = (roomRevenue?.CPD_Change) ?? 0;
+                                    string roomRevenueCPDClass = roomRevenueCPDChange > 0 ? "text-success" : roomRevenueCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string roomRevenueCPDArrow = roomRevenueCPDChange > 0 ? "↑" : roomRevenueCPDChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPD</div>
+                                    <div class="value @roomRevenueCPDClass">
+                                        @* @(Math.Abs(cpdChange)) @cpdArrow *@
+                                        @(roomRevenueCPDChange.ToString("P1")) @roomRevenueCPDArrow
+                                    </div>
+                                </div>
+                                @{
+                                    var roomRevenueCPMChange = (roomRevenue?.CPM_Change) ?? 0;
+                                    string roomRevenueCPMClass = roomRevenueCPMChange > 0 ? "text-success" : roomRevenueCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string roomRevenueCPMArrow = roomRevenueCPMChange > 0 ? "↑" : roomRevenueCPMChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPM</div>
+                                    <div class="value @roomRevenueCPMClass">@(roomRevenueCPMChange.ToString("P1")) @roomRevenueCPMArrow</div>
+                                </div>
+                                @{
+                                    var roomRevenueCPYChange = (roomRevenue?.CPY_Change) ?? 0;
+                                    string roomRevenueCPYClass = roomRevenueCPYChange > 0 ? "text-success" : roomRevenueCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string roomRevenueCPYArrow = roomRevenueCPYChange > 0 ? "↑" : roomRevenueCPYChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPY</div>
+                                    <div class="value @(roomRevenueCPYClass)">@(roomRevenueCPYChange.ToString("P1")) @(roomRevenueCPYArrow)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cardItems">
+                            <div class="card-header">
+                                <h4>F&B Revenue</h4>
+                                <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="item">
+                                    <div class="label">Today</div>
+                                    <div class="value">@(fnbRevenue?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">MTD</div>
+                                    <div class="value">@(fnbRevenue?.MTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">YTD</div>
+                                    <div class="value">@(fnbRevenue?.YTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                @{
+                                    var fnbRevenueCPDChange = (fnbRevenue?.CPD_Change) ?? 0;
+                                    string fnbRevenueCPDClass = fnbRevenueCPDChange > 0 ? "text-success" : fnbRevenueCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string fnbRevenueCPDArrow = fnbRevenueCPDChange > 0 ? "↑" : fnbRevenueCPDChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPD</div>
+                                    <div class="value @fnbRevenueCPDClass">@fnbRevenueCPDChange.ToString("P1") @fnbRevenueCPDArrow<span></span></div>
+                                </div>
+                                @{
+                                    var fnbRevenueCPMChange = (fnbRevenue?.CPM_Change) ?? 0;
+                                    string fnbRevenueCPMClass = fnbRevenueCPMChange > 0 ? "text-success" : fnbRevenueCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string fnbRevenueCPMArrow = fnbRevenueCPMChange > 0 ? "↑" : fnbRevenueCPMChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPM</div>
+                                    <div class="value @fnbRevenueCPMClass">@fnbRevenueCPMChange.ToString("P1") @fnbRevenueCPMArrow <span></span></div>
+                                </div>
+                                @{
+                                    var fnbRevenueCPYChange = (fnbRevenue?.CPY_Change) ?? 0;
+                                    string fnbRevenueCPYClass = fnbRevenueCPYChange > 0 ? "text-success" : fnbRevenueCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string fnbRevenueCPYArrow = fnbRevenueCPYChange > 0 ? "↑" : fnbRevenueCPYChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPY</div>
+                                    <div class="value @fnbRevenueCPYClass">@fnbRevenueCPYChange.ToString("P1") @fnbRevenueCPYArrow <span></span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cardItems">
+                            <div class="card-header">
+                                <h4>Other Revenue</h4>
+                                <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="item">
+                                    <div class="label">Today</div>
+                                    <div class="value">@(upsellRevenue?.TotalRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">MTD</div>
+                                    <div class="value">@(upsellRevenue?.MTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">YTD</div>
+                                    <div class="value">@(upsellRevenue?.YTDRevenue?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                @{
+                                    var upsellRevenueCPDChange = (upsellRevenue?.CPD_Change) ?? 0;
+                                    string upsellRevenueCPDClass = upsellRevenueCPDChange > 0 ? "text-success" : upsellRevenueCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string upsellRevenueCPDArrow = upsellRevenueCPDChange > 0 ? "↑" : upsellRevenueCPDChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPD</div>
+                                    <div class="value @upsellRevenueCPDClass">@upsellRevenueCPDChange.ToString("P1") @upsellRevenueCPDArrow<span></span></div>
+                                </div>
+                                @{
+                                    var upsellRevenueCPMChange = (upsellRevenue?.CPM_Change) ?? 0;
+                                    string upsellRevenueCPMClass = upsellRevenueCPMChange > 0 ? "text-success" : upsellRevenueCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string upsellRevenueCPMArrow = upsellRevenueCPMChange > 0 ? "↑" : upsellRevenueCPMChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPM</div>
+                                    <div class="value @upsellRevenueCPMClass">@upsellRevenueCPMChange.ToString("P1") @upsellRevenueCPMArrow<span></span></div>
+                                </div>
+                                @{
+                                    var upsellRevenueCPYChange = (upsellRevenue?.CPY_Change) ?? 0;
+                                    string upsellRevenueCPYClass = upsellRevenueCPYChange > 0 ? "text-success" : upsellRevenueCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string upsellRevenueCPYArrow = upsellRevenueCPYChange > 0 ? "↑" : upsellRevenueCPYChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPY</div>
+                                    <div class="value @upsellRevenueCPYClass">@upsellRevenueCPYChange.ToString("P1") @upsellRevenueCPYArrow<span></span></div>
+                                </div>
+                            </div>
+                        </div>
+                        @{
+                            var roomOccupied = Model?.RoomOccupancyDataList?.ToList().Sum(x => x.BookedRooms);
+                            var adr = roomOccupied == 0 ? 0 : (roomRevenue?.TotalRevenue / roomOccupied) ?? 0;
+                        }
+                        <div class="cardItems">
+                            <div class="card-header">
+                                <h4>ADR (Average Daily Rate)</h4>
+                                <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
+                            </div>
+                            <div class="card-body">
+                                @* <div class="item">
+                                    <div class="label">Today</div>
+                                    <div class="value">@(adr.ToString("F2")) <span></span></div>
+                                </div> *@
+                                <div class="item">
+                                    <div class="label">Today</div>
+                                    <div class="value">@(Model?.ADRREVPARToday?.REVPAR?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">MTD</div>
+                                    <div class="value">@(Model?.ADRREVPARMTD?.REVPAR?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">YTD</div>
+                                    <div class="value">@(Model?.ADRREVPARYTD?.REVPAR?.ToString("C0", System.Globalization.CultureInfo.CreateSpecificCulture("en-IN"))) <span></span></div>
+                                </div>
+                                @{
+                                    var adrCurrentDay = Model?.ADRREVPARToday?.ADR ?? 0;
+                                    var adrPreviousDay = Model?.ADRREVPARYesterday?.ADR ?? 0;
+
+                                    var revParCPDChange = adrPreviousDay == 0 ? 0 : (adrCurrentDay - adrPreviousDay) / adrPreviousDay;
+                                    string revParCPDClass = revParCPDChange > 0 ? "text-success" : revParCPDChange < 0 ? "text-danger" : "text-muted";
+                                    string revParCPDArrow = revParCPDChange > 0 ? "↑" : revParCPDChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPD</div>
+                                    <div class="value @revParCPDClass">
+                                        @(revParCPDChange.ToString("P1")) @revParCPDArrow
+                                    </div>
+                                </div>
+                                @{
+                                    var adrCurrentMonth = Model?.ADRREVPARMTD?.ADR ?? 0;
+                                    var adrPreviousMonth = Model?.ADRREVPARCPM?.ADR ?? 0;
+                                    var adrCPMChange = adrPreviousMonth == 0 ? 0 : (adrCurrentMonth - adrPreviousMonth) / adrPreviousMonth;
+
+                                    string adrCPMClass = adrCPMChange > 0 ? "text-success" : adrCPMChange < 0 ? "text-danger" : "text-muted";
+                                    string adrCPMArrow = adrCPMChange > 0 ? "↑" : adrCPMChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPM</div>
+                                    <div class="value @adrCPMClass">
+                                        @(adrCPMChange.ToString("P1")) @adrCPMArrow
+                                    </div>
+                                </div>
+                                @{
+                                    var adrCurrentYear = Model?.ADRREVPARYTD?.ADR ?? 0;
+                                    var adrPreviousYear = Model?.ADRREVPARCPY?.ADR ?? 0;
+                                    var adrCPYChange = adrPreviousYear == 0 ? 0 : (adrCurrentYear - adrPreviousYear) / adrPreviousYear;
+
+                                    // Conditional formatting
+                                    string adrCPYClass = adrCPYChange > 0 ? "text-success" : adrCPYChange < 0 ? "text-danger" : "text-muted";
+                                    string adrCPYArrow = adrCPYChange > 0 ? "↑" : adrCPYChange < 0 ? "↓" : "→";
+                                }
+                                <div class="item">
+                                    <div class="label">CPY</div>
+                                    <div class="value @adrCPYClass">
+                                        @(adrCPYChange.ToString("P1")) @adrCPYArrow
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @{
+                            var revparToday = totalRooms == 0 ? 0 : (roomRevenue?.TotalRevenue ?? 0) / totalRooms;
+
+                            var revparCPD = Model?.ADRREVPARCPD?.REVPAR ?? 0;
+                            var revparCPM = Model?.ADRREVPARCPM?.REVPAR ?? 0;
+                            var revparCPY = Model?.ADRREVPARCPY?.REVPAR ?? 0;
+
+                            var revCurrentDay = Model?.ADRREVPARToday?.REVPAR ?? 0;
+                            var revCurrentMonth = Model?.ADRREVPARMTD?.REVPAR ?? 0;
+                            var revCurrentYear = Model?.ADRREVPARYTD?.REVPAR ?? 0;
+
+                            var revPreviousDay = Model?.ADRREVPARYesterday?.REVPAR ?? 0;
+                            var revPreviousMonth = Model?.ADRREVPARCPM?.REVPAR ?? 0;
+                            var revPreviousYear = Model?.ADRREVPARCPY?.REVPAR ?? 0;
+
+
+                            var revparCPDChange = revPreviousDay == 0 ? 0 : ((revCurrentDay - revPreviousDay) / revPreviousDay);
+                            var revparCPMChange = revPreviousMonth == 0 ? 0 : ((revCurrentMonth - revPreviousMonth) / revPreviousMonth);
+                            var revparCPYChange = revPreviousYear == 0 ? 0 : ((revCurrentYear - revPreviousYear) / revPreviousYear);
+
+                            string GetClass(double change) =>
+                            change > 0 ? "text-success" : change < 0 ? "text-danger" : "text-muted";
+
+                            string GetArrow(double change) =>
+                            change > 0 ? "↑" : change < 0 ? "↓" : "→";
+
+                            var revparCPDClass = GetClass(revparCPDChange);
+                            var revparCPMClass = GetClass(revparCPMChange);
+                            var revparCPYClass = GetClass(revparCPYChange);
+
+                            var revparCPDArrow = GetArrow(revparCPDChange);
+                            var revparCPMArrow = GetArrow(revparCPMChange);
+                            var revparCPYArrow = GetArrow(revparCPYChange);
+
+                            // For MTD and YTD, if you have values, replace the fixed numbers below similarly.
+                            // For example:
+                            var revparMTD = Model?.ADRREVPARMTD?.REVPAR ?? 0;
+                            var revparYTD = Model?.ADRREVPARYTD?.REVPAR ?? 0;
+                        }
+
+                        <div class="cardItems">
+                            <div class="card-header">
+                                <h4>RevPAR</h4>
+                                <span>@(System.DateTime.Now.ToString("dd-MMM-yyyy"))</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="item">
+                                    <div class="label">Today</div>
+                                    <div class="value">@revparToday.ToString("F2") <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">MTD</div>
+                                    <div class="value">@revparMTD.ToString("F2") <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">YTD</div>
+                                    <div class="value">@revparYTD.ToString("F2") <span></span></div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">CPD</div>
+                                    <div class="value @revparCPDClass">
+                                        @revparCPDChange.ToString("P1") <span>@revparCPDArrow</span>
+                                    </div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">CPM</div>
+                                    <div class="value @revparCPMClass">
+                                        @revparCPMChange.ToString("P1") <span>@revparCPMArrow</span>
+                                    </div>
+                                </div>
+                                <div class="item">
+                                    <div class="label">CPY</div>
+                                    <div class="value @revparCPYClass">
+                                        @revparCPYChange.ToString("P1") <span>@revparCPYArrow</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <partial name="_bottomNavigation1" />
+</div>
+
+
+
+
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <script src="~/customjs/validation.js"></script>
+    <script src="~/customjs/accounting/runnightaudit.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+
+                   $("#inputmonthyearselector")
+                .datetimepicker({
+                    format: 'M-Y', // month-year format (e.g., 05-2025)
+                    timepicker: false, // no time picker
+                    datepicker: true, // enable datepicker
+                    viewMode: 'months', // start with month view (some plugins use this)
+                    minView: 'months', // limit selection to month level
+                });
+
+                  $(".owl-carousel").owlCarousel({
+          loop: false,
+          margin: 15,
+          nav: true,
+          dots: true,
+          navText: ['<i class="fas fa-chevron-left"></i>', '<i class="fas fa-chevron-right"></i>'],
+          responsive:{
+            0:{ items:1 },
+            600:{ items:2 },
+            1000:{ items:3 },
+            1200:{ items:4 }
+          }
+        });
+
+        });
+
+        const scrollContainer = document
+            .getElementById("scrollContainer");
+        const scrollLeft = document
+            .getElementById("scrollLeft");
+        const scrollRight = document
+            .getElementById("scrollRight");
+        const scrollStep =
+            200; // Pixels to scroll on each click
+
+        function updateButtons() {
+            scrollLeft.classList.toggle(
+                "hidden", scrollContainer
+                .scrollLeft <= 0);
+            scrollRight.classList.toggle(
+                "hidden", scrollContainer
+                .scrollLeft +
+                scrollContainer
+                .clientWidth >=
+                scrollContainer.scrollWidth);
+        }
+
+        scrollLeft.addEventListener("click",
+            () => {
+                scrollContainer.scrollBy({
+                    left: -scrollStep,
+                    behavior: "smooth"
+                });
+            });
+
+        scrollRight.addEventListener("click",
+            () => {
+                scrollContainer.scrollBy({
+                    left: scrollStep,
+                    behavior: "smooth"
+                });
+            });
+
+        scrollContainer.addEventListener(
+            "scroll", updateButtons);
+        window.addEventListener("resize",
+            updateButtons);
+
+        updateButtons(); // Ensure correct button visibility on load
+
+
+
+
+    </script>
+}
+

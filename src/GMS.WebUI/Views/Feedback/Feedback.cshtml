@@ -17,10 +17,26 @@
 <body>
     @Html.Partial("_reviewAndFeedback/_header")
     <div class="content-box">
-        <h4>Welcome</h4>
-        <p>Thank you for becoming a part of NAAD Wellness family</p>
-        <p>We value your feedback & suggestions and it will help us immensely in enriching your experience at NAAD.</p>
-        <p>We want to know about your experience at NAAD...</p>
+        @{
+            var operations = ViewBag.Operations as GMS.Infrastructure.Models.Masters.OperationsDTO;
+            var welcomeTitle = !string.IsNullOrWhiteSpace(operations?.FeedbackWelcomeTitle) ? operations.FeedbackWelcomeTitle : "Welcome";
+            var message1 = !string.IsNullOrWhiteSpace(operations?.FeedbackWelcomeMessage1) ? operations.FeedbackWelcomeMessage1 : "Thank you for becoming a part of NAAD Wellness family";
+            var message2 = !string.IsNullOrWhiteSpace(operations?.FeedbackWelcomeMessage2) ? operations.FeedbackWelcomeMessage2 : "We value your feedback & suggestions and it will help us immensely in enriching your experience at NAAD.";
+            var message3 = !string.IsNullOrWhiteSpace(operations?.FeedbackWelcomeMessage3) ? operations.FeedbackWelcomeMessage3 : "We want to know about your experience at NAAD...";
+        }
+        <h4>@welcomeTitle</h4>
+        @if (!string.IsNullOrWhiteSpace(message1))
+        {
+            <p>@message1</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(message2))
+        {
+            <p>@message2</p>
+        }
+        @if (!string.IsNullOrWhiteSpace(message3))
+        {
+            <p>@message3</p>
+        }
         <a href="/ReviewAndFeedbacks/FeedbackLevel2/@Model?.GuestId" class="btn btn-custom mt-4">Next</a>
     </div>
     @Html.Partial("_reviewAndFeedback/_footer")

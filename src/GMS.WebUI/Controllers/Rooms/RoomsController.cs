@@ -9,14 +9,18 @@ using Microsoft.AspNetCore.Mvc;
 using GMS.Endpoints.Rooms;
 using GMS.Infrastructure.Models.Rooms;
 using System.Security.Claims;
+using System.Linq;
 using GMS.Infrastructure.Models.Guests;
 using GMS.Infrastructure.Models.Masters;
 using GMS.Infrastructure.ViewModels.Guests;
 using GMS.Core.Entities;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Http;
 using GMS.Infrastructure.Helper;
 using Humanizer;
 using Rooms.Controllers;
+using System.Globalization;
+using GMS.WebUI.Services.Rooms;
 
 namespace GMS.WebUI.Controllers.Rooms;
 
@@ -37,8 +41,9 @@ public class RoomsController : Controller
     private readonly GuaranteeCodeAPIController _guaranteeCodeAPIController;
     private readonly RoomRateAPIController _roomRateAPIController;
     private readonly BulkRateAPIController _bulkRateAPIController;
+    private readonly RoomHousekeepingDashboardService _roomHousekeepingDashboardService;
     private Microsoft.AspNetCore.Hosting.IWebHostEnvironment _hostingEnv;
-    public RoomsController(ILogger<RoomsController> logger, RoomTypeAPIController roomTypeAPIController, RoomsAvailabilityAPIController roomsAvailabilityAPIController, RoomLockingAPIController roomLockingAPIController, GuestsAPIController guestsAPIController, GenderAPIController genderAPIController, CountryAPIController countryAPIController, ServicesAPIController servicesAPIController, CarTypeAPIController carTypeAPIController, BrandAwarenessAPIController brandAwarenessAPIController, LeadSourceAPIController leadSourceAPIController, ChannelCodeAPIController channelCodeAPIController, GuaranteeCodeAPIController guaranteeCodeAPIController, IWebHostEnvironment hostingEnv, RoomRateAPIController roomRateAPIController, BulkRateAPIController bulkRateAPIController)
+    public RoomsController(ILogger<RoomsController> logger, RoomTypeAPIController roomTypeAPIController, RoomsAvailabilityAPIController roomsAvailabilityAPIController, RoomLockingAPIController roomLockingAPIController, GuestsAPIController guestsAPIController, GenderAPIController genderAPIController, CountryAPIController countryAPIController, ServicesAPIController servicesAPIController, CarTypeAPIController carTypeAPIController, BrandAwarenessAPIController brandAwarenessAPIController, LeadSourceAPIController leadSourceAPIController, ChannelCodeAPIController channelCodeAPIController, GuaranteeCodeAPIController guaranteeCodeAPIController, IWebHostEnvironment hostingEnv, RoomRateAPIController roomRateAPIController, BulkRateAPIController bulkRateAPIController, RoomHousekeepingDashboardService roomHousekeepingDashboardService)
     {
         _logger = logger;
         _roomTypeAPIController = roomTypeAPIController;
@@ -56,6 +61,7 @@ public class RoomsController : Controller
         _hostingEnv = hostingEnv;
         _roomRateAPIController = roomRateAPIController;
         _bulkRateAPIController = bulkRateAPIController;
+        _roomHousekeepingDashboardService = roomHousekeepingDashboardService;
     }
     public async Task<IActionResult> RoomsAvailabality()
     {
@@ -80,6 +86,118 @@ public class RoomsController : Controller
             dto.Rooms = (List<RoomsDTO>?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
         }
         return View(dto);
+    }
+    public async Task<IActionResult> RoomAllocationHouseKeeping(DateTime? workDate)
+    {
+        var targetDate = ResolveWorkDate(workDate, Request);
+        var dashboard = await _roomHousekeepingDashboardService.GetDashboardAsync(targetDate);
+        ViewBag.WorkDateString = targetDate.ToString("yyyy-MM-dd");
+        dashboard.RoomTypes = await GetRoomTypeNamesAsync();
+        return View(dashboard);
+    }
+
+    public async Task<IActionResult> HouseKeeperDashboard(DateTime? workDate)
+    {
+        var workerIdClaim = User.FindFirstValue("WorkerId");
+        if (string.IsNullOrWhiteSpace(workerIdClaim) || !int.TryParse(workerIdClaim, out var workerId) || workerId <= 0)
+        {
+            _logger.LogWarning("HouseKeeperDashboard requested without a valid WorkerId claim.");
+            return RedirectToAction("Login", "Account");
+        }
+
+        var targetDate = ResolveWorkDate(workDate, Request);
+        var dashboard = await _roomHousekeepingDashboardService.GetWorkerDashboardAsync(targetDate, workerId);
+        return View(dashboard);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> HouseKeeperAssignmentsPartial(DateTime? workDate)
+    {
+        var workerIdClaim = User.FindFirstValue("WorkerId");
+        if (string.IsNullOrWhiteSpace(workerIdClaim) || !int.TryParse(workerIdClaim, out var workerId) || workerId <= 0)
+        {
+            _logger.LogWarning("HouseKeeperAssignmentsPartial requested without a valid WorkerId claim.");
+            return Unauthorized();
+        }
+
+        var targetDate = ResolveWorkDate(workDate, Request);
+        var dashboard = await _roomHousekeepingDashboardService.GetWorkerDashboardAsync(targetDate, workerId);
+        return PartialView("_HouseKeeperAssignments", dashboard);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RoomAllocationStatsPartial(DateTime? workDate)
+    {
+        var targetDate = ResolveWorkDate(workDate, Request);
+        var dashboard = await _roomHousekeepingDashboardService.GetDashboardAsync(targetDate);
+        return PartialView("_RoomAllocationStats", dashboard);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RoomAllocationTeamPartial(DateTime? workDate)
+    {
+        var targetDate = ResolveWorkDate(workDate, Request);
+        var dashboard = await _roomHousekeepingDashboardService.GetDashboardAsync(targetDate);
+        return PartialView("_RoomAllocationTeam", dashboard.Team);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RoomAllocationUnassignedPartial(DateTime? workDate)
+    {
+        var targetDate = ResolveWorkDate(workDate, Request);
+        var dashboard = await _roomHousekeepingDashboardService.GetDashboardAsync(targetDate);
+        return PartialView("_RoomAllocationUnassigned", dashboard.UnassignedRooms);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RoomAllocationMatrixPartial(DateTime? workDate)
+    {
+        var targetDate = ResolveWorkDate(workDate, Request);
+        var dashboard = await _roomHousekeepingDashboardService.GetDashboardAsync(targetDate);
+        return PartialView("_RoomAllocationMatrix", dashboard.AssignmentMatrix);
+    }
+
+    private static DateTime ResolveWorkDate(DateTime? workDate, HttpRequest request)
+    {
+        if (workDate.HasValue)
+        {
+            return workDate.Value.Date;
+        }
+
+        var raw = request?.Query["workDate"].ToString();
+        if (!string.IsNullOrWhiteSpace(raw))
+        {
+            var formats = new[] { "yyyy-MM-dd", "dd-MMM-yyyy", "MM/dd/yyyy", "dd-MM-yyyy" };
+            if (DateTime.TryParseExact(raw, formats, CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeLocal | DateTimeStyles.AllowWhiteSpaces, out var parsed))
+            {
+                return parsed.Date;
+            }
+        }
+
+        return DateTime.Today;
+    }
+
+    private async Task<List<string>> GetRoomTypeNamesAsync()
+    {
+        try
+        {
+            var response = await _roomTypeAPIController.List();
+            if (response is OkObjectResult ok && ok.Value is IEnumerable<RoomTypeDTO> types)
+            {
+                return types
+                    .Select(t => t.Rtype)
+                    .Where(t => !string.IsNullOrWhiteSpace(t))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(t => t)
+                    .ToList()!;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load room types for housekeeping dashboard");
+        }
+        return new List<string>();
     }
 
     #region RoomRates
@@ -795,6 +913,7 @@ public class RoomsController : Controller
     public async Task<IActionResult> RoomStatusRecordPartialView([FromBody] RoomsDTO? inputDTO)
     {
         RoomStatusViewModel? dto = new RoomStatusViewModel();
+        ViewBag.EnableRoomSelection = inputDTO?.EnableSelection ?? false;
         var res = await _roomLockingAPIController.GetRoomWithCleaningAttributeById(inputDTO?.Id ?? 0);
         if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
         {
@@ -832,14 +951,58 @@ public class RoomsController : Controller
     }
     public async Task<IActionResult> CleanRoomCheck([FromBody] RoomChkListDTO inputDTO)
     {
-        if (inputDTO != null)
+        if (inputDTO == null)
         {
-            inputDTO.CheckedBy = Convert.ToInt32(User.FindFirstValue("Id"));
-            inputDTO.ChkDate = DateTime.Now;
-            var res = await _roomLockingAPIController.RoomCleanCheckList(inputDTO);
-            return res;
+            return BadRequest("Invalid Data");
         }
-        return BadRequest("Invalid Data");
+
+        inputDTO.CheckedBy = Convert.ToInt32(User.FindFirstValue("Id"));
+        inputDTO.ChkDate = DateTime.Now;
+
+        var roomIds = inputDTO.RoomIds?
+            .Where(id => id > 0)
+            .Distinct()
+            .ToList();
+
+        if (roomIds == null || !roomIds.Any())
+        {
+            if (inputDTO.RID.HasValue && inputDTO.RID > 0)
+            {
+                roomIds = new List<int> { inputDTO.RID.Value };
+            }
+            else
+            {
+                return BadRequest("Please select at least one room.");
+            }
+        }
+
+        foreach (var roomId in roomIds)
+        {
+            var payload = new RoomChkListDTO
+            {
+                RID = roomId,
+                RChkLstID = inputDTO.RChkLstID,
+                Reason = inputDTO.Reason,
+                Comments = inputDTO.Comments,
+                CheckedBy = inputDTO.CheckedBy,
+                ChkDate = inputDTO.ChkDate
+            };
+
+            var res = await _roomLockingAPIController.RoomCleanCheckList(payload);
+            if (res is ObjectResult objectResult &&
+                objectResult.StatusCode.HasValue &&
+                objectResult.StatusCode != StatusCodes.Status200OK)
+            {
+                return res;
+            }
+
+            if (res is BadRequestObjectResult)
+            {
+                return res;
+            }
+        }
+
+        return Ok(new { message = "Rooms cleaned successfully." });
     }
     #endregion
 

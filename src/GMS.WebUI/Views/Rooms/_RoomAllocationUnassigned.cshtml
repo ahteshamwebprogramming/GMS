@@ -1,0 +1,38 @@
+@model IEnumerable<GMS.Infrastructure.ViewModels.Rooms.HousekeepingRoomCard>
+
+@if (Model != null)
+{
+    foreach (var room in Model)
+    {
+        var availability = room.AvailabilityStatus ?? "Empty";
+        var tidy = room.TidyStatus ?? "Untidy";
+        var tidyClass = string.Equals(tidy, "Ready", StringComparison.OrdinalIgnoreCase) ? "success" : "warning";
+        var availabilityIcon = availability switch
+        {
+            "On Hold" => "bi-pause-circle-fill",
+            "Locked" => "bi-lock-fill",
+            "Occupied" => "bi-door-closed-fill",
+            _ => "bi-door-open-fill"
+        };
+        var tidyIcon = string.Equals(tidy, "Ready", StringComparison.OrdinalIgnoreCase)
+            ? "bi-check-circle-fill"
+            : "bi-exclamation-circle-fill";
+        <article class="hk-stack-card hk-room-card"
+                 data-room-number="@room.RoomNumber?.ToLower()"
+                 data-room-type="@room.RoomType?.ToLower()"
+                 data-availability="@availability.ToLower()"
+                 data-tidy="@tidy.ToLower()">
+            <div class="hk-stack-row">
+                <div>
+                    <div class="hk-stack-title">Room @room.RoomNumber</div>
+                    <div class="hk-stack-sub">@room.RoomType</div>
+                </div>
+                    <div class="hk-stack-meta text-end">
+                        <span class="hk-pill room-status"><i class="bi @availabilityIcon me-1"></i>@availability</span>
+                        <span class="hk-pill @tidyClass"><i class="bi @tidyIcon me-1"></i>@tidy</span>
+                    </div>
+            </div>
+        </article>
+    }
+}
+

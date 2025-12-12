@@ -1,0 +1,208 @@
+@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+@using System.Linq
+@using GMS.Infrastructure.Helper
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Credit Note Voucher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            margin: 0;
+            color: #333;
+            background: #FFF2EB;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .voucher-header {
+            background-color: #005670;
+            color: #fff;
+            padding: 20px;
+            position: relative;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+            .voucher-header h1 {
+                margin: 33px 0 0 0;
+                font-size: 22px;
+            }
+
+        .company-info {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+            .company-info span {
+                display: block;
+            }
+
+        .section {
+            padding: 15px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-table td {
+            padding: 4px 8px;
+            vertical-align: top;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th {
+            background-color: #005670;
+            color: #fff;
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border: 1px solid #ccc;
+        }
+
+        .amount-highlight {
+            font-size: 20px;
+            font-weight: bold;
+            color: #005670;
+        }
+
+        .footer {
+            background-color: #005670;
+            color: #ffcc00;
+            padding: 15px;
+            text-align: center;
+            margin-top: 30px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .naad_logo {
+            width: 160px;
+            margin-right: 40px;
+        }
+
+        .logo-header {
+            vertical-align: top;
+        }
+
+        @@media print {
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <tr>
+            <td class="voucher-header logo-header" style="width: 30%;">
+                <img src="~/assets/img/naad-1.png" class="naad_logo" />
+                <p style="margin-top: 5px;font-size: 10px;"><i>An NABH Accredited Ayurveda & Naturecure Hospital</i></p>
+                <h3 style="margin-bottom: 0px; margin-top: 10px;">Credit Note Voucher</h3>
+            </td>
+            <td class="voucher-header">
+                <div class="company-info">
+                    <span style="font-size:19px;">Naad Wellness Private Limited</span>
+                    <span style="font-style: italic;">(An Ayush Rajat recognised by Government of Haryana)</span>
+                    <span>Naad Marg, Ansal Sushant City,<br> Sector-63, Kundli, Sonipat - 131028, Haryana, India</span>
+                    <span style="color: #ffcc00;">+91 82229 59641 / +91 124 6030 400</span>
+                    <span>CIN# U85100DL2011PTC214132</span>
+                    <span>GSTIN# 06AADCV5495N2ZL</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section">
+        <table class="info-table">
+            <tr>
+                <td width="50%">
+                    <strong>To:</strong> @Model?.MembersWithAttributes?.CustomerName<br>
+                    <strong>Mobile No:</strong> @Model?.MembersWithAttributes?.MobileNo<br>
+                    <strong>Email:</strong> @Model?.MembersWithAttributes?.Email<br>
+                    @if (!string.IsNullOrWhiteSpace(Model?.MembersWithAttributes?.Address1))
+                    {
+                        <strong>Address:</strong> @Model?.MembersWithAttributes?.Address1<br>
+                    }
+                </td>
+                <td>
+                    <strong>Credit Note No:</strong> @Model?.CreditNoteAccount?.Code<br>
+                    <strong>Date:</strong> @(Model?.CreditNoteAccount?.CreatedDate?.ToString("dd-MMM-yyyy") ?? DateTime.Now.ToString("dd-MMM-yyyy"))<br>
+                    @if (Model?.CreditNoteAccount?.CodeValidity != null)
+                    {
+                        <strong>Valid Till:</strong> @Model.CreditNoteAccount.CodeValidity.Value.ToString("dd-MMM-yyyy")<br>
+                    }
+                </td>
+            </tr>
+        </table>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Credit Note Amount</td>
+                    <td style="text-align: right;" class="amount-highlight">$@(Model?.CreditNoteAccount?.Amount?.ToString("N2") ?? "0.00")</td>
+                </tr>
+                <tr>
+                    <td>Balance Available</td>
+                    <td style="text-align: right;" class="amount-highlight">$@(Model?.CreditNoteAccount?.BalanceAmount?.ToString("N2") ?? "0.00")</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 30px; padding: 15px; background-color: #f5f5f5; border-left: 4px solid #005670;">
+            <p style="margin: 0;"><strong>Terms & Conditions:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>This credit note is valid until @(Model?.CreditNoteAccount?.CodeValidity != null ? Model.CreditNoteAccount.CodeValidity.Value.ToString("dd-MMM-yyyy") : "the expiry date mentioned above")</li>
+                <li>This credit note can be used for future bookings at Naad Wellness</li>
+                <li>The credit note is non-transferable and non-refundable</li>
+                <li>Please quote the credit note number when making a reservation</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p style="margin: 0;">Thank you for your business!</p>
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+</body>
+</html>
+

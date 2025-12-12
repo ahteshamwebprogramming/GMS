@@ -940,7 +940,10 @@ function OpenCheckOutListModalPartialView(Id, Code, Name, _dateOfDepartment) {
         error: function (error) {
             UnblockUI();
             $sadConfirmation(error.responseJSON.heading, error.responseJSON.message + '!', 'Settle Now', 'sad', function () {
-                BillingPartialView(Id);
+                BillingPartialView(Id).catch(function(err) {
+                    // Handle promise rejection silently or log if needed
+                    console.error('Error opening billing modal:', err);
+                });
             });
         }
     });
@@ -1261,8 +1264,8 @@ function BillingPartialView(Id) {
             initBillingAttributes();
         },
         error: function (result) {
-            //UnblockUI();
-            $erroralert("Transaction Failed!", result.responseText);
+            UnblockUI();
+            $erroralert("Transaction Failed!", result.responseText || 'An error occurred while loading billing data.');
         }
     });
 }
@@ -1292,7 +1295,7 @@ function SettlementPartialView(Id, GuestIdPaxSN1) {
                     format: 'd-m-Y',
                     timepicker: false,
                 });
-                var creditNoteValidity = moment().add(8, 'months').format('DD-MM-YYYY');
+                var creditNoteValidity = moment().add(90, 'days').format('DD-MM-YYYY');
                 $("#SettlementModal").find("[name='ValidTill']").val(creditNoteValidity);
             },
             error: function (result) {

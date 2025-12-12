@@ -60,5 +60,6 @@ public class MapperInitializer : Profile
         CreateMap<Sources, SourcesDTO>().ReverseMap();
         CreateMap<CreditDebitNoteAccount, CreditDebitNoteAccountDTO>().ReverseMap();
         CreateMap<GuestLedger, GuestLedgerDTO>().ReverseMap();
+        CreateMap<Operations, OperationsDTO>().ReverseMap();
     }
 }

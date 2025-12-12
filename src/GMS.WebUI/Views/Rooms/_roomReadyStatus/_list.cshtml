@@ -1,10 +1,20 @@
 ﻿@model GMS.Infrastructure.ViewModels.Rooms.RoomStatusViewModel
 
 
+@{
+    var enableSelection = ViewBag.EnableRoomSelection as bool? ?? false;
+}
+
 <div class="resposive_table room-table-container" style="overflow-x:scroll">
-    <table class="table">
+    <table class="table" id="roomReadyStatusTable">
         <thead class="table-dark">
             <tr>
+                @if (enableSelection)
+                {
+                    <th scope="col" width="60" class="text-center">
+                        <input type="checkbox" class="form-check-input" id="selectAllRooms" />
+                    </th>
+                }
                 <th scope="col" width="200">Actions</th> @* Only Clean Button <i class="bi bi-check-all"></i> *@
                 <th scope="col">Room No</th>
                 <th scope="col">Room Category</th>
@@ -23,7 +33,17 @@
                 {
                     foreach (var item in Model.RoomWithAttributeList)
                     {
+                        var sanitizedRoomNumber = (item.Rnumber ?? string.Empty).Replace("'", "\\'");
                         <tr>
+                            @if (enableSelection)
+                            {
+                                <td class="text-center">
+                                    <input type="checkbox"
+                                           class="form-check-input room-select"
+                                           data-room-id="@item.Id"
+                                           data-room-number="@item.Rnumber" />
+                                </td>
+                            }
                             @{
                                 if (item.CleanStatus)
                                 {
@@ -31,7 +51,9 @@
                                 }
                                 else
                                 {
-                                    <td onclick="OpenCheckList(@item.Id)" style="padding: 1px 0px 0px .5rem;"><i style="font-size: 20px;" class="bi bi-check-all"></i></td>
+                                    <td onclick="OpenCheckList(@item.Id, '@sanitizedRoomNumber')" style="padding: 1px 0px 0px .5rem; cursor:pointer;">
+                                        <i style="font-size: 20px;" class="bi bi-check-all"></i>
+                                    </td>
                                 }
                             }
                             <td>@(item.Rnumber)</td>

@@ -1,0 +1,131 @@
+@model GMS.Infrastructure.ViewModels.Accounting.CreditDebitNoteAccountViewModel
+
+<style>
+    /* Calendar button styling for GMS theme (blue/primary) */
+    .btn-calendar-update {
+        border: 1px solid #0d6efd !important;
+        color: #0d6efd !important;
+        background: transparent !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .btn-calendar-update:hover {
+        background: rgba(13, 110, 253, 0.1) !important;
+        border-color: #0b5ed7 !important;
+        color: #0b5ed7 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3) !important;
+    }
+    
+    .btn-calendar-update i {
+        color: #0d6efd !important;
+        transition: color 0.3s ease !important;
+    }
+    
+    .btn-calendar-update:hover i {
+        color: #0b5ed7 !important;
+    }
+    
+    /* Badge size in Credit Note table - same as Debit Note */
+    #CreditNoteAccountTable .badge {
+        font-size: 0.85rem !important;
+        padding: 0.45em 0.7em !important;
+    }
+</style>
+
+<div class="resposive_table" style="overflow-x:scroll">
+    <table class="table" id="CreditNoteAccountTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Code</th>
+                        <th scope="col">Guest Name</th>
+                        <th scope="col">UHID</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Used Amount</th>
+                        <th scope="col">Balance Amount</th>
+                        <th scope="col">Code Validity</th>
+                        <th scope="col">Created Date</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" width="100">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (Model != null && Model.CreditDebitNoteAccountsWithAttr != null && Model.CreditDebitNoteAccountsWithAttr.Any())
+                        {
+                            foreach (var item in Model.CreditDebitNoteAccountsWithAttr)
+                            {
+                                var amount = item.Amount ?? 0;
+                                var balance = item.BalanceAmount ?? 0;
+                                var isValid = item.CodeValidity.HasValue && item.CodeValidity.Value.Date >= DateTime.Today;
+                                var isExpired = item.CodeValidity.HasValue && item.CodeValidity.Value.Date < DateTime.Today;
+                                
+                                string status = "Active";
+                                string textClass = "";
+                                string badgeClass = "bg-success";
+                                
+                                if (isExpired)
+                                {
+                                    status = "Expired";
+                                    textClass = "text-danger";
+                                    badgeClass = "bg-danger";
+                                }
+                                else if (balance == 0)
+                                {
+                                    status = "Used";
+                                    textClass = "text-danger";
+                                    badgeClass = "bg-danger";
+                                }
+                                else if (balance > 0 && balance < amount)
+                                {
+                                    status = "Partially Used";
+                                    textClass = "text-warning";
+                                    badgeClass = "bg-warning";
+                                }
+                                else if (balance == amount && amount > 0)
+                                {
+                                    status = "Active";
+                                    textClass = "";
+                                    badgeClass = "bg-success";
+                                }
+                                else if (balance == 0 && amount == 0)
+                                {
+                                    status = "Used";
+                                    textClass = "text-danger";
+                                    badgeClass = "bg-danger";
+                                }
+                                
+                                <tr class="@textClass">
+                                    <td scope="row">@item.Code</td>
+                                    <td>@item.GuestName</td>
+                                    <td>@item.UHID</td>
+                                    <td>@(item.Amount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.UsedAmount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.BalanceAmount?.ToString("N2") ?? "0.00")</td>
+                                    <td>@(item.CodeValidity?.ToString("dd-MMM-yyyy") ?? "-")</td>
+                                    <td>@(item.CreatedDate?.ToString("dd-MMM-yyyy") ?? "-")</td>
+                                    <td>
+                                        <span class="badge @badgeClass">@status</span>
+                                    </td>
+                                    <td>
+                                        @if (status == "Active" || status == "Partially Used")
+                                        {
+                                            <button type="button" class="btn btn-sm btn-calendar-update" title="Update Validity" onclick="openUpdateValidityModal(@item.Id, '@item.Code', '@(item.CodeValidity?.ToString("yyyy-MM-dd") ?? "")')">
+                                                <i class="bi bi-calendar-event"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="10" class="text-center text-muted">No records found</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+</div>
+

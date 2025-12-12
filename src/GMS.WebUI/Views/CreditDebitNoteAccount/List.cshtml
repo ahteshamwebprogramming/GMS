@@ -1,0 +1,108 @@
+@{
+    ViewData["Title"] = "Credit Note Account";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .nav-link {
+        color: #333 !important;
+        font-weight: normal;
+        font-size: 14px;
+    }
+
+        .nav-link:focus, .nav-link:hover {
+            color: #0d6efd !important;
+        }
+
+    .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+        color: #0d6efd !important;
+        background: rgba(13, 110, 253, 0.1) !important;
+        border-color: transparent;
+        font-weight: 500;
+    }
+</style>
+
+<div class="admin_wrapper">
+    @Html.Partial("_accounting/_leftNavigationAccounting")
+    
+    <div class="right_container">
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <div class="raiods_btn_filters">
+                        <ul class="nav nav-tabs guest-status-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button type="button" class="nav-link active" role="tab" aria-selected="true" data-status="Active" onclick="setActive('Active')">Active</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button type="button" class="nav-link" role="tab" aria-selected="false" data-status="PartiallyUsed" onclick="setActive('PartiallyUsed')">Partially Used</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button type="button" class="nav-link" role="tab" aria-selected="false" data-status="Used" onclick="setActive('Used')">Used</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button type="button" class="nav-link" role="tab" aria-selected="false" data-status="Expired" onclick="setActive('Expired')">Expired</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button type="button" class="nav-link" role="tab" aria-selected="false" data-status="All" onclick="setActive('All')">All</button>
+                            </li>
+                        </ul>
+                        <input type="hidden" id="CreditNoteAccountStatus" value="Active" />
+                    </div>
+                </div>
+                <div id="div_ListPartial">
+                    @* Partial view will be loaded here *@
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+<!-- Update Validity Modal -->
+<div class="modal fade" id="updateValidityModal" tabindex="-1" aria-labelledby="updateValidityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateValidityModalLabel">Update Code Validity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateValidityForm">
+                    <input type="hidden" id="CreditNoteId" name="Id" />
+                    <div class="mb-3">
+                        <label for="CreditNoteCode" class="form-label">Code</label>
+                        <input type="text" class="form-control" id="CreditNoteCode" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label for="NewCodeValidity" class="form-label">New Validity Date <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control dateonly" id="NewCodeValidity" name="CodeValidity" dateformat="YYYY-MM-DD" autocomplete="off" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="updateCodeValidity()">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/CustomJS/Accounting/CreditNoteAccount.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            setActive('Active');
+            
+            // Clean up datetimepicker when modal is closed
+            $('#updateValidityModal').on('hidden.bs.modal', function () {
+                var $dateInput = $('#NewCodeValidity');
+                if ($dateInput.data('xdsoft_datetimepicker')) {
+                    $dateInput.datetimepicker('destroy');
+                }
+                $dateInput.val('');
+            });
+        });
+    </script>
+}
+

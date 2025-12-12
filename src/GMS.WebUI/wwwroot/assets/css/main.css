@@ -1918,3 +1918,10 @@ th {
 .card {
     background: #ffbf69 !important;
 }
+
+/* DataTables input styling */
+input.dt-input {
+    border: 0 !important;
+    border-bottom: #b8b8b8 solid 1px !important;
+    border-radius: 0 !important;
+}

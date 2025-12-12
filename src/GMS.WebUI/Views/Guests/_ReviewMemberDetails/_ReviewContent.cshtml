@@ -1,0 +1,271 @@
+@model GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild
+
+<table style="width: 100%; border-collapse: collapse; background: #fff; border-radius: 5px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+    <tr>
+        <th colspan="4">
+            <div class="invoice-header">
+                <div>
+                    <div class="invoice-title"><img src="~/img/invoiceprint/logo.png" style="width: 70px"></div>
+                </div>
+                <div class="company-details">
+                    <h2>Naad Wellness</h2>
+                    <span>For a sound you</span>
+                    <p class="mt-2">
+                        Naad Marg, Ansal Sushant City,<br>
+                        Sector-63, Kundli, Sonipat - 131028,<br>
+                        Haryana, India
+                    </p>
+                    <p class="contact-info">+91 82229 59641 / +91 124 6030 400</p>
+                </div>
+            </div>
+        </th>
+    </tr>
+    <tr style="">
+        <td colspan="4" style="color: black; padding: 10px; font-size: 26px; text-align: center;"><div>Guest Registration Form</div></td>
+    </tr>
+    <tr style="background: #114378;">
+        <th colspan="4" style="background: #114378; color: white; padding: 10px; font-size: 18px; text-align: center;"><div>Guest Personal Information</div></th>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Registration No:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.RegistrationNumber)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">UHID No:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.UHID)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Check-in Date:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model?.DateOfArrival?.ToString("dd-MMM-yyyy hh:mm tt"))</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Check-out Date:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model?.DateOfDepartment?.ToString("dd-MMM-yyyy hh:mm tt"))</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Guest Name:</td>
+        <td colspan="3" style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model?.CustomerName)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Date of Birth:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model?.Dob)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Age:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model?.Age)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Gender:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model?.GenderName)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Blood Group:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model?.BloodGroup)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Contact No:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.MobileNo)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">EmailId:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.Email)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Marital Status:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.MarStatus)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Occupation:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.Occupation)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Nationality:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.Nationality)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Residential Address:</td>
+        <td colspan="3" style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.Address1)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">City / Town:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.City)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">State:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.State)</span></td>
+    </tr>
+
+
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Pincode/Zip:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.Pincode)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Country:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.Country)</span></td>
+
+    </tr>
+    <tr>
+        <th colspan="4" style="background: #114378; color: white; padding: 10px;">Stay Details</th>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Room No:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.RoomNumber)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Room Type:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.RoomTypeName)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Package:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.Service)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Number of Nights:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.NoOfNights)</span></td>
+    </tr>
+    <tr>
+        <th colspan="4" style="background: #114378; color: white; padding: 10px;">Documents</th>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Passport/ID No:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.NationalityId == 101 ? Model.Idproof : Model.PassportNo)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Issue Date / Expiry Date</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.NationalityId == 101 ? Model.IdProofIssueDate?.ToString("dd-MMM-yyyy") : Model.PassportIssueDate?.ToString("dd-MMM-yyyy"))</span> / <span>@(Model.NationalityId == 101 ? Model.IdProofExpiryDate?.ToString("dd-MMM-yyyy") : Model.PassportExpiryDate?.ToString("dd-MMM-yyyy"))</span></td>
+
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Visa Details:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.VisaDetails)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Issue Date / Expiry Date</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">
+            <span>  @(Model.VisaIssueDate?.ToString("dd-MMM-yyyy"))</span>
+            @{
+                if (!(Model.VisaIssueDate == null && Model.VisaExpiryDate == null))
+                {
+                    <span>/</span>
+                }
+            }
+            <span>@(Model.VisaExpiryDate?.ToString("dd-MMM-yyyy"))</span>
+        </td>
+    </tr>
+    <tr>
+        <th colspan="4" style="background: #114378; color: white; padding: 10px;">Emergency Contact</th>
+    </tr>
+
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Name:</td>
+        <td colspan="3" style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.RelativeName)</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Relationship with Guest:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.Relations)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Contact No:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.RelativeNumber)</span></td>
+    </tr>
+
+    <tr>
+        <th colspan="4" style="background: #114378; color: white; padding: 10px;">Declaration</th>
+    </tr>
+    <tr>
+        <td colspan="4" style="padding: 5px 8px; border: 1px solid #ddd;">I hereby declare that the details furnished above are true and correct to the best of my knowledge and belief.</td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Signature:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span></span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Date/Time:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(DateTime.Now.ToString("dd-MMM-yyyy hh:mm tt"))</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Name:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.CustomerName)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Place:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>Kundli, Sonipat</span></td>
+    </tr>
+
+</table>
+
+<table style="width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+    <tr>
+        <td colspan="4" style="padding: 5px 8px; border: 1px solid #ddd;">
+            <h2 style="margin:15px 0">General Informed Consentand Declaration</h2>
+            <h4 style="margin-bottom:20px;">I hereby give my consent to an integrative,biological and medical assessment and treatment(s):</h4>
+            <p style="margin-bottom:20px;">Treatments may utilize such substances as herbs, vitamins, minerals and various other therapeutic modalities, which will be determined by the consultants of Naad Wellness. Assessment findings and treatment plans have been discussed in full with me for myself / spouse / children / parents (please strike off the irrelevant).</p>
+            <p style="margin-bottom:20px;">Further, I have been informed and explained about the expenses of the treatment plan or service chosen by me for myself / spouse / children / parents (please strike off the irrelevant). Also, I have been apprised of the alternative options of the treatment or service available in the health industry for myself /spouse / children / parents (please strike off the irrelevant).</p>
+            <p style="margin-bottom:20px;">
+                I am responsible for the decision to seek a therapeutic program that includes the physical, psychological, environmental, and spiritual aspects of my / my spouse's / my children's / my parent's (please strike off the irrelevant) wellness need (s) / complaints(s).
+                As a further inducement to Naad Wellness centre to provide treatment / services for myself / my spouse / my children / my parents
+            </p>(please strike off the irrelevant), I hereby waive any claims and demands that I might now or hereafter having against the Naad Wellness, the Holding Company (s), their owners, employees, therapists, doctors, suppliers, vendors, associates, agents and consultants that may arise, or be deemed to arise, from treatment / service at Naad Wellness.</p>
+            Also, I hereby release Naad Wellness, The Holding Company(s), their owners, employees, therapists, doctors, suppliers, vendors, associates, agents and consultants from any and all liability of whatsoever kind or nature arising out of or in any way their relating to the treatment / service I receive for myself / my spouse / my children / my parents (please strike off the irrelevant) at Naad Wellness.</p>
+            <p style="margin-bottom:20px;">The medical consultation records of mine / my spouse's / my children's / my parent's (please strike off the irrelevant) are strictly confidential. They are intended to be read only by myself and the Naad Wellness staff. These records will not be transmitted to anyone else without my written permission.</p>
+            <p style="margin-bottom:20px;">I certify that all the facts related to my / my spouse / my children / my parent's (please strike off the irrelevant) lifestyle, medical history and consultation to be true and correct.</p>
+            <p style="margin-bottom:20px;">Regardless of the jurisdiction in which this declaration is signed by me for myself / my spouse / my children / my parent (please strike off the irrelevant), it shall be deemed to have been signed by me in India. Any dispute arising from, out of or as a consequence of this declaration or the treatment / service given by the Naad Wellness shall be subject to the laws of India and this declaration shall be interpreted and construed in accordance with the laws of that jurisdiction. I hereby submit to the jurisdiction of the courts in Sonipat district, Haryana, India only for resolution of any dispute arising out of or relating to this declaration and the treatment / service performed by the Naad Wellness.</p>
+            <p style="margin-bottom:20px;">
+                This declaration was given to me, read by me and signed by me for this treatment/service for myself / my spouse / my children / my parents (please strike off the irrelevant)
+            </p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Admission Date/Time:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.DateOfArrival?.ToString("dd-MMM-yyyy hh:mm tt"))</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Discharge Date/Time:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.DateOfDepartment?.ToString("dd-MMM-yyyy hh:mm tt"))</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">UHID No:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@Model.UHID</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Date:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(DateTime.Now.ToString("dd-MMM-yyyy"))</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Signature :</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span></span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Time:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(DateTime.Now.ToString("hh:mm tt"))</span></td>
+
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Name:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.CustomerName)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">Place:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>Kundli, Sonipat</span></td>
+    </tr>
+</table>
+
+<table style="width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
+    <tr>
+        <td colspan="4" style="padding: 5px 8px; border: 1px solid #ddd;">
+            <h2 style="margin:15px 0">सामान्य सूचित सहमति और घोषणा</h2>
+            <h4 style="margin-bottom:15px;">मैं इसके द्वारा एक एकीकृत, जैविक और चिकित्सा मूल्यांकन और उपचार के लिए अपनी सहमति देता हूं:</h4>
+            <p style="margin-bottom:15px;">उपचार में जड़ी-बूटियों, विटामिन, खनिजों और विभिन्न अन्य चिकित्सीय तौर-तरीकों जैसे पदार्थों का उपयोग किया जा सकता है, जोकि नाद वेलनेस के सलाहकारों द्वारा निर्धारित किया जाएगा।मूल्यांकन के निष्कर्षों और उपचार योजनाओं पर मेरे साथ मेरे / पति / पत्नी / बच्चों / माता-पिता के लिए पूरी तरह से चर्चा की गई है (कृपया अप्रासंगिक को काट दें)।</p>
+            <p style="margin-bottom:15px;">इसके अलावा, मुझे अपने / जीवन साथी / बच्चों / माता-पिता के लिए मेरे द्वारा चुनी गई उपचार योजना या सेवा के खर्चों के बारे में सूचित और समझाया गया है (कृपया अप्रासंगिक को काट दें)। इसके अलावा, मुझे अपने /जीवन साथी / बच्चों / माता-पिता के लिए स्वास्थ्य उद्योग में उपलब्ध उपचार या सेवा के वैकल्पिक विकल्पों से अवगत कराया गया है (कृपया अप्रासंगिक को काट दें)।</p>
+            <p style="margin-bottom:15px;">मैं एक चिकित्सीय कार्यक्रम की तलाश करने के निर्णय के लिए जिम्मेदार हूं जिसमें मेरे / मेरे पति / पत्नी / मेरे बच्चों / मेरे माता-पिता के शारीरिक, मनोवैज्ञानिक, पर्यावरणीय और आध्यात्मिक पहलू शामिल हैं (कृपया अप्रासंगिक) कल्याण की आवश्यकता(ओं) / शिकायतों को काट दें)।</p>
+            </p>
+            नाद वेलनेस सेंटर को मेरे / मेरे पति / पत्नी / मेरे बच्चों / मेरे माता-पिता (कृपया अप्रासंगिक को काट दें) के लिए उपचार / सेवाएं प्रदान करनेके लिए एक और प्रलोभन के रूप में, मैं एतद द्वारा किसी भी दावे और मांगों को माफ करता हूं जो मैं अभी या इसके बाद नाद वेलनेस केखिलाफ कर सकता हूं। ,होल्डिंग कंपनी, उनके मालिक, कर्मचारी, चिकित्सक, डॉक्टर, आपूर्तिकर्ता, विक्रेता, सहयोगी, एजेंट और सलाहकार जो नाद वेलनेस में उपचार / सेवा से उत्पन्न हो सकते हैं या उत्पन्न होने के लिए समझा जा सकता है।</p>
+            <p style="margin-bottom:15px;">इसके अलावा, मैं नाद वेलनेस, द होल्डिंग कंपनी (कंपनियों), उनके मालिकों, कर्मचारियों, चिकित्सक, डॉक्टरों, आपूर्ति कर्ताओं, विक्रेताओं, सहयोगियों, एजेंटों और सलाहकारों को किसी भी प्रकार या किसी भी तरह से उत्पन्न होने वाले किसी भी प्रकार या प्रकृति के सभी दायित्वों से मुक्त करता हूं। नाद वेलनेस में मुझे अपने लिए / मेरे जीवन साथी / मेरे बच्चों / मेरे माता-पिता के लिए प्राप्त होने वाले उपचार/सेवा से संबंधित (कृपया अप्रासंगिक को काट दें)।</p>
+            <p style="margin-bottom:15px;">मेरे / मेरे जीवन साथी / मेरे बच्चों / मेरे माता-पिता के चिकित्सा परामर्श रिकॉर्ड (कृपया अप्रासंगिक को काट दें) पूरी तरह से गोपनीय हैं। उनका उद्देश्य केवल मेरे और नाद वेलनेस कर्मचारियों द्वारा पढ़ा जाना है। मेरी लिखित अनुमति के बिना ये रिकॉर्ड किसी और को प्रेषित नहीं किए जाएंगे।</p>
+            <p style="margin-bottom:15px;">मैं प्रमाणित करता / करती हूं कि मेरे / मेरे पति / पत्नी /मेरे बच्चों / मेरे माता-पिता (कृपया अप्रासंगिक को काट दें) की जीवन शैली, चिकित्सकीय इतिहास और परामर्श से संबंधित सभी तथ्य, सत्य और सही हैं।</p>
+            <p style="margin-bottom:15px;">
+                मेरे / मेरे पति / पत्नी / मेरे बच्चों / मेरे माता-पिता (कृपया अप्रासंगिक को काट दें) के लिए मेरे द्वारा इस घोषणा पत्र पर हस्ताक्षर किए जाने वाले क्षेत्राधिकार के बावजूद, इसे भारत में मेरे द्वारा हस्ताक्षरित माना जाएगा।इस घोषणा से या इस के परिणाम स्वरूप या नाद वेलनेस द्वारा दिए गए उपचार/सेवा से उत्पन्न होने वाला कोई भी विवाद भारत के कानूनों के अधीन होगा और इस घोषणा की व्याख्या और उस अधिकार क्षेत्र के कानूनों के अनुसार की जाएगी। मैं एतद्द्वारा सोनीपत जिला, हरियाणा, भारत के न्यायालयों के अधिकार क्षेत्र में केवल इस घोषणा से उत्पन्न होने वाले या इससे संबंधित किसी भी विवाद के समाधान के लिए और नाद वेलनेस द्वारा किए गए उपचार / सेवा के लिए प्रस्तुत करता हूं।
+            </p><p style="margin-bottom:15px;">
+                यह घोषणा पत्र मुझे दिया गया था, मेरे द्वारा पढ़ा गया और मेरे द्वारा मेरे / मेरे पति / पत्नी / मेरे बच्चों / मेरे माता-पिता के लिए इस उपचार / सेवा के लिए हस्ताक्षरित किया गया (कृपया अप्रासंगिक को काट दें)।
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">प्रवेश तिथि/समय:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.DateOfArrival?.ToString("dd-MMM-yyyy hh:mm tt"))</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">डिस्चार्ज दिनांक/समय:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.DateOfDepartment?.ToString("dd-MMM-yyyy hh:mm tt"))</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">यूएचआईडी संख्या</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@Model.UHID</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">दिनांक:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(DateTime.Now.ToString("dd-MMM-yyyy"))</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">हस्ताक्षर:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span></span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">समय:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(DateTime.Now.ToString("hh:mm tt"))</span></td>
+    </tr>
+    <tr>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">नाम</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>@(Model.CustomerName)</span></td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;">जगह:</td>
+        <td style="padding: 5px 8px; border: 1px solid #ddd;"><span>Kundli, Sonipat</span></td>
+    </tr>
+</table>
+

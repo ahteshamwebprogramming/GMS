@@ -13,8 +13,10 @@ public class Settlement
     public double? Balance { get; set; }
     public double? Refund { get; set; }
     public double? CreditAmount { get; set; }
+    public double? DebitAmount { get; set; }
     public string? RefundRemarks { get; set; }
     public string? NoteNumber { get; set; }
+    public string? DebitNoteNumber { get; set; }
     public DateTime? ValidTill { get; set; }
     public bool? IsActive { get; set; }
     public DateTime? CreatedDate { get; set; }

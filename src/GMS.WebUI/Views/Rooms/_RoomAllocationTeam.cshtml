@@ -1,0 +1,37 @@
+@model IEnumerable<GMS.Infrastructure.ViewModels.Rooms.HousekeepingWorkerSummary>
+
+@if (Model != null)
+{
+    foreach (var worker in Model)
+    {
+        var deptIcon = string.Equals(worker.Department, "Housekeeping", StringComparison.OrdinalIgnoreCase) ? "bi-houses-fill" : "bi-people-fill";
+        <article class="hk-stack-card hk-worker-card"
+                 data-worker-name="@worker.WorkerName"
+                 data-department="@worker.Department"
+                 data-worker-id="@worker.WorkerId">
+            <div class="hk-stack-row">
+                <div>
+                    <div class="hk-stack-title">@worker.WorkerName</div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap hk-stack-sub">
+                        <span><i class="bi bi-person-badge me-1"></i>Employee Code: @worker.EmployeeCode</span>
+                        <span class="hk-pill subtle mb-0"><i class="bi @deptIcon me-1"></i>@worker.Department</span>
+                    </div>
+                    <div class="d-flex align-items-baseline gap-2 hk-pending-inline">
+                        <span class="hk-label text-uppercase mb-0"><i class="bi bi-hourglass-split me-1"></i>Pending Rooms</span>
+                        <strong class="hk-stack-value mb-0">@worker.PendingRoomCount</strong>
+                    </div>
+                </div>
+                <div class="hk-stack-meta text-end">
+                    <button type="button"
+                            class="btn btn-outline-primary btn-sm hk-open-assignment mt-2"
+                            data-worker-id="@worker.WorkerId"
+                            data-worker-name="@worker.WorkerName"
+                            data-worker-code="@worker.EmployeeCode">
+                        <i class="bi bi-check2-square me-1"></i>@worker.AssignedRoomCount Rooms Assigned
+                    </button>
+                </div>
+            </div>
+        </article>
+    }
+}
+

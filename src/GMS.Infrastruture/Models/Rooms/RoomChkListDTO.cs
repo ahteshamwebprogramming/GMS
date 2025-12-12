@@ -1,10 +1,14 @@
-﻿namespace GMS.Infrastructure.Models.Rooms
+﻿using System.Collections.Generic;
+
+namespace GMS.Infrastructure.Models.Rooms
 {
     public class RoomChkListDTO
     {
         public int Id { get; set; }
 
         public int? RID { get; set; }
+
+        public List<int>? RoomIds { get; set; }
 
         public string? RChkLstID { get; set; }
 

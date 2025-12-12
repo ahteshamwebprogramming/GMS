@@ -13,6 +13,13 @@
                         <label class="form-label required">Payment Method</label>
                         <input type="text" class="form-control requiredInput" name="PaymentMethodName" dbCol value="@Model?.PaymentMethod?.PaymentMethodName">
                     </div>
+                    <div class="mb-3 form-group">
+                        <label class="form-label">Payment Method Code</label>
+                        <input type="text" class="form-control" name="PaymentMethodCode" dbCol value="@Model?.PaymentMethod?.PaymentMethodCode" placeholder="e.g., CN, DC">
+                        <small class="form-text text-muted">
+                            <strong>Note:</strong> If you want the method to work as Credit Note, add code <strong>CN</strong>. For Debit Note, add code <strong>DC</strong>. Leave empty for regular payment methods.
+                        </small>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">

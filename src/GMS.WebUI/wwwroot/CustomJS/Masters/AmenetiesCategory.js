@@ -16,6 +16,8 @@ function ListPartialView() {
         success: function (data, textStatus, jqXHR) {
             UnblockUI();
             $('#div_ListPartial').html(data);
+
+
         },
         error: function (result) {
             UnblockUI();

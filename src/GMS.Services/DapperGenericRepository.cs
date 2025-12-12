@@ -475,7 +475,7 @@ public class DapperGenericRepository<T> : IDapperRepository<T> where T : class, 
     //    }
     //    finally { _dapperDBContext.Connection.Close(); }
     //}
-    public async Task<IEnumerable<T>> ExecuteStoredProcedureAsync<T>(string procedureName, object parameters = null)
+    public async Task<IEnumerable<T>> ExecuteStoredProcedureAsync<T>(string procedureName, object parameters = null, int? commandTimeout = null)
     {
         if (_dapperDBContext.Connection.State != ConnectionState.Open)
             _dapperDBContext.Connection.Open();
@@ -486,7 +486,8 @@ public class DapperGenericRepository<T> : IDapperRepository<T> where T : class, 
                 procedureName,
                 parameters,
                 transaction: _dapperDBContext.Transaction,
-                commandType: CommandType.StoredProcedure
+                commandType: CommandType.StoredProcedure,
+                commandTimeout: commandTimeout
             );
             return result; // Returns an IEnumerable<TestTable>
         }
@@ -502,7 +503,7 @@ public class DapperGenericRepository<T> : IDapperRepository<T> where T : class, 
         }
     }
 
-    public async Task<int> ExecuteStoredProcedureAsync(string procedureName, object parameters = null)
+    public async Task<int> ExecuteStoredProcedureAsync(string procedureName, object parameters = null, int? commandTimeout = null)
     {
         if (_dapperDBContext.Connection.State != ConnectionState.Open)
             _dapperDBContext.Connection.Open();
@@ -512,7 +513,8 @@ public class DapperGenericRepository<T> : IDapperRepository<T> where T : class, 
                 procedureName,
                 parameters,
                 transaction: _dapperDBContext.Transaction,
-                commandType: CommandType.StoredProcedure
+                commandType: CommandType.StoredProcedure,
+                commandTimeout: commandTimeout
             );
             return result; // Returns the number of affected rows
         }

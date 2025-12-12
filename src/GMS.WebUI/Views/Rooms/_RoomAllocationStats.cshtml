@@ -1,0 +1,17 @@
+@model GMS.Infrastructure.ViewModels.Rooms.RoomHousekeepingDashboardViewModel
+
+<div class="hk-status-line">
+    <div class="hk-status-chip">
+        <span>Rooms Cleaned Today</span>
+        <strong id="hkRoomsCleanedValue">@Model.RoomsCompleted / @Model.TotalRooms</strong>
+    </div>
+    <div class="hk-status-chip warning">
+        <span>Pending Rooms</span>
+        <strong id="hkRoomsPendingValue">@Model.RoomsPending</strong>
+    </div>
+    <div class="hk-date-display">
+        <i class="bi bi-calendar3"></i>
+        <input type="text" class="form-control" id="hkDateDisplay" readonly value="@Model.WorkDate.ToString("dd-MMM-yyyy")" />
+    </div>
+</div>
+
