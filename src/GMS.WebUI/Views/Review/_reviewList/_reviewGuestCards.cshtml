@@ -1,19 +1,6 @@
 @using System.Globalization
 @model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
 
-<style>
-    .engagement{
-        max-width: 450px;
-        margin: 45px auto 0 auto;
-        background: #2f4f47;
-        padding: 30px 35px;
-        border-radius: 22px;
-        color: #ebf1f0;
-        box-shadow: 12px 12px 30px #1f3a35, -12px -12px 40px #3d6b5f;
-        user-select: none;
-    }
-</style>
-
 <div class="guest_list">
     @{
         if (Model != null && Model.MemberDetailsWithChildren != null)
@@ -23,16 +10,22 @@
                 foreach (var item in Model.MemberDetailsWithChildren)
                 {
                     <a href="/Review/RegistrationInfo/@item.Id" style="text-decoration: none; display: block;">
-                        @*<div class="guest_info engagement">*@
                         <div class="engagement">
-                            <div class="guest_header">
-                                <span class="user_icon"><strong>@(string.IsNullOrWhiteSpace(item.RoomNumber) ? "-" : item.RoomNumber)</strong></span>
+                            <h3>@(string.IsNullOrWhiteSpace(item.CustomerName) ? "Guest" : item.CustomerName)</h3>
+                            <div class="data-row">
+                                <div class="data-item">
+                                    <i class="bi bi-door-open"></i> <span>@(string.IsNullOrWhiteSpace(item.RoomNumber) ? "-" : item.RoomNumber)</span>
+                                </div>
+                                <div class="data-item">
+                                    <i class="bi bi-person-vcard"></i> <span>@(string.IsNullOrWhiteSpace(item.UHID) ? "-" : item.UHID)</span>
+                                </div>
+                                <div class="data-item">
+                                    <i class="bi bi-calendar-check"></i> <span>@(item.DateOfArrival?.ToString("dd-MMM-yyyy") ?? "-")</span>
+                                </div>
+                                <div class="data-item">
+                                    <i class="bi bi-calendar-x"></i> <span>@(item.DateOfDepartment?.ToString("dd-MMM-yyyy") ?? "-")</span>
+                                </div>
                             </div>
-                            <ul class="usert_info">
-                                <li><i class="bi bi-person-vcard"></i> <span>@(string.IsNullOrWhiteSpace(item.UHID) ? "-" : item.UHID)</span></li>
-                                <li><i class="bi bi-person"></i> <span>@(string.IsNullOrWhiteSpace(item.CustomerName) ? "-" : item.CustomerName)</span></li>
-                                <li><i class="bi bi-calendar"></i> <span>@(item.DateOfArrival?.ToString("dd-MMM-yy") ?? "-") to @(item.DateOfDepartment?.ToString("dd-MMM-yy") ?? "-")</span></li>
-                            </ul>
                         </div>
                     </a>
                 }

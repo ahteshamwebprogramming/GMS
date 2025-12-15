@@ -1,3 +1,25 @@
+/* Page Background - Keep original */
+.right_container {
+    /* Original background maintained - no override */
+}
+
+.filtered_rooms_container {
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.therapiesList_table_list {
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* Title Area Styling */
+.title_area {
+    margin-bottom: 30px;
+}
+
 /* Search Container */
 .search-container {
     position: relative;
@@ -36,6 +58,14 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
 }
 
+.raiods_btn_filters {
+    /* Original styling maintained */
+}
+
+.raiods_btn_filters .form-check-label {
+    /* Original styling maintained */
+}
+
 .raiods_btn_filters .form-check-input {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
@@ -44,87 +74,137 @@
 #div_ViewReviewListPartial {
     width: 100%;
     overflow-x: hidden;
-    padding: 0 10px;
-    box-sizing: border-box;
-}
-
-/* Ensure parent containers don't overflow */
-.filtered_rooms_container {
-    width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
-}
-
-.therapiesList_table_list {
-    width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
-}
-
-/* Responsive grid for guest cards - scoped to Review page */
-#div_ViewReviewListPartial .guest_list {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-    gap: 15px;
-    width: 100%;
-    max-width: 100%;
     padding: 0;
-    margin: 0;
-}
-
-/* Ensure cards don't overflow */
-#div_ViewReviewListPartial .guest_list .guest_info {
-    width: 100% !important;
-    max-width: 100% !important;
     box-sizing: border-box;
 }
 
-/* Make entire card clickable */
+/* Guest List Container - Card Layout */
+#div_ViewReviewListPartial .guest_list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    max-width: 1200px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+/* Card Styling - Matching Reference Design */
 #div_ViewReviewListPartial .guest_list > a {
     text-decoration: none;
     display: block;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-#div_ViewReviewListPartial .guest_list > a:hover {
-    transform: translateY(-2px);
+#div_ViewReviewListPartial .engagement {
+    background: #2f4f47 !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 1px 8px rgba(0, 0, 0, 0.1) !important;
+    padding: 20px !important;
+    transform: perspective(1000px) rotateX(5deg) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    color: #ebf1f0 !important;
 }
 
-#div_ViewReviewListPartial .guest_list > a:hover .guest_info {
-    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.4) !important;
+/* Removed colorful top border - doesn't match theme */
+
+#div_ViewReviewListPartial .guest_list > a:hover .engagement {
+    transform: perspective(1000px) rotateX(0deg) translateY(-10px) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 1px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Card Title */
+#div_ViewReviewListPartial .engagement h3 {
+    margin: 0 0 15px 0;
+    color: #ebf1f0;
+    font-size: 1.5em;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Data Row - With Icons instead of Labels */
+#div_ViewReviewListPartial .data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#div_ViewReviewListPartial .data-item {
+    font-size: 1em;
+    color: #ebf1f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#div_ViewReviewListPartial .data-item i {
+    color: #ebf1f0;
+    font-size: 1.1em;
+}
+
+#div_ViewReviewListPartial .data-item span {
+    color: #ebf1f0;
+    font-weight: 500;
+}
+
+/* Pagination Styling */
+.pagination2 {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination2 .pagination {
+    /* Original styling maintained */
+}
+
+.pagination2 .pagination .page-link {
+    /* Original styling maintained */
+}
+
+.pagination2 .pagination .page-link:hover {
+    /* Original styling maintained */
+}
+
+.pagination2 .pagination .page-item.active .page-link {
+    /* Original styling maintained */
+}
+
+.pagination2 .pagination .page-item.disabled .page-link {
+    /* Original styling maintained */
+}
+
+/* No Record Styling */
+.no_record {
+    text-align: center;
+    padding: 50px 20px;
+    /* Original styling maintained */
+}
+
+.no_record .noc h3 {
+    /* Original styling maintained */
+    margin-top: 20px;
 }
 
 /* Responsive breakpoints */
-@media (max-width: 1400px) {
-    #div_ViewReviewListPartial .guest_list {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
-    }
-}
-
-@media (max-width: 1200px) {
-    #div_ViewReviewListPartial .guest_list {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-    }
-}
-
-@media (max-width: 992px) {
-    #div_ViewReviewListPartial .guest_list {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
-    }
-}
-
 @media (max-width: 768px) {
-    #div_ViewReviewListPartial .guest_list {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
-        gap: 10px;
+    #div_ViewReviewListPartial .usert_info {
+        flex-direction: column;
+        align-items: flex-start;
     }
-}
-
-@media (max-width: 576px) {
-    #div_ViewReviewListPartial .guest_list {
-        grid-template-columns: 1fr !important;
-        gap: 10px;
+    
+    #div_ViewReviewListPartial .usert_info li {
+        width: 100%;
+    }
+    
+    .right_container {
+        padding: 10px;
     }
 }
 
