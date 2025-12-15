@@ -43,4 +43,86 @@ public class ResourceAllocationController : Controller
         }
         return PartialView("_list/_roomAllocation", dto);
     }
+
+    public async Task<IActionResult> GetScheduleById(int Id)
+    {
+        try
+        {
+            var scheduleRes = await _resourceAllocationAPIController.GetScheduleById(Id);
+            if (scheduleRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)scheduleRes).StatusCode == 200)
+            {
+                var schedule = (GMS.Infrastructure.ViewModels.ResourceAllocation.GuestScheduleWithAttributes?)((Microsoft.AspNetCore.Mvc.ObjectResult)scheduleRes).Value;
+                return Ok(schedule);
+            }
+            return BadRequest("Schedule not found");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error getting schedule {nameof(GetScheduleById)}");
+            return BadRequest("Error retrieving schedule");
+        }
+    }
+
+    public async Task<IActionResult> UpdateSchedule([FromBody] GMS.Infrastructure.Models.Guests.GuestScheduleDTO inputDTO)
+    {
+        try
+        {
+            if (inputDTO == null || inputDTO.Id <= 0)
+            {
+                return BadRequest("Invalid schedule data");
+            }
+
+            var res = await _guestsAPIController.CreateGuestScheduleByCalendar(inputDTO);
+            return res;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating schedule {nameof(UpdateSchedule)}");
+            return BadRequest("Error updating schedule");
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteSchedule([FromBody] GMS.Infrastructure.Models.Guests.GuestScheduleDTO inputDTO)
+    {
+        try
+        {
+            if (inputDTO == null || inputDTO.Id <= 0)
+            {
+                return BadRequest("Invalid schedule ID");
+            }
+
+            var res = await _guestsAPIController.DeleteGuestSchedule(inputDTO.Id);
+            return res;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error deleting schedule {nameof(DeleteSchedule)}");
+            return BadRequest("Error deleting schedule");
+        }
+    }
+
+    public async Task<IActionResult> GetTaskName()
+    {
+        var res = await _guestsAPIController.GetTasks();
+        return res;
+    }
+
+    public async Task<IActionResult> GetEmployeeByTaskId([FromBody] TaskMasterDTO inputDTO)
+    {
+        var res = await _guestsAPIController.GetEmployeeByTaskId(inputDTO.Id);
+        return res;
+    }
+
+    public async Task<IActionResult> GetResourcesByTaskId([FromBody] TaskMasterDTO inputDTO)
+    {
+        var res = await _guestsAPIController.GetResourcesByTaskId(inputDTO.Id);
+        return res;
+    }
+
+    public async Task<IActionResult> GetTaskByTaskId([FromBody] TaskMasterDTO inputDTO)
+    {
+        var res = await _guestsAPIController.GetTaskByTaskId(inputDTO.Id);
+        return res;
+    }
 }

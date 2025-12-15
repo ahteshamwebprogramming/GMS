@@ -14,6 +14,103 @@
     </div>
     <!-- Modal -->
 
+    <!-- Edit Schedule Modal -->
+    <div class="modal fade" id="editScheduleModal" tabindex="-1" aria-labelledby="editScheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editScheduleModalLabel">Edit Schedule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="EditScheduleForm">
+                        <div class="row">
+                            <div class="col-4">
+                                <label>Guest Name</label>
+                                <div id="EditGuestName" style="padding-top: 0.375rem;">-</div>
+                            </div>
+                            <div class="col-4">
+                                <label>Room No</label>
+                                <div id="EditRoomNo" style="padding-top: 0.375rem;">-</div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-4">
+                                <label>Task Name</label>
+                                <select class="form-control" name="TaskId" id="EditTaskId" placeholder="Task Name" onchange="GetEmployeeByTaskIdForEdit(this)">
+                                    <option value="0"></option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label>Resource</label>
+                                <select class="form-control" name="ResourceId" id="EditResourceId">
+                                    <option value="0"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4 mt-3">
+                                <label>Therapist 1</label>
+                                <select class="form-control" name="EmployeeId1" id="EditEmployeeId1">
+                                    <option value="0"></option>
+                                </select>
+                            </div>
+                            <div class="col-4 mt-3">
+                                <label>Therapist 2</label>
+                                <select class="form-control" name="EmployeeId2" id="EditEmployeeId2">
+                                    <option value="0"></option>
+                                </select>
+                            </div>
+                            <div class="col-4 mt-3">
+                                <label>Therapist 3</label>
+                                <select class="form-control" name="EmployeeId3" id="EditEmployeeId3">
+                                    <option value="0"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>Start Date</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="text" class="form-control time" id="EditStartDate" name="StartDate" placeholder="" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>Start Time</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="time" class="form-control time" id="EditStartTime" name="StartTime" placeholder="" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>Duration</label>
+                                <input id="EditDuration" type="text" placeholder="Select duration" class="form-control" name="Duration">
+                                <input type="hidden" id="EditSelectedDuration" />
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>End Date</label>
+                                <div class="form-group position-relative dateCalWrapper">
+                                    <input type="text" class="form-control time" id="EditEndDate" name="EndDate" placeholder="" readonly />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-4 mt-3">
+                                <label>End Time</label>
+                                <div class="form-group">
+                                    <input type="time" class="form-control time" id="EditEndTime" name="EndTime" placeholder="End Time" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" value="" name="ScheduleId" id="EditScheduleId" />
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btnUpdateSchedule" onclick="UpdateSchedule()">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Edit Schedule Modal -->
+
     <div class="right_container">
 
         <!-- filtered rooms Start-->
@@ -35,6 +132,7 @@
     @Html.Partial("_bottomNavigation1")
 </div>
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="~/customjs/ResourceAllocation/ResourceAllocationList.js"></script>
     <script src="~/customjs/validation.js"></script>
 

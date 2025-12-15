@@ -25,39 +25,37 @@
                     foreach (var item in Model.ScheduleWithAttributeList)
                     {
                         <tr>
-                            <td scope="row" class="taskname">
-                                <select class="selectchosen">
-                                    @{
-                                        if (Model.Tasks != null)
+                            <td scope="row" class="taskname" style="white-space: nowrap;">
+                                @{
+                                    string taskName = "";
+                                    if (Model.Tasks != null && item.TaskId > 0)
+                                    {
+                                        var selectedTask = Model.Tasks.FirstOrDefault(t => t.Id == item.TaskId);
+                                        if (selectedTask != null)
                                         {
-                                            <option value="0"></option>
-                                            foreach (var tasks in Model.Tasks)
-                                            {
-                                                if (tasks.Id == item.TaskId)
-                                                {
-                                                    <option selected="selected" value="@tasks.Id">@tasks.TaskName</option>
-                                                }
-                                                else
-                                                {
-                                                    <option value="@tasks.Id">@tasks.TaskName</option>
-                                                }
-                                            }
+                                            taskName = selectedTask.TaskName;
                                         }
                                     }
-                                </select>
+                                }
+                                @taskName
                             </td>
-                            <td scope="row" class="duration">@item.Duration</td>
-                            <td scope="row">@item.StartDateTime</td>
-                            <td scope="row">@item.EndDateTime</td>
-                            <td scope="row">@item.ResourceName</td>
-                            <td scope="row"></td>
-                            <td scope="row"></td>
-                            <td scope="row"></td>
-                            <td scope="row"></td>
-                            <td scope="row"></td>
-                            <td scope="row"></td>
-                            <td scope="row"></td>
-                            <td scope="row"></td>
+                            <td scope="row" class="duration" style="white-space: nowrap;">@item.Duration</td>
+                            <td scope="row" style="white-space: nowrap;">@item.StartDateTime.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td scope="row" style="white-space: nowrap;">@item.EndDateTime.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td scope="row" style="white-space: nowrap;">@item.ResourceName</td>
+                            <td scope="row" style="white-space: nowrap;">@item.Therapist1Name</td>
+                            <td scope="row" style="white-space: nowrap;">@item.Therapist2Name</td>
+                            <td scope="row" style="white-space: nowrap;">@item.Therapist3Name</td>
+                            <td scope="row" style="white-space: nowrap;">@item.GuestName</td>
+                            <td scope="row" style="white-space: nowrap;">@(!string.IsNullOrEmpty(item.RoomNo) ? "Room " + item.RoomNo : "")</td>
+                            <td scope="row" style="white-space: nowrap;">@(item.InPackage == true ? "Yes" : "No")</td>
+                            <td scope="row" style="white-space: nowrap;">@item.Remarks</td>
+                            <td style="white-space: nowrap;">
+                                <div class="actions_btns">
+                                    <a href="#" onclick="EditSchedule(@item.Id)" class="pencil ms-2"><i class="bi bi-pencil-fill"></i></a>
+                                    <a href="#" onclick="DeleteSchedule(@item.Id)" class="trash ms-2"><i class="bi bi-trash-fill"></i></a>
+                                </div>
+                            </td>
 
                         </tr>
                     }
