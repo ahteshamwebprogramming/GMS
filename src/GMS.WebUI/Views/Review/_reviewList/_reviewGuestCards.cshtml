@@ -9,18 +9,18 @@
             {
                 foreach (var item in Model.MemberDetailsWithChildren)
                 {
-                    <div class="guest_info">
-                        <div class="guest_header">
-                            <span class="user_icon"><strong>@(string.IsNullOrWhiteSpace(item.RoomNumber) ? "-" : item.RoomNumber)</strong></span>
-                        </div>
-                        <a href="/Review/RegistrationInfo/@item.Id">
+                    <a href="/Review/RegistrationInfo/@item.Id" style="text-decoration: none; display: block;">
+                        <div class="guest_info">
+                            <div class="guest_header">
+                                <span class="user_icon"><strong>@(string.IsNullOrWhiteSpace(item.RoomNumber) ? "-" : item.RoomNumber)</strong></span>
+                            </div>
                             <ul class="usert_info">
                                 <li><i class="bi bi-person-vcard"></i> <span>@(string.IsNullOrWhiteSpace(item.UHID) ? "-" : item.UHID)</span></li>
                                 <li><i class="bi bi-person"></i> <span>@(string.IsNullOrWhiteSpace(item.CustomerName) ? "-" : item.CustomerName)</span></li>
                                 <li><i class="bi bi-calendar"></i> <span>@(item.DateOfArrival?.ToString("dd-MMM-yy") ?? "-") to @(item.DateOfDepartment?.ToString("dd-MMM-yy") ?? "-")</span></li>
                             </ul>
-                        </a>
-                    </div>
+                        </div>
+                    </a>
                 }
             }
             else

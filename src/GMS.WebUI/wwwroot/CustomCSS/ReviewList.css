@@ -79,6 +79,22 @@
     box-sizing: border-box;
 }
 
+/* Make entire card clickable */
+#div_ViewReviewListPartial .guest_list > a {
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#div_ViewReviewListPartial .guest_list > a:hover {
+    transform: translateY(-2px);
+}
+
+#div_ViewReviewListPartial .guest_list > a:hover .guest_info {
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.4) !important;
+}
+
 /* Responsive breakpoints */
 @media (max-width: 1400px) {
     #div_ViewReviewListPartial .guest_list {

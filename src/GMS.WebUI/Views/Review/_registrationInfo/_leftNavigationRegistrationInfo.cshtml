@@ -1,5 +1,6 @@
 @{
     var guestId = ViewBag.GuestId;
+    var currentSection = ViewBag.Section ?? "RegistrationInfo";
 }
 
 <button class="hamburger">☰</button>
@@ -8,9 +9,81 @@
     <div class="top_menu">
         <ul>
             <li>
-                <a href="/Review/RegistrationInfo/@guestId" class="active">
+                <a href="/Review/ReviewList" class="@(currentSection == "ReviewList" ? "active" : "")">
+                    <figure><i class="bi bi-clipboard-check"></i></figure>
+                    <h4>Review List</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId" class="@(currentSection == "RegistrationInfo" ? "active" : "")">
                     <figure><i class="bi bi-eye-fill"></i></figure>
                     <h4>Registration Info</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/Documents" class="@(currentSection == "Documents" ? "active" : "")">
+                    <figure><i class="bi bi-file-earmark-fill"></i></figure>
+                    <h4>Documents</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/Schedules" class="@(currentSection == "Schedules" ? "active" : "")">
+                    <figure><i class="bi bi-calendar-event-fill"></i></figure>
+                    <h4>Schedules</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/CaseSheet" class="@(currentSection == "CaseSheet" ? "active" : "")">
+                    <figure><i class="bi bi-stickies-fill"></i></figure>
+                    <h4>Case Sheet</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/DietChart" class="@(currentSection == "DietChart" ? "active" : "")">
+                    <figure><i class="bi bi-clipboard-data-fill"></i></figure>
+                    <h4>Diet Chart</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/DoctorNotes" class="@(currentSection == "DoctorNotes" ? "active" : "")">
+                    <figure><i class="bi bi-clipboard-check-fill"></i></figure>
+                    <h4>Doctor's Note</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/DischargeSummary" class="@(currentSection == "DischargeSummary" ? "active" : "")">
+                    <figure><i class="bi bi-align-top"></i></figure>
+                    <h4>Discharge Summary</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/FollowUpSheet" class="@(currentSection == "FollowUpSheet" ? "active" : "")">
+                    <figure><i class="bi bi-stickies-fill"></i></figure>
+                    <h4>Follow Up Sheet</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/GuestEducation" class="@(currentSection == "GuestEducation" ? "active" : "")">
+                    <figure><i class="bi bi-person-check-fill"></i></figure>
+                    <h4>Guest Education</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/WellnessTherapist" class="@(currentSection == "WellnessTherapist" ? "active" : "")">
+                    <figure><i class="bi bi-person-bounding-box"></i></figure>
+                    <h4>Wellness Therapist</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/WorkSheet" class="@(currentSection == "WorkSheet" ? "active" : "")">
+                    <figure><i class="bi bi-file-earmark-medical-fill"></i></figure>
+                    <h4>Work Sheet</h4>
+                </a>
+            </li>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId/WellnessSchedule" class="@(currentSection == "WellnessSchedule" ? "active" : "")">
+                    <figure><i class="bi bi-calendar-check-fill"></i></figure>
+                    <h4>Wellness Schedule</h4>
                 </a>
             </li>
         </ul>

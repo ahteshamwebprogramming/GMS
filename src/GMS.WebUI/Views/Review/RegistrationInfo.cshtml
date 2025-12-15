@@ -13,14 +13,90 @@
         <!-- filtered rooms Start-->
         <div class="filtered_rooms_container">
             <div class="therapiesList_table_list">
-                <div class="title_area">
-                    <h2>Registration Info</h2>
-                </div>
-                <div class="top_title_name">
-                    <div class="name_id">NAAD ID <span>@(Model?.RegistrationNumber ?? "N/A")</span></div>
-                </div>
+                @{
+                    var section = ViewBag.Section ?? "RegistrationInfo";
+                }
 
-                @Html.Partial("_registrationInfo/_RegistrationInfoContent", Model)
+                @if (section == "RegistrationInfo")
+                {
+                    <div class="title_area">
+                        <h2>Registration Info</h2>
+                    </div>
+                    <div class="top_title_name">
+                        <div class="name_id">NAAD ID <span>@(Model?.RegistrationNumber ?? "N/A")</span></div>
+                    </div>
+                }
+                else if (section != "Documents" && section != "Schedules")
+                {
+                    <div class="title_area">
+                        <h2>@(section == "CaseSheet" ? "Case Sheet" : section == "DietChart" ? "Diet Chart" : section == "DoctorNotes" ? "Doctor's Note" : section == "DischargeSummary" ? "Discharge Summary" : section == "FollowUpSheet" ? "Follow Up Sheet" : section == "GuestEducation" ? "Guest Education" : section == "WellnessTherapist" ? "Wellness Therapist" : section == "WorkSheet" ? "Work Sheet" : section == "WellnessSchedule" ? "Wellness Schedule" : "")</h2>
+                    </div>
+                    <div class="top_title_name">
+                        <div class="name_id">NAAD ID <span>@(Model?.RegistrationNumber ?? "N/A")</span></div>
+                    </div>
+                }
+                else if (section == "Documents")
+                {
+                    <div class="title_area">
+                        <h2>Documents</h2>
+                    </div>
+                    <div class="top_title_name">
+                        <div class="name_id">NAAD ID <span>@(Model?.RegistrationNumber ?? "N/A")</span></div>
+                    </div>
+                }
+
+                @if (section == "RegistrationInfo")
+                {
+                    @Html.Partial("_registrationInfo/_RegistrationInfoContent", Model)
+                }
+                else if (section == "Documents")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_DocumentsContent.cshtml", Model)
+                }
+                else if (section == "Schedules")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_SchedulesContent.cshtml", Model)
+                }
+                else if (section == "CaseSheet")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_CaseSheetContent.cshtml", Model)
+                }
+                else if (section == "DietChart")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_DietChartContent.cshtml", Model)
+                }
+                else if (section == "DoctorNotes")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_DoctorNotesContent.cshtml", Model)
+                }
+                else if (section == "DischargeSummary")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_DischargeSummaryContent.cshtml", Model)
+                }
+                else if (section == "FollowUpSheet")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_FollowUpSheetContent.cshtml", Model)
+                }
+                else if (section == "GuestEducation")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_GuestEducationContent.cshtml", Model)
+                }
+                else if (section == "WellnessTherapist")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_WellnessTherapistContent.cshtml", Model)
+                }
+                else if (section == "WorkSheet")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_WorkSheetContent.cshtml", Model)
+                }
+                else if (section == "WellnessSchedule")
+                {
+                    @Html.Partial("~/Views/Guests/_ReviewMemberDetails/_WellnessScheduleContent.cshtml", Model)
+                }
+                else
+                {
+                    @Html.Partial("_registrationInfo/_RegistrationInfoContent", Model)
+                }
 
             </div>
         </div>
@@ -28,4 +104,7 @@
     </div>
     @Html.Partial("_bottomNavigation1")
 </div>
+@section Scripts {
+    <script src="~/CustomJS/Guests/ReviewMemberDetails.js"></script>
+}
 
