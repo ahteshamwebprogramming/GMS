@@ -1,0 +1,31 @@
+@model GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild
+@{
+    ViewData["Title"] = "Registration Info";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link href="~/customcss/cstmprintpage.css" rel="stylesheet" />
+<link href="~/CustomCSS/Guests/ReviewMemberDetails.css" rel="stylesheet" />
+<div class="admin_wrapper">
+    @Html.Partial("_registrationInfo/_leftNavigationRegistrationInfo")
+
+    @* Content Sections *@
+    <div class="right_container">
+        <!-- filtered rooms Start-->
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Registration Info</h2>
+                </div>
+                <div class="top_title_name">
+                    <div class="name_id">NAAD ID <span>@(Model?.RegistrationNumber ?? "N/A")</span></div>
+                </div>
+
+                @Html.Partial("_registrationInfo/_RegistrationInfoContent", Model)
+
+            </div>
+        </div>
+        <!-- filtered rooms end-->
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+

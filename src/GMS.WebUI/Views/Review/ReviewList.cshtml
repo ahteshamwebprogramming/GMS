@@ -1,0 +1,77 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, GMSCore
+@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Review List";
+}
+
+<link href="~/customcss/common.css" rel="stylesheet" />
+<link href="~/customcss/cardbutton.css" rel="stylesheet" />
+<link href="~/customcss/ReviewList.css" rel="stylesheet" />
+
+<div class="admin_wrapper">
+    @Html.Partial("_review/_leftNavigationReview")
+
+    <div class="right_container">
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <div class="raiods_btn_filters">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" onclick="setActive('All')" value="option1">
+                            <label class="form-check-label" for="inlineRadio1">All</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" checked type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="setActive('Current')" value="option2">
+                            <label class="form-check-label" for="inlineRadio2">Current</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3" onclick="setActive('Upcoming')" value="option3">
+                            <label class="form-check-label" for="inlineRadio3">Upcoming</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio4" onclick="setActive('Previous')" value="option4">
+                            <label class="form-check-label" for="inlineRadio4">Previous</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio5" onclick="setActive('Cancelled')" value="option5">
+                            <label class="form-check-label" for="inlineRadio5">Cancelled</label>
+                        </div>
+                        <input type="hidden" id="ReviewListType" />
+                    </div>
+                    <div class="btn_add btn_add2">
+                        <div class="search-container">
+                            <input type="search" oncancel="ReviewListPartialView()" onchange="ReviewListPartialView()" class="search-input" placeholder="Search..." name="ReviewSearchKeyword" id="ReviewSearchKeyword">
+                            <button class="search-icon"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="div_ViewReviewListPartial">
+                    @* Guest cards will be loaded here via AJAX *@
+                </div>
+            </div>
+        </div>
+        @Html.Partial("_bottomNavigation1")
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/customjs/review/reviewlist.js"></script>
+    <script>
+        const searchContainer = document.querySelector(".search-container");
+        const searchIcon = document.querySelector(".search-icon");
+
+        if (searchIcon) {
+            searchIcon.addEventListener("click", () => {
+                searchContainer.classList.toggle("active");
+            });
+        }
+
+        $(document).ready(function () {
+            ReviewListPartialView();
+        });
+    </script>
+}
+

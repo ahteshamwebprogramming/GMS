@@ -1,0 +1,19 @@
+@{
+    var guestId = ViewBag.GuestId;
+}
+
+<button class="hamburger">☰</button>
+<div class="left_container" id="left_container">
+    <div class="brand_logo"><img src="~/img/logo.png" /></div>
+    <div class="top_menu">
+        <ul>
+            <li>
+                <a href="/Review/RegistrationInfo/@guestId" class="active">
+                    <figure><i class="bi bi-eye-fill"></i></figure>
+                    <h4>Registration Info</h4>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+

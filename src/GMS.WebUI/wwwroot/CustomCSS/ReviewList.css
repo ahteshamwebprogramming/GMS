@@ -1,0 +1,114 @@
+/* Search Container */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.search-input {
+    width: 0;
+    opacity: 0;
+    padding: 10px;
+    border: none;
+    outline: none;
+    border-radius: 20px;
+    transition: width 0.4s ease, opacity 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.search-container.active .search-input {
+    width: 200px;
+    opacity: 1;
+    padding-left: 15px;
+}
+
+.search-icon {
+    border: none;
+    background: none;
+    margin-left: 10px;
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.search-input:focus {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+}
+
+.raiods_btn_filters .form-check-input {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive guest list container */
+#div_ViewReviewListPartial {
+    width: 100%;
+    overflow-x: hidden;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+/* Ensure parent containers don't overflow */
+.filtered_rooms_container {
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.therapiesList_table_list {
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* Responsive grid for guest cards - scoped to Review page */
+#div_ViewReviewListPartial .guest_list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 15px;
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+/* Ensure cards don't overflow */
+#div_ViewReviewListPartial .guest_list .guest_info {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1400px) {
+    #div_ViewReviewListPartial .guest_list {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    #div_ViewReviewListPartial .guest_list {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+    }
+}
+
+@media (max-width: 992px) {
+    #div_ViewReviewListPartial .guest_list {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #div_ViewReviewListPartial .guest_list {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    #div_ViewReviewListPartial .guest_list {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+}
+

@@ -1,0 +1,84 @@
+@using System.Globalization
+@model GMS.Infrastructure.ViewModels.Guests.GuestsListViewModel
+
+<div class="guest_list">
+    @{
+        if (Model != null && Model.MemberDetailsWithChildren != null)
+        {
+            if (Model.MemberDetailsWithChildren.Count > 0)
+            {
+                foreach (var item in Model.MemberDetailsWithChildren)
+                {
+                    <div class="guest_info">
+                        <div class="guest_header">
+                            <span class="user_icon"><strong>@(string.IsNullOrWhiteSpace(item.RoomNumber) ? "-" : item.RoomNumber)</strong></span>
+                        </div>
+                        <a href="/Review/RegistrationInfo/@item.Id">
+                            <ul class="usert_info">
+                                <li><i class="bi bi-person-vcard"></i> <span>@(string.IsNullOrWhiteSpace(item.UHID) ? "-" : item.UHID)</span></li>
+                                <li><i class="bi bi-person"></i> <span>@(string.IsNullOrWhiteSpace(item.CustomerName) ? "-" : item.CustomerName)</span></li>
+                                <li><i class="bi bi-calendar"></i> <span>@(item.DateOfArrival?.ToString("dd-MMM-yy") ?? "-") to @(item.DateOfDepartment?.ToString("dd-MMM-yy") ?? "-")</span></li>
+                            </ul>
+                        </a>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no_record">
+                    <div class="noc">
+                        <span><img src="~/assets/img/no-record.png"></span>
+                        <h3>No Guests Found!</h3>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no_record">
+                <div class="noc">
+                    <span><img src="~/assets/img/no-record.png"></span>
+                    <h3>No Guests Found!</h3>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@{
+    if (Model?.MemberDetailsWithChildren?.Count > 0)
+    {
+        <div class="pagination2">
+            @{
+                if (Model != null && Model.GuestsGridViewParameters != null)
+                {
+                    int PageIndex = Model.GuestsGridViewParameters.PageNumber ?? default(int);
+                    int TotalPages = Model.GuestsGridViewParameters.TotalPages ?? default(int);
+
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            <li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="ReviewListPartialView(@(PageIndex > 1 ? PageIndex - 1 : 1))">Previous</a></li>
+
+                            @if (PageIndex > 3)
+                            {
+                                <li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="ReviewListPartialView(1)">1</a></li>
+                                <li class="page-item disabled"><a class="page-link" href="javascript:void(0)">...</a></li>
+                            }
+                            @for (var i = Math.Max(1, PageIndex - 1); i <= Math.Min(PageIndex + 1, TotalPages); i++)
+                            {
+                                <li class="page-item @(i == PageIndex ? "active" : "")"><a class="page-link" href="javascript:void(0)" onclick="ReviewListPartialView(@i)">@i</a></li>
+                            }
+                            @if (PageIndex < TotalPages - 2)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                <li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="ReviewListPartialView(@TotalPages)">@TotalPages</a></li>
+                            }
+                            <li class="page-item"><a class="page-link" href="javascript:void(0)" onclick="ReviewListPartialView(@(PageIndex<TotalPages?  PageIndex + 1 : TotalPages))">Next</a></li>
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    }
+}
+
