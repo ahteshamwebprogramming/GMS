@@ -7,24 +7,37 @@ function initCreateEventModal() {
 function initTherapistDropdowns() {
     $EmployeeId1 = $("#AddSchedule").find("[name='EmployeeId1']");
     $EmployeeId2 = $("#AddSchedule").find("[name='EmployeeId2']");
-    $("[name='EmployeeId1'], [name='EmployeeId2']").change(function () {
+    $EmployeeId3 = $("#AddSchedule").find("[name='EmployeeId3']");
+    $("[name='EmployeeId1'], [name='EmployeeId2'], [name='EmployeeId3']").change(function () {
         validateTherapistDropdowns($(this));
     });
-    //$("#dropdown1, #dropdown2").change(function () {
-    //    validateTherapistDropdowns($(this));
-    //});
-    //$("#dropdown1, #dropdown2").change(function () {
-    //    validateTherapistDropdowns($(this));
-    //});
 }
 function validateTherapistDropdowns(currentDropdown) {
     let dropdown1Value = $("#AddSchedule").find("[name='EmployeeId1']").val();
     let dropdown2Value = $("#AddSchedule").find("[name='EmployeeId2']").val();
+    let dropdown3Value = $("#AddSchedule").find("[name='EmployeeId3']").val();
 
-    if (dropdown1Value === dropdown2Value && dropdown1Value !== "") {
-        //alert("Both dropdowns cannot have the same value. Please select a different option.");
-        $erroralert("Duplicate Therapist Error!", 'We cannot have same therapist in both!');
-        currentDropdown.val(0);
+    // Check for duplicates - no two therapists can be the same
+    if (dropdown1Value !== "" && dropdown1Value !== "0") {
+        if (dropdown1Value === dropdown2Value || dropdown1Value === dropdown3Value) {
+            $erroralert("Duplicate Therapist Error!", 'We cannot have same therapist selected multiple times!');
+            currentDropdown.val(0);
+            return;
+        }
+    }
+    if (dropdown2Value !== "" && dropdown2Value !== "0") {
+        if (dropdown2Value === dropdown1Value || dropdown2Value === dropdown3Value) {
+            $erroralert("Duplicate Therapist Error!", 'We cannot have same therapist selected multiple times!');
+            currentDropdown.val(0);
+            return;
+        }
+    }
+    if (dropdown3Value !== "" && dropdown3Value !== "0") {
+        if (dropdown3Value === dropdown1Value || dropdown3Value === dropdown2Value) {
+            $erroralert("Duplicate Therapist Error!", 'We cannot have same therapist selected multiple times!');
+            currentDropdown.val(0);
+            return;
+        }
     }
 }
 
@@ -56,6 +69,7 @@ function GetEmployeeByTaskId(currCtrl) {
     let Id = $(currCtrl).val();
     let employeeId1 = $(currCtrl).attr("employeeid1");
     let employeeId2 = $(currCtrl).attr("employeeid2");
+    let employeeId3 = $(currCtrl).attr("employeeid3");
     var inputDTO = {
         "Id": Id
     };
@@ -67,12 +81,16 @@ function GetEmployeeByTaskId(currCtrl) {
         success: function (data) {
             let $employeeId1 = $("#AddSchedule").find("[name='EmployeeId1']");
             let $employeeId2 = $("#AddSchedule").find("[name='EmployeeId2']");
+            let $employeeId3 = $("#AddSchedule").find("[name='EmployeeId3']");
             $employeeId1.empty();
             $employeeId2.empty();
+            $employeeId3.empty();
             $employeeId1.append('<option value="0"></option>');
             $employeeId2.append('<option value="0"></option>');
+            $employeeId3.append('<option value="0"></option>');
             if (data != null && data.length > 0) {
                 for (var i = 0; i < data.length; i++) {
+                    // Therapist 1
                     if (employeeId1 == data[i].employeeId) {
                         $employeeId1.append('<option selected="selected" value="' + data[i].employeeId + '">' + data[i].employeeName + '</option>');
                     }
@@ -80,11 +98,20 @@ function GetEmployeeByTaskId(currCtrl) {
                         $employeeId1.append('<option value="' + data[i].employeeId + '">' + data[i].employeeName + '</option>');
                     }
 
+                    // Therapist 2
                     if (employeeId2 == data[i].employeeId) {
                         $employeeId2.append('<option selected="selected" value="' + data[i].employeeId + '">' + data[i].employeeName + '</option>');
                     }
                     else {
                         $employeeId2.append('<option value="' + data[i].employeeId + '">' + data[i].employeeName + '</option>');
+                    }
+
+                    // Therapist 3
+                    if (employeeId3 == data[i].employeeId) {
+                        $employeeId3.append('<option selected="selected" value="' + data[i].employeeId + '">' + data[i].employeeName + '</option>');
+                    }
+                    else {
+                        $employeeId3.append('<option value="' + data[i].employeeId + '">' + data[i].employeeName + '</option>');
                     }
                 }
             }

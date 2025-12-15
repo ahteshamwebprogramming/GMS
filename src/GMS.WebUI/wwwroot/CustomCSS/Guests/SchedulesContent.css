@@ -75,37 +75,206 @@
     gap: 10px;
 }
 
-.room-type-badge {
-    background: linear-gradient(135deg, #F2CC5D 0%, #f5d97a 100%);
-    color: #333;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 16px;
-    display: inline-flex;
+.room-info-text {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 2px 4px rgba(242, 204, 93, 0.3);
-}
-
-.room-type-badge i {
-    font-size: 18px;
-}
-
-.room-number-badge {
-    background: linear-gradient(135deg, #e8f4f8 0%, #d4e8f0 100%);
-    color: #114378;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 600;
+    gap: 12px;
     font-size: 15px;
+    color: #495057;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.room-type-text,
+.package-text,
+.room-number-text {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 2px 4px rgba(17, 67, 120, 0.2);
+    gap: 6px;
+    font-weight: 500;
 }
 
-.room-number-badge i {
+.room-type-text {
+    color: #333;
+}
+
+.package-text {
+    color: #0d6efd;
+}
+
+.room-number-text {
+    color: #114378;
+}
+
+.room-separator {
+    color: #adb5bd;
+    font-weight: 300;
+    margin: 0 4px;
+}
+
+.room-info-text i {
     font-size: 16px;
+    opacity: 0.8;
 }
 
+/* Toolbar Styles */
+.schedules-toolbar {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    margin-bottom: 20px;
+}
+
+.schedules-toolbar .filter-item {
+    min-width: 140px;
+    max-width: 160px;
+    flex: 0 0 auto;
+}
+
+.schedules-toolbar .form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 5px;
+    font-size: 0.8rem;
+}
+
+.schedules-toolbar .form-control-sm {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.schedules-toolbar .btn-group .btn {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+    .schedules-toolbar .filter-item {
+        min-width: 130px;
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 992px) {
+    .schedules-toolbar .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .schedules-toolbar .filter-item {
+        min-width: 100%;
+        max-width: 100%;
+    }
+    
+    .schedules-toolbar .ms-auto {
+        margin-left: 0 !important;
+        margin-top: 10px;
+    }
+    
+    .schedules-toolbar .btn-group {
+        width: 100%;
+    }
+    
+    .schedules-toolbar .btn-group .btn {
+        flex: 1;
+    }
+}
+
+.schedules-toolbar .btn i {
+    margin-right: 5px;
+}
+
+/* List View Styles */
+#listViewContainer {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+#schedulesListTable {
+    margin-top: 0;
+}
+
+#schedulesListTable thead th {
+    background-color: #7b584f !important;
+    font-weight: 600;
+    color: #ffffff !important;
+    border-bottom: 2px solid #495057;
+    padding: 12px 8px;
+    text-align: left;
+}
+
+#schedulesListTable tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+#schedulesListTable tbody td {
+    vertical-align: middle;
+}
+
+/* Calendar View Container */
+#calendarViewContainer {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+/* Day Events Modal Styles */
+#dayEventsModal .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#dayEventsModal .modal-title {
+    font-weight: 600;
+    color: #114378;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#dayEventsModal .modal-title i {
+    font-size: 1.2em;
+}
+
+#dayEventsModal .table {
+    margin-bottom: 0;
+}
+
+#dayEventsModal .table thead th {
+    background-color: #7b584f !important;
+    font-weight: 600;
+    color: #ffffff !important;
+    border-bottom: 2px solid #495057;
+    padding: 12px;
+    text-align: left;
+}
+
+#dayEventsModal .table tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+#dayEventsModal .table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+#dayEventsModal .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Disable FullCalendar default popover - we use custom Bootstrap modal instead */
+.fc-popover {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}

@@ -28,7 +28,7 @@ public class ResourceAllocationAPIController : ControllerBase
     {
         try
         {
-            string query = @"Select 
+            string query = @"Select
                             gs.* 
                             from GuestSchedule gs
                             Left Join TaskMaster tm on gs.TaskId=tm.Id

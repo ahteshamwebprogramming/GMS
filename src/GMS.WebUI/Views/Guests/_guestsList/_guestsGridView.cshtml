@@ -66,6 +66,7 @@
                                 <li><i class="bi bi-phone"></i> <span>@item.MobileNo</span></li>
                                 <li><i class="bi bi-calendar"></i> <span> @item.DateOfArrival?.ToString("dd-MMM-yy") to @item.DateOfDepartment?.ToString("dd-MMM-yy")</span></li>
                                 <li><i class="fas fa-bed"></i> <span>@(string.IsNullOrWhiteSpace(item.RoomTypeName) ? "-" : item.RoomTypeName)</span></li>
+                                <li><i class="bi bi-box-seam"></i> <span>@(string.IsNullOrWhiteSpace(item.Service) ? "-" : item.Service)</span></li>
                                 <li><i class="bi bi-clock"></i> <span>@item.Category</span></li>
 
                                 @{

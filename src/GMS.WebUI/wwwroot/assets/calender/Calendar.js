@@ -511,6 +511,7 @@ function CreateEvent() {
         inputDTO.TaskId = $("#AddSchedule").find("[name='TaskId']").val();
         inputDTO.EmployeeId1 = $("#AddSchedule").find("[name='EmployeeId1']").val();
         inputDTO.EmployeeId2 = $("#AddSchedule").find("[name='EmployeeId2']").val();
+        inputDTO.EmployeeId3 = $("#AddSchedule").find("[name='EmployeeId3']").val();
         inputDTO.ResourceId = $("#AddSchedule").find("[name='ResourceId']").val();
 
         // Format StartDateTime (Start Date + Start Time)
@@ -536,8 +537,30 @@ function CreateEvent() {
             contentType: 'application/json',
             data: JSON.stringify(inputDTO),
             success: function (response) {
-                alert("Success");
-                location.reload();
+                // Show success notification
+                if (typeof showNotification === 'function') {
+                    showNotification('Schedule saved successfully', 'success');
+                } else {
+                    alert('Schedule saved successfully');
+                }
+                
+                // Close the modal
+                $('#crtevents').modal('hide');
+                
+                // Refresh calendar instead of reloading page
+                if (window.globalCalendarInstance) {
+                    window.globalCalendarInstance.refetchEvents();
+                }
+                
+                // Refresh list view if visible
+                if ($('#listViewContainer').is(':visible') && window.SchedulesListView) {
+                    window.SchedulesListView.loadAndRender();
+                }
+                
+                // Reset form
+                $("#AddSchedule")[0].reset();
+                $("#AddSchedule").find("[name='ScheduleId']").val('');
+                $('#btnDelete').hide();
                 //debugger
                 //document.getElementById("btnadd").disabled = false;
                 //if (response.status == 400) {
@@ -559,6 +582,20 @@ function CreateEvent() {
                 //        location.reload();
                 //    }, 30);
                 //}
+            },
+            error: function (error) {
+                console.error('Failed to save schedule:', error);
+                var errorMessage = 'Failed to save schedule. Please try again.';
+                if (error.responseJSON && error.responseJSON.message) {
+                    errorMessage = error.responseJSON.message;
+                }
+                
+                // Show error notification
+                if (typeof showNotification === 'function') {
+                    showNotification(errorMessage, 'error');
+                } else {
+                    alert(errorMessage);
+                }
             }
         });
     }
@@ -568,6 +605,10 @@ function CreateEvent() {
 
 var title, des, loc, status, accessibility;
 var eventid, taskName, startDate, startTime, duration, endDate, endTime;
+
+// DISABLED: FullCalendar initialization moved to SchedulesContent.js to prevent duplicate initialization
+// Calendar initialization is now handled exclusively in SchedulesContent.js for the Guest Schedules module
+/*
 document.addEventListener('DOMContentLoaded', function () {
 
     let eventsCustom = [];
@@ -852,6 +893,7 @@ document.addEventListener('DOMContentLoaded', function () {
     calendar.render();
 
 });
+*/
 
 
 var filename = new Array();

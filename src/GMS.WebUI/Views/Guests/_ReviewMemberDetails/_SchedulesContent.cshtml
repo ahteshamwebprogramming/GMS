@@ -3,7 +3,7 @@
 <link href="~/assets/calender/calendar.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/main.min.css" rel="stylesheet">
 <link href="~/CustomCSS/Guests/SchedulesContent.css" rel="stylesheet" />
 
 <div class="schedules-container">
@@ -28,15 +28,28 @@
                 </div>
             </div>
             <div class="room-info-section">
-                <div class="room-type-badge">
-                    <i class="bi bi-door-open"></i> @Model?.RoomTypeName
+                <div class="room-info-text">
+                    @if (!string.IsNullOrEmpty(Model?.RoomTypeName))
+                    {
+                        <span class="room-type-text">
+                            <i class="bi bi-door-open"></i> @Model.RoomTypeName
+                        </span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model?.Service))
+                    {
+                        <span class="room-separator">|</span>
+                        <span class="package-text">
+                            <i class="bi bi-box-seam"></i> @Model.Service
+                        </span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model?.RoomNumber))
+                    {
+                        <span class="room-separator">|</span>
+                        <span class="room-number-text">
+                            <i class="bi bi-door-closed"></i> @Model.RoomNumber
+                        </span>
+                    }
                 </div>
-                @if (!string.IsNullOrEmpty(Model?.RoomNumber))
-                {
-                    <div class="room-number-badge">
-                        <i class="bi bi-door-closed"></i> @Model.RoomNumber
-                    </div>
-                }
             </div>
         </div>
     </div>
@@ -45,8 +58,123 @@
     <input type="hidden" id="guestCheckoutDate" value="@Model?.DateOfDepartment?.ToString("yyyy-MM-dd HH:mm")" />
     <input type="hidden" id="GuestSchedule_GuestId" value="@Model?.Id" />
 
-    <div class="cal_box">
+    @* Toolbar with Filters *@
+    <div class="schedules-toolbar mb-3">
+        <div class="d-flex flex-wrap align-items-end gap-2">
+            <div class="filter-item">
+                <label class="form-label small">From Date</label>
+                <input type="date" class="form-control form-control-sm" id="filterFromDate" />
+            </div>
+            <div class="filter-item">
+                <label class="form-label small">To Date</label>
+                <input type="date" class="form-control form-control-sm" id="filterToDate" />
+            </div>
+            <div class="filter-item">
+                <label class="form-label small">Task</label>
+                <select class="form-control form-control-sm" id="filterTaskId">
+                    <option value="0">All Tasks</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label class="form-label small">Therapist</label>
+                <select class="form-control form-control-sm" id="filterEmployeeId">
+                    <option value="0">All Therapists</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label class="form-label small">Resource</label>
+                <select class="form-control form-control-sm" id="filterResourceId">
+                    <option value="0">All Resources</option>
+                </select>
+            </div>
+            <div class="ms-auto">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-primary" id="btnCalendarView">
+                        <i class="bi bi-calendar-event"></i> Calendar View
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="btnListView">
+                        <i class="bi bi-list-ul"></i> List View
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnPrint">
+                        <i class="bi bi-printer"></i> Print
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success" id="btnDownloadExcel" title="Download Excel">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Calendar View Container *@
+    <div id="calendarViewContainer" class="cal_box">
         <div id="calendar"></div>
+    </div>
+
+    @* List View Container *@
+    <div id="listViewContainer" style="display: none;">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="schedulesListTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Task</th>
+                        <th>Duration</th>
+                        <th>Resource</th>
+                        <th>Therapist 1</th>
+                        <th>Therapist 2</th>
+                        <th>Therapist 3</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="schedulesListTableBody">
+                    <tr>
+                        <td colspan="9" class="text-center">Loading schedules...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@*Day Events Modal (for "+more" link)*@
+<div class="modal fade" id="dayEventsModal" tabindex="-1" aria-labelledby="dayEventsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dayEventsModalLabel">
+                    <i class="bi bi-calendar-event"></i> <span id="dayEventsModalDate"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Task</th>
+                                <th>Duration</th>
+                                <th>Resource</th>
+                                <th>Therapist 1</th>
+                                <th>Therapist 2</th>
+                                <th>Therapist 3</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dayEventsModalBody">
+                            <tr>
+                                <td colspan="8" class="text-center">Loading events...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -84,6 +212,12 @@
                         <div class="col-4 mt-3">
                             <label>Therapist 2</label>
                             <select class="form-control" name="EmployeeId2">
+                                <option value="0"></option>
+                            </select>
+                        </div>
+                        <div class="col-4 mt-3">
+                            <label>Therapist 3</label>
+                            <select class="form-control" name="EmployeeId3">
                                 <option value="0"></option>
                             </select>
                         </div>
@@ -129,8 +263,35 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-danger me-auto" id="btnDelete" onclick="DeleteSchedule()" style="display: none;">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="btnadd" onclick="CreateEvent()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this schedule?</p>
+                <p class="text-danger mb-0"><strong>This action cannot be undone.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDelete">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
             </div>
         </div>
     </div>
@@ -157,8 +318,8 @@
                 return;
             }
 
-            // Check for FullCalendar (loaded in layout)
-            if (typeof FullCalendar === 'undefined') {
+            // Check for FullCalendar (FullCalendar v6 exposes itself as window.FullCalendar)
+            if (typeof window.FullCalendar === 'undefined' && typeof FullCalendar === 'undefined') {
                 if (retryCount < maxRetries) {
                     setTimeout(function() { waitForDependencies(callback); }, 50);
                 } else {
@@ -207,11 +368,46 @@
             // Load scripts sequentially after dependencies are confirmed
             loadScript('@Url.Content("~/assets/calender/calendar.js")', function() {
                 loadScript('@Url.Content("~/CustomJS/Guests/GuestSchedule.js")', function() {
-                    loadScript('@Url.Content("~/CustomJS/Guests/SchedulesContent.js")', function() {
-                        // All scripts loaded successfully
+                    loadScript('@Url.Content("~/CustomJS/Guests/SchedulesFilters.js")', function() {
+                        loadScript('@Url.Content("~/CustomJS/Guests/SchedulesListView.js")', function() {
+                            loadScript('@Url.Content("~/CustomJS/Guests/SchedulesContent.js")', function() {
+                                // All scripts loaded successfully
+                                // Ensure calendar initializes even if DOMContentLoaded already fired
+                                initializeCalendarIfNeeded();
+                            });
+                        });
                     });
                 });
             });
         });
+
+        // Function to initialize calendar if DOM is ready
+        function initializeCalendarIfNeeded() {
+            // Check if calendar element exists
+            var calendarEl = document.getElementById('calendar');
+            if (!calendarEl) {
+                console.warn('Calendar element not found, waiting for DOM...');
+                // If DOM not ready, wait for it
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        setTimeout(initializeCalendarIfNeeded, 100);
+                    });
+                } else {
+                    // DOM is ready but element might not be rendered yet, retry
+                    setTimeout(initializeCalendarIfNeeded, 100);
+                }
+                return;
+            }
+
+            // Check if calendar is already initialized
+            if (window.globalCalendarInstance) {
+                return; // Already initialized
+            }
+
+            // Trigger calendar initialization by dispatching a custom event
+            // This will work even if DOMContentLoaded already fired
+            var initEvent = new Event('initializeCalendar');
+            document.dispatchEvent(initEvent);
+        }
     })();
 </script>

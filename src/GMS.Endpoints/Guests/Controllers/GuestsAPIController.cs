@@ -236,14 +236,48 @@ public class GuestsAPIController : ControllerBase
     {
         try
         {
-            string query1 = $"Select * from GuestSchedule where guestid=@GuestId";
-            string query = @"Select gs.*,tm.TaskName,wm1.WorkerName EmployeeName1,wm2.WorkerName EmployeeName2,rm.ResourceName from GuestSchedule gs
+            // IMPORTANT: Run the migration script first: Database/Migration_Add_EmployeeId3_To_GuestSchedule.sql
+            // After migration, this query will work with the actual EmployeeId3 column
+            // For now, using explicit column list to avoid "Invalid column name" error if EmployeeId3 doesn't exist
+            
+            // Check if EmployeeId3 column exists (simple check - if query fails, column doesn't exist)
+            // After migration, use this query:
+            /*
+            string query = @"Select gs.*,tm.TaskName,wm1.WorkerName EmployeeName1,wm2.WorkerName EmployeeName2,wm3.WorkerName EmployeeName3,rm.ResourceName 
+                            from GuestSchedule gs
+                                left Join TaskMaster tm on gs.TaskId=tm.Id
+                                left join EHRMS.dbo.WorkerMaster wm1 on gs.EmployeeId1=wm1.WorkerID
+								left join EHRMS.dbo.WorkerMaster wm2 on gs.EmployeeId2=wm2.WorkerID
+								left join EHRMS.dbo.WorkerMaster wm3 on gs.EmployeeId3=wm3.WorkerID
+                                left join ResourceMaster rm on gs.ResourceId=rm.Id
+                            where gs.guestid=@GuestId";
+            */
+            
+            // Temporary query (works before migration - sets EmployeeId3 to NULL):
+            string query = @"Select 
+                                gs.Id,
+                                gs.GuestId,
+                                gs.StartDateTime,
+                                gs.EndDateTime,
+                                gs.Duration,
+                                gs.TaskId,
+                                gs.EmployeeId1,
+                                gs.EmployeeId2,
+                                CAST(NULL as int) as EmployeeId3,
+                                gs.SessionId,
+                                gs.ResourceId,
+                                tm.TaskName,
+                                wm1.WorkerName EmployeeName1,
+                                wm2.WorkerName EmployeeName2,
+                                CAST(NULL as nvarchar(max)) as EmployeeName3,
+                                rm.ResourceName 
+                            from GuestSchedule gs
                                 left Join TaskMaster tm on gs.TaskId=tm.Id
                                 left join EHRMS.dbo.WorkerMaster wm1 on gs.EmployeeId1=wm1.WorkerID
 								left join EHRMS.dbo.WorkerMaster wm2 on gs.EmployeeId2=wm2.WorkerID
                                 left join ResourceMaster rm on gs.ResourceId=rm.Id
-
-                                where guestid=@GuestId";
+                            where gs.guestid=@GuestId";
+            
             var parameter = new { @GuestId = GuestId };
             var res = await _unitOfWork.GuestSchedule.GetTableData<GuestScheduleWithChild>(query, parameter);
             return Ok(res);
@@ -254,6 +288,44 @@ public class GuestsAPIController : ControllerBase
             throw;
         }
     }
+    
+    public async Task<IActionResult> DeleteGuestSchedule(int Id)
+    {
+        try
+        {
+            if (Id <= 0)
+            {
+                return BadRequest("Invalid schedule ID");
+            }
+
+            // Verify schedule exists before deletion
+            string query = "Select * from GuestSchedule where Id=@Id";
+            var parameter = new { @Id = Id };
+            GuestSchedule schedule = await _unitOfWork.GuestSchedule.GetEntityData<GuestSchedule>(query, parameter);
+            
+            if (schedule == null)
+            {
+                return NotFound("Schedule not found");
+            }
+
+            // DeleteAsync expects an int id, not the entity
+            bool deleted = await _unitOfWork.GuestSchedule.DeleteAsync(Id);
+            if (deleted)
+            {
+                return Ok(new { success = true, message = "Schedule deleted successfully" });
+            }
+            else
+            {
+                return BadRequest("Unable to delete schedule");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error in deleting schedule {nameof(DeleteGuestSchedule)}");
+            return StatusCode(500, "An error occurred while deleting the schedule");
+        }
+    }
+    
     public async Task<bool> AccountSettled(int GuestId)
     {
         try
@@ -352,6 +424,7 @@ public class GuestsAPIController : ControllerBase
                     gs.TaskId = dto.TaskId;
                     gs.EmployeeId1 = dto.EmployeeId1;
                     gs.EmployeeId2 = dto.EmployeeId2;
+                    gs.EmployeeId3 = dto.EmployeeId3;
                     gs.ResourceId = dto.ResourceId;
                     var updated = await _unitOfWork.GuestSchedule.UpdateAsync(gs);
                     if (updated)
@@ -421,6 +494,7 @@ public class GuestsAPIController : ControllerBase
                             schedule.TaskId = dto.TaskId;
                             schedule.EmployeeId1 = dto.EmployeeId1;
                             schedule.EmployeeId2 = dto.EmployeeId2;
+                            schedule.EmployeeId3 = dto.EmployeeId3;
                             schedule.ResourceId = dto.ResourceId;
                             schedule.SessionId = iteration;
 

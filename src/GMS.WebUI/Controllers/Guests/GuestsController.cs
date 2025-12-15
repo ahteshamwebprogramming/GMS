@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Data;
 using System.Security.Claims;
+using System.Text;
 
 
 
@@ -1172,6 +1173,178 @@ public class GuestsController : Controller
         }
     }
 
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/Schedules/Print")]
+    public async Task<IActionResult> SchedulesPrint(int? GuestId, string from = null, string to = null, int? taskId = null, int? employeeId = null, int? resourceId = null)
+    {
+        if (GuestId == null)
+        {
+            return View();
+        }
+        else
+        {
+            MemberDetailsWithChild? membersDetailsDTOs = new MemberDetailsWithChild();
+            var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+            if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+            {
+                membersDetailsDTOs = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+                if (membersDetailsDTOs != null && membersDetailsDTOs.Dob != null)
+                    membersDetailsDTOs.Age = CommonHelper.CalculateAge(membersDetailsDTOs.Dob);
+            }
+            
+            // Get schedules
+            var schedulesRes = await _guestsAPIController.GetGuestsEventForCalender(GuestId ?? default(int));
+            List<GMS.Infrastructure.ViewModels.Guests.GuestScheduleWithChild> schedules = new List<GMS.Infrastructure.ViewModels.Guests.GuestScheduleWithChild>();
+            if (schedulesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)schedulesRes).StatusCode == 200)
+            {
+                schedules = ((List<GMS.Infrastructure.ViewModels.Guests.GuestScheduleWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)schedulesRes).Value) ?? new List<GMS.Infrastructure.ViewModels.Guests.GuestScheduleWithChild>();
+            }
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(from))
+            {
+                var fromDate = DateTime.Parse(from);
+                schedules = schedules.Where(s => s.StartDateTime.Date >= fromDate.Date).ToList();
+            }
+            if (!string.IsNullOrEmpty(to))
+            {
+                var toDate = DateTime.Parse(to);
+                schedules = schedules.Where(s => s.StartDateTime.Date <= toDate.Date).ToList();
+            }
+            if (taskId.HasValue && taskId.Value > 0)
+            {
+                schedules = schedules.Where(s => s.TaskId == taskId.Value).ToList();
+            }
+            if (employeeId.HasValue && employeeId.Value > 0)
+            {
+                schedules = schedules.Where(s => s.EmployeeId1 == employeeId.Value || s.EmployeeId2 == employeeId.Value || s.EmployeeId3 == employeeId.Value).ToList();
+            }
+            if (resourceId.HasValue && resourceId.Value > 0)
+            {
+                schedules = schedules.Where(s => s.ResourceId == resourceId.Value).ToList();
+            }
+
+            // Sort by date
+            schedules = schedules.OrderBy(s => s.StartDateTime).ToList();
+
+            ViewBag.GuestId = GuestId;
+            ViewBag.Schedules = schedules;
+            ViewBag.Filters = new { from, to, taskId, employeeId, resourceId };
+            return View("_ReviewMemberDetails/_SchedulesPrint", membersDetailsDTOs);
+        }
+    }
+
+    [Route("/Guests/ReviewMemberDetails/{GuestId}/Schedules/ExportExcel")]
+    public async Task<IActionResult> SchedulesExportExcel(int? GuestId, string from = null, string to = null, int? taskId = null, int? employeeId = null, int? resourceId = null)
+    {
+        if (GuestId == null)
+        {
+            return BadRequest("Guest ID is required");
+        }
+
+        // Get guest details
+        MemberDetailsWithChild? guestDetails = new MemberDetailsWithChild();
+        var res = await _guestsAPIController.GetGuestByIdWithChild(GuestId ?? default(int));
+        if (res != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)res).StatusCode == 200)
+        {
+            guestDetails = (MemberDetailsWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
+        }
+
+        // Get schedules
+        var schedulesRes = await _guestsAPIController.GetGuestsEventForCalender(GuestId ?? default(int));
+        List<GMS.Infrastructure.ViewModels.Guests.GuestScheduleWithChild> schedules = new List<GMS.Infrastructure.ViewModels.Guests.GuestScheduleWithChild>();
+        if (schedulesRes != null && ((Microsoft.AspNetCore.Mvc.ObjectResult)schedulesRes).StatusCode == 200)
+        {
+            schedules = ((List<GMS.Infrastructure.ViewModels.Guests.GuestScheduleWithChild>?)((Microsoft.AspNetCore.Mvc.ObjectResult)schedulesRes).Value) ?? new List<GMS.Infrastructure.ViewModels.Guests.GuestScheduleWithChild>();
+        }
+
+        // Apply filters
+        if (!string.IsNullOrEmpty(from))
+        {
+            var fromDate = DateTime.Parse(from);
+            schedules = schedules.Where(s => s.StartDateTime.Date >= fromDate.Date).ToList();
+        }
+        if (!string.IsNullOrEmpty(to))
+        {
+            var toDate = DateTime.Parse(to);
+            schedules = schedules.Where(s => s.StartDateTime.Date <= toDate.Date).ToList();
+        }
+        if (taskId.HasValue && taskId.Value > 0)
+        {
+            schedules = schedules.Where(s => s.TaskId == taskId.Value).ToList();
+        }
+        if (employeeId.HasValue && employeeId.Value > 0)
+        {
+            schedules = schedules.Where(s => s.EmployeeId1 == employeeId.Value || s.EmployeeId2 == employeeId.Value || s.EmployeeId3 == employeeId.Value).ToList();
+        }
+        if (resourceId.HasValue && resourceId.Value > 0)
+        {
+            schedules = schedules.Where(s => s.ResourceId == resourceId.Value).ToList();
+        }
+
+        // Sort by date
+        schedules = schedules.OrderBy(s => s.StartDateTime).ToList();
+
+        // Generate CSV content
+        var csv = new StringBuilder();
+        
+        // Add guest header information
+        csv.AppendLine("Guest Schedule Report");
+        csv.AppendLine($"Guest Name: {guestDetails?.CustomerName ?? "N/A"}");
+        csv.AppendLine($"UHID: {guestDetails?.UHID ?? "N/A"}");
+        csv.AppendLine($"Room: {guestDetails?.RoomTypeName ?? "N/A"} | {guestDetails?.Service ?? "N/A"} | {guestDetails?.RoomNumber ?? "N/A"}");
+        csv.AppendLine($"Stay Dates: {(guestDetails?.DateOfArrival?.ToString("dd-MMM-yyyy") ?? "N/A")} to {(guestDetails?.DateOfDepartment?.ToString("dd-MMM-yyyy") ?? "N/A")}");
+        csv.AppendLine(); // Empty line
+        
+        // Add column headers
+        csv.AppendLine("Date,Time,Task,Duration,Resource,Therapist 1,Therapist 2,Therapist 3");
+        
+        // Group by date and add rows
+        var groupedSchedules = schedules.GroupBy(s => s.StartDateTime.Date).OrderBy(g => g.Key);
+        
+        foreach (var dateGroup in groupedSchedules)
+        {
+            var dateStr = dateGroup.Key.ToString("dd-MMM-yyyy");
+            var isFirstRow = true;
+            
+            foreach (var schedule in dateGroup.OrderBy(s => s.StartDateTime))
+            {
+                var timeStr = schedule.StartDateTime.ToString("HH:mm") + " - " + schedule.EndDateTime.ToString("HH:mm");
+                var duration = schedule.EndDateTime - schedule.StartDateTime;
+                var durationStr = duration.Hours < 1 
+                    ? $"{duration.Minutes} min{(duration.Minutes != 1 ? "s" : "")}"
+                    : duration.Minutes > 0 
+                        ? $"{duration.Hours}h {duration.Minutes}m"
+                        : $"{duration.Hours} hour{(duration.Hours != 1 ? "s" : "")}";
+                
+                var taskName = schedule.TaskName ?? "N/A";
+                var resourceName = schedule.ResourceName ?? "-";
+                var therapist1 = schedule.EmployeeName1 ?? "-";
+                var therapist2 = schedule.EmployeeName2 ?? "-";
+                var therapist3 = schedule.EmployeeName3 ?? "-";
+                
+                // Escape commas and quotes in CSV
+                var escapeCsv = new Func<string, string>(s => 
+                {
+                    if (string.IsNullOrEmpty(s)) return "";
+                    if (s.Contains(",") || s.Contains("\"") || s.Contains("\n"))
+                        return "\"" + s.Replace("\"", "\"\"") + "\"";
+                    return s;
+                });
+                
+                csv.AppendLine($"{escapeCsv(isFirstRow ? dateStr : "")},{escapeCsv(timeStr)},{escapeCsv(taskName)},{escapeCsv(durationStr)},{escapeCsv(resourceName)},{escapeCsv(therapist1)},{escapeCsv(therapist2)},{escapeCsv(therapist3)}");
+                isFirstRow = false;
+            }
+        }
+
+        // Generate filename
+        var guestName = guestDetails?.CustomerName?.Replace(" ", "_") ?? "Guest";
+        var fileName = $"Guest_Schedule_{guestName}_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+        
+        // Return CSV file
+        var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+        return File(bytes, "text/csv", fileName);
+    }
+
     [Route("/Guests/ReviewMemberDetails/{GuestId}/CaseSheet")]
     public async Task<IActionResult> CaseSheet(int? GuestId)
     {
@@ -1506,6 +1679,18 @@ public class GuestsController : Controller
         return res;
     }
 
+    [HttpPost]
+    public async Task<IActionResult> DeleteGuestSchedule([FromBody] GuestScheduleDTO inputDTO)
+    {
+        if (inputDTO == null || inputDTO.Id <= 0)
+        {
+            return BadRequest("Invalid schedule ID");
+        }
+        
+        var res = await _guestsAPIController.DeleteGuestSchedule(inputDTO.Id);
+        return res;
+    }
+
     public async Task<IActionResult> GetGuestsEventForCalenderById([FromBody] GuestScheduleDTO inputDTO)
     {
         GuestScheduleViewModel? dto = new GuestScheduleViewModel();
@@ -1521,6 +1706,7 @@ public class GuestsController : Controller
         }
         return Ok(dto);
     }
+
     public async Task<IActionResult> CreateGuestScheduleByCalendar([FromBody] GuestScheduleDTO inputDTO)
     {
         if (inputDTO != null)
