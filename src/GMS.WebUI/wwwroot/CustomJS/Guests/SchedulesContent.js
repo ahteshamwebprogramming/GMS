@@ -170,7 +170,7 @@ var globalCalendarInstance = null;
 
                 var startMoment = moment(event.start);
                 var endMoment = moment(event.end);
-                var timeRange = startMoment.format('HH:mm') + ' - ' + endMoment.format('HH:mm');
+                var timeRange = startMoment.format('hh:mm A') + ' - ' + endMoment.format('hh:mm A');
                 
                 // Calculate duration
                 var duration = moment.duration(endMoment.diff(startMoment));
@@ -331,8 +331,11 @@ var globalCalendarInstance = null;
                     $("#AddSchedule").find("[name='EndTime']").val(endTime);
                     $("#AddSchedule").find("[name='ScheduleId']").val(guestSchedule.id);
 
-                    // Show delete button when editing
-                    $('#btnDelete').show();
+                            // Show delete button when editing
+                            $('#btnDelete').show();
+                            
+                            // Hide X field when editing
+                            $("#noOfDaysContainer").hide();
 
                     $taskId.change();
                 },
@@ -459,6 +462,9 @@ var globalCalendarInstance = null;
             myCustomButton: {
                 text: 'Add Event',
                 click: function () {
+                    if (typeof resetAddScheduleForm === 'function') {
+                        resetAddScheduleForm();
+                    }
                     $('#crtevents').modal('toggle');
                             if (typeof initFlatPickerDuration === 'function') {
                     initFlatPickerDuration();
@@ -477,6 +483,11 @@ var globalCalendarInstance = null;
                     $('#btnDelete').hide();
                     // Clear ScheduleId
                     $("#AddSchedule").find("[name='ScheduleId']").val('');
+                    // Show X field for new schedules
+                    $("#noOfDaysContainer").show();
+                    if (typeof resetAddScheduleForm === 'function') {
+                        resetAddScheduleForm();
+                    }
             $('#crtevents').modal('toggle');
                     if (typeof initFlatPickerDuration === 'function') {
             initFlatPickerDuration();
@@ -679,6 +690,9 @@ var globalCalendarInstance = null;
 
                             // Show delete button when editing
                             $('#btnDelete').show();
+                            
+                            // Hide X field when editing
+                            $("#noOfDaysContainer").hide();
 
                     $taskId.change();
                 },

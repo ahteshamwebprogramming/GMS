@@ -1,0 +1,118 @@
+@model GMS.Infrastructure.ViewModels.Wellness.WellnessStatusBoardViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Wellness Treatment Status Board";
+}
+
+<div class="admin_wrapper hk-dashboard hk-worker-dashboard">
+    @Html.Partial("_home/_leftNavigationHome")
+
+    <div class="right_container gms-page wellness-board">
+        <!-- Board Header -->
+        <div class="board-header">
+            <div class="board-header-left">
+                <h1>Wellness Treatment Status Board</h1>
+                <p class="subtitle">Live treatment tracking — @Model.BoardDate.ToString("dddd, dd MMM yyyy")</p>
+            </div>
+            <div class="board-header-right">
+                <span class="live-badge">LIVE</span>
+                <span class="last-sync">Last Sync: <strong id="lastSyncTime">--:-- --</strong></span>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="board-table-container">
+            <table class="wellness-board-table" id="statusTable">
+                <thead>
+                    <tr>
+                        <th>Therapist Name</th>
+                        <th>Treatment Name</th>
+                        <th>Date &amp; Time</th>
+                        <th>Treatment Room</th>
+                        <th>Guest</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="statusTableBody">
+                    @if (Model.Schedules != null && Model.Schedules.Any())
+                    {
+                        @foreach (var schedule in Model.Schedules.Where(s => s.Status != GMS.Infrastructure.ViewModels.Wellness.WellnessExecutionStatus.Completed))
+                        {
+                            <tr data-schedule-id="@schedule.ScheduleId" 
+                                data-status="@schedule.StatusClass"
+                                data-scheduled-time="@schedule.ScheduledDateTime.ToString("o")"
+                                data-started-at="@(schedule.ActualStartTime?.ToString("o") ?? "")"
+                                class="@(schedule.IsOverdue ? "is-overdue" : "")">
+                                <td class="cell-truncate" title="@(schedule.TherapistName ?? "-")">
+                                    @(schedule.TherapistName ?? "-")
+                                </td>
+                                <td class="cell-truncate" title="@(schedule.TreatmentName ?? "N/A")">
+                                    @(schedule.TreatmentName ?? "N/A")
+                                </td>
+                                <td>@schedule.ScheduledDateTime.ToString("hh:mm tt")</td>
+                                <td>@(schedule.TreatmentRoom ?? "-")</td>
+                                <td class="cell-truncate" title="@(schedule.GuestName ?? "N/A")@(!string.IsNullOrEmpty(schedule.RoomNo) ? $" (Room {schedule.RoomNo})" : "")">
+                                    @(schedule.GuestName ?? "N/A")
+                                    @if (!string.IsNullOrEmpty(schedule.RoomNo))
+                                    {
+                                        <small>(Room @schedule.RoomNo)</small>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="status-container" data-status-container data-status="@schedule.StatusClass"></div>
+                                </td>
+                                <td class="cell-remark" title="@(schedule.Remarks ?? "")">
+                                    @if (schedule.IssueReported == true)
+                                    {
+                                        <span class="issue-badge">⚠</span>
+                                    }
+                                    @(schedule.Remarks ?? "-")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr id="noDataRow">
+                            <td colspan="7" class="text-center py-4">
+                                <div class="no-data-message">
+                                    <i class="bi bi-calendar-x" style="font-size: 2rem; opacity: 0.5;"></i>
+                                    <p class="mt-2 mb-0">No treatments scheduled for today</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/wellness-status-board.css" asp-append-version="true" />
+    <style>
+        .no-data-message {
+            color: #8b949e;
+            padding: 2rem;
+        }
+        .issue-badge {
+            color: #e74c3c;
+            margin-right: 4px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Pass initial data to JS
+        window.WellnessBoardConfig = {
+            boardDate: '@Model.BoardDate.ToString("yyyy-MM-dd")',
+            refreshUrl: '@Url.Action("GetWellnessStatusBoardData", "Home")',
+            initialData: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Schedules ?? new List<GMS.Infrastructure.ViewModels.Wellness.WellnessScheduleRow>()))
+        };
+    </script>
+    <script src="~/js/wellness-status-board.js" asp-append-version="true"></script>
+}

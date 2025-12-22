@@ -1296,7 +1296,7 @@ public class GuestsController : Controller
         csv.AppendLine(); // Empty line
         
         // Add column headers
-        csv.AppendLine("Date,Time,Task,Duration,Resource,Therapist 1,Therapist 2,Therapist 3");
+        csv.AppendLine("Date,Time,Task,Duration,Treatment Room,Healer 1,Healer 2,Healer 3");
         
         // Group by date and add rows
         var groupedSchedules = schedules.GroupBy(s => s.StartDateTime.Date).OrderBy(g => g.Key);

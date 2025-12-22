@@ -1,0 +1,417 @@
+/* ============================================
+   Wellness Treatment Status Board - GMS Theme
+   Operations Board / Airport Display Style
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
+
+/* Page Container */
+.gms-page.wellness-board {
+    font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f4f6f9;
+    min-height: 100vh;
+    padding: 0;
+}
+
+/* Board Header */
+.board-header {
+    background: linear-gradient(135deg, #1a252f 0%, #2C3E50 100%);
+    padding: 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #1abc9c;
+}
+
+.board-header-left h1 {
+    margin: 0;
+    font-family: "Roboto Mono", monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.board-header-left .subtitle {
+    margin: 6px 0 0;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+.board-header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(35, 134, 54, 0.2);
+    border: 1px solid #238636;
+    color: #3fb950;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.live-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #3fb950;
+    border-radius: 50%;
+    animation: pulse-live 1.2s ease-in-out infinite;
+    box-shadow: 0 0 8px #3fb950;
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.last-sync {
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+}
+
+.last-sync strong {
+    color: #fff;
+    font-weight: 500;
+}
+
+/* Table Container */
+.board-table-container {
+    padding: 20px 28px 28px;
+    overflow-x: auto;
+}
+
+/* Table Styling - Status Board Look */
+.wellness-board-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #1a252f;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.wellness-board-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.wellness-board-table th {
+    background: #2C3E50;
+    color: rgba(255,255,255,0.8);
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 2px solid #1abc9c;
+}
+
+.wellness-board-table th:first-child {
+    padding-left: 24px;
+}
+
+.wellness-board-table tbody tr {
+    transition: background-color 0.15s ease;
+    background: #1a252f;
+}
+
+/* Hover state - should work with status colors */
+.wellness-board-table tbody tr:hover {
+    background: #243342 !important;
+    opacity: 0.9;
+}
+
+/* Restore status background on hover, with slight opacity change */
+.wellness-board-table tbody tr[data-status="scheduled"]:hover {
+    background: rgba(149, 165, 166, 0.15) !important; /* Neutral gray - slightly darker on hover */
+}
+
+.wellness-board-table tbody tr[data-status="assigned"]:hover {
+    background: rgba(26, 188, 156, 0.2) !important; /* Light teal - darker on hover */
+}
+
+.wellness-board-table tbody tr[data-status="in-progress"]:hover {
+    background: rgba(39, 174, 96, 0.25) !important; /* Light green - darker on hover */
+}
+
+.wellness-board-table tbody tr[data-status="pending"]:hover {
+    background: rgba(149, 165, 166, 0.15) !important; /* Neutral gray - slightly darker on hover */
+}
+
+.wellness-board-table tbody tr[data-status="completed"]:hover {
+    background: rgba(31, 131, 75, 0.2) !important; /* Light green - darker on hover */
+}
+
+.wellness-board-table tbody tr[data-status="cancelled"]:hover {
+    background: rgba(231, 76, 60, 0.2) !important; /* Light red - darker on hover */
+}
+
+/* Starting Soon hover */
+.wellness-board-table tbody tr.starting-soon:hover {
+    background: rgba(255, 152, 0, 0.25) !important; /* Light orange/amber - darker on hover */
+}
+
+.wellness-board-table td {
+    padding: 16px 16px;
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.85rem;
+    color: #ecf0f1;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    vertical-align: middle;
+}
+
+.wellness-board-table td:first-child {
+    padding-left: 24px;
+    position: relative;
+}
+
+/* Left Status Indicator Bar */
+.wellness-board-table tbody td:first-child::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #7f8c8d;
+    transition: background-color 0.3s ease;
+}
+
+/* Left border colors */
+.wellness-board-table tbody tr[data-status="scheduled"] td:first-child::before { background: #95a5a6; } /* Neutral gray */
+.wellness-board-table tbody tr[data-status="assigned"] td:first-child::before { background: #1abc9c; } /* Keep teal */
+.wellness-board-table tbody tr[data-status="in-progress"] td:first-child::before { background: #27ae60; } /* Green */
+.wellness-board-table tbody tr[data-status="pending"] td:first-child::before { background: #95a5a6; } /* Neutral gray */
+.wellness-board-table tbody tr[data-status="completed"] td:first-child::before { background: #1f834b; } /* Keep green */
+.wellness-board-table tbody tr[data-status="cancelled"] td:first-child::before { background: #e74c3c; } /* Red */
+.wellness-board-table tbody tr.is-overdue td:first-child::before { background: #e74c3c; } /* Red */
+.wellness-board-table tbody tr.starting-soon td:first-child::before { background: #ff9800; } /* Orange/Amber */
+
+/* Animation for Starting Soon - moved to after status backgrounds */
+@keyframes pulse-starting-soon {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Truncated Text */
+.cell-truncate {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Remarks Column */
+.cell-remark {
+    max-width: 150px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #95a5a6;
+    font-size: 0.8rem;
+}
+
+/* Status Container - Flip Board Style */
+.status-container {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.char-cell {
+    width: 18px;
+    height: 28px;
+    background: transparent;
+    border: 1px solid #2C3E50;
+    border-radius: 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* First character box - rounded left corners */
+.status-container .char-cell:first-child {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+/* Last character box - rounded right corners */
+.status-container .char-cell:last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+.char-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Roboto Mono", monospace;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    transform: translateY(-100%);
+    transition: transform 0.25s ease-out;
+}
+
+.char-text.show {
+    transform: translateY(0);
+}
+
+/* Status Colors - High Contrast for Board */
+.char-text.scheduled {
+    background: #95a5a6; /* Neutral gray */
+    color: #ffffff;
+}
+
+.char-text.assigned {
+    background: #1abc9c; /* Teal */
+    color: #ffffff;
+}
+
+.char-text.in-progress {
+    background: #27ae60; /* Green */
+    color: #ffffff;
+}
+
+.char-text.pending {
+    background: #95a5a6; /* Neutral gray */
+    color: #ffffff;
+}
+
+.char-text.overdue {
+    background: #e74c3c; /* Red */
+    color: #ffffff;
+}
+
+.char-text.starting-soon {
+    background: #ff9800; /* Orange/Amber */
+    color: #ffffff;
+}
+
+.char-text.completed {
+    background: #1f834b; /* Dark green */
+    color: #ffffff;
+}
+
+.char-text.cancelled {
+    background: #e74c3c; /* Red */
+    color: #ffffff;
+}
+
+/* Overdue State - Should only apply red background when overdue AND not in-progress or completed */
+.wellness-board-table tbody tr.is-overdue:not([data-status="in-progress"]):not([data-status="completed"]):not([data-status="cancelled"]):not([data-status="assigned"]) {
+    background: rgba(231, 76, 60, 0.15) !important;
+}
+
+/* Status-specific row background colors - Must come after is-overdue with higher specificity and !important */
+.wellness-board-table tbody tr[data-status="scheduled"] {
+    background: rgba(149, 165, 166, 0.12) !important; /* Neutral gray - subtle but visible */
+}
+
+.wellness-board-table tbody tr[data-status="assigned"] {
+    background: rgba(26, 188, 156, 0.1) !important; /* Light teal */
+}
+
+.wellness-board-table tbody tr[data-status="in-progress"] {
+    background: rgba(39, 174, 96, 0.15) !important; /* Light green */
+}
+
+.wellness-board-table tbody tr[data-status="pending"] {
+    background: rgba(149, 165, 166, 0.08) !important; /* Neutral gray - very light */
+}
+
+.wellness-board-table tbody tr[data-status="completed"] {
+    background: rgba(31, 131, 75, 0.1) !important; /* Light green */
+}
+
+.wellness-board-table tbody tr[data-status="cancelled"] {
+    background: rgba(231, 76, 60, 0.1) !important; /* Light red */
+}
+
+/* Starting Soon State - Orange/Amber shade - Must come AFTER status-specific backgrounds to override them */
+.wellness-board-table tbody tr.starting-soon {
+    background: rgba(255, 152, 0, 0.15) !important; /* Light orange/amber */
+}
+
+.wellness-board-table tbody tr.starting-soon td:first-child::before {
+    animation: pulse-starting-soon 1s ease-in-out infinite;
+    box-shadow: 0 0 8px #ff9800; /* Orange/Amber */
+}
+
+.wellness-board-table tbody tr.is-overdue td:first-child::before {
+    animation: pulse-overdue 1s ease-in-out infinite;
+    box-shadow: 0 0 8px #e74c3c;
+}
+
+@keyframes pulse-overdue {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Row Update Animation */
+.wellness-board-table tbody tr.row-updated {
+    animation: row-flash 1.5s ease-out;
+}
+
+@keyframes row-flash {
+    0% { background: rgba(26, 188, 156, 0.2); }
+    100% { background: transparent; }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .board-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .board-header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 768px) {
+    .board-table-container {
+        padding: 12px 16px 16px;
+    }
+
+    .wellness-board-table th,
+    .wellness-board-table td {
+        padding: 12px 10px;
+        font-size: 0.75rem;
+    }
+
+    .char-cell {
+        width: 13px;
+        height: 20px;
+    }
+
+    .char-text {
+        font-size: 0.65rem;
+    }
+}

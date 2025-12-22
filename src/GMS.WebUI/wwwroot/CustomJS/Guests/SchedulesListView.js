@@ -45,7 +45,7 @@
                         }
                     }
 
-                    var timeRange = startMoment.format('HH:mm') + ' - ' + endMoment.format('HH:mm');
+                    var timeRange = startMoment.format('hh:mm A') + ' - ' + endMoment.format('hh:mm A');
                     var taskName = event.extendedProps && event.extendedProps.taskName ? event.extendedProps.taskName : (event.title || 'N/A');
                     // Remove duration from title if present
                     taskName = taskName.replace(/\(\d+.*?\)/g, '').trim();
@@ -178,6 +178,9 @@
 
                     // Show delete button when editing
                     $('#btnDelete').show();
+                    
+                    // Hide X field when editing
+                    $("#noOfDaysContainer").hide();
 
                     $taskId.change();
                 },

@@ -1,0 +1,186 @@
+@model (GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentRow assignment, string workerName)
+@{
+    var occupancy = string.IsNullOrWhiteSpace(Model.assignment.OccupancyStatus) ? "Empty" : Model.assignment.OccupancyStatus;
+    var isStarted = Model.assignment.Status == GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.InProgress || Model.assignment.Status == GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.Completed;
+    var isCompleted = Model.assignment.Status == GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.Completed;
+    var scheduledStart = Model.assignment.StartDateTime;
+    var actualStart = Model.assignment.ActualStartTime;
+
+    var scheduledStartText = scheduledStart?.ToString("hh:mm tt") ?? "-";
+    var scheduledDuration = Model.assignment.Duration
+        ?? (scheduledStart.HasValue && Model.assignment.EndDateTime.HasValue
+            ? Model.assignment.EndDateTime.Value - scheduledStart.Value
+            : (TimeSpan?)null);
+    string FormatDuration(TimeSpan? span)
+    {
+        if (!span.HasValue) return "-";
+        var ts = span.Value;
+        if (ts.TotalMinutes < 1)
+        {
+            var seconds = (int)Math.Round(ts.TotalSeconds);
+            return seconds > 0 ? $"{seconds}s" : "<1m";
+        }
+
+        var hours = (int)Math.Floor(ts.TotalHours);
+        var mins = ts.Minutes;
+        if (hours > 0)
+        {
+            return mins > 0 ? $"{hours}h {mins}m" : $"{hours}h";
+        }
+        return $"{mins}m";
+    }
+
+    var scheduledDurationText = FormatDuration(scheduledDuration);
+
+    var actualEnd = Model.assignment.ActualEndTime;
+    var actualStartText = actualStart?.ToString("hh:mm tt") ?? "-";
+    var actualDuration = actualStart.HasValue && actualEnd.HasValue
+        ? (TimeSpan?)(actualEnd.Value - actualStart.Value)
+        : null;
+    var actualDurationText = FormatDuration(actualDuration);
+
+    int? startDelayMinutes = null;
+    string actualStartClass = string.Empty;
+    if (scheduledStart.HasValue && actualStart.HasValue)
+    {
+        var delay = actualStart.Value - scheduledStart.Value;
+        if (delay.TotalMinutes > 0)
+        {
+            startDelayMinutes = (int)Math.Round(delay.TotalMinutes);
+            if (delay.TotalMinutes > 5)
+            {
+                actualStartClass = "text-danger";
+            }
+            else
+            {
+                actualStartClass = "text-warning";
+            }
+        }
+    }
+
+    string actualDurationClass = string.Empty;
+    if (scheduledDuration.HasValue && actualDuration.HasValue)
+    {
+        var durationDelta = actualDuration.Value - scheduledDuration.Value;
+        var deltaMinutesAbs = Math.Abs(durationDelta.TotalMinutes);
+        if (deltaMinutesAbs > 0)
+        {
+            if (deltaMinutesAbs > 5)
+            {
+                actualDurationClass = "text-danger";
+            }
+            else
+            {
+                actualDurationClass = "text-warning";
+            }
+        }
+    }
+
+    Func<GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus, string> statusLabel = status => status switch
+    {
+        GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.InProgress => "In Progress",
+        _ => status.ToString()
+    };
+
+    Func<GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus, string> statusClass = status => status switch
+    {
+        GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.Completed => "success",
+        GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.InProgress => "room-status",
+        GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.Inspection => "warning",
+        _ => string.Empty
+    };
+}
+
+<article class="hk-room-card @(Model.assignment.IssueReported ? "issue-reported" : "")"
+         data-task-card
+         data-schedule-id="@Model.assignment.ScheduleId"
+         data-room-number="@Model.assignment.RoomNumber"
+         data-room-type="@Model.assignment.RoomType"
+         data-status="@Model.assignment.Status.ToString().ToLowerInvariant()"
+         data-occupancy="@occupancy.ToLowerInvariant()"
+         data-start="@Model.assignment.StartDateTime?.ToString("o")"
+         data-started-at="@Model.assignment.ActualStartTime?.ToString("o")"
+         data-issue-notes="@(Model.assignment.IssueNotes ?? "")">
+    <div class="hk-room-card-header d-flex justify-content-between align-items-start">
+        <div>
+            <p class="hk-eyebrow mb-1 text-uppercase">@(!string.IsNullOrWhiteSpace(Model.assignment.TreatmentRoom) ? Model.assignment.TreatmentRoom : "Treatment Room TBD")</p>
+            <h3 class="hk-room-title mb-0">@(!string.IsNullOrWhiteSpace(Model.assignment.RoomType) ? Model.assignment.RoomType : "Task TBD")</h3>
+        </div>
+        <div class="d-flex flex-column gap-1 align-items-start align-items-md-end">
+            <span class="hk-pill @(Model.assignment.Status == GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.InProgress ? "room-status" : statusClass(Model.assignment.Status))">
+                @statusLabel(Model.assignment.Status)
+            </span>
+            <span class="hk-pill starting-soon-badge d-none" data-starting-soon-badge>
+                Starting Soon
+            </span>
+            <div class="text-muted small lh-1 d-flex gap-1 align-items-center d-none" data-elapsed-container>
+                <span class="hk-label text-uppercase mb-0">Elapsed</span>
+                <span data-elapsed-header></span>
+            </div>
+            @if (Model.assignment.IssueReported)
+            {
+                <span class="issue-reported-badge" data-issue-notes="@(Model.assignment.IssueNotes ?? "")">
+                    <i class="bi bi-exclamation-circle-fill"></i> Issue Reported
+                </span>
+            }
+        </div>
+    </div>
+    <div class="hk-room-card-body">
+        <div class="hk-room-meta">
+            <span class="hk-label text-uppercase">Guest</span>
+            <strong>@(!string.IsNullOrWhiteSpace(Model.assignment.GuestName) ? Model.assignment.GuestName : "N/A") <small class="text-muted">(@(Model.assignment.RoomNumber ?? "N/A"))</small></strong>
+        </div>
+        <div class="hk-room-meta">
+            <span class="hk-label text-uppercase">Assigned To</span>
+            <strong>@(!string.IsNullOrWhiteSpace(Model.assignment.AssignedTo) ? Model.assignment.AssignedTo : "Unassigned")</strong>
+        </div>
+        <div class="hk-room-meta inline-meta">
+            <div class="d-flex align-items-center gap-1">
+                <span class="hk-label text-uppercase mb-0">Start</span>
+                <strong>@scheduledStartText</strong>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+                <span class="hk-label text-uppercase mb-0">Duration</span>
+                <strong>@scheduledDurationText</strong>
+            </div>
+        </div>
+        @if (isCompleted)
+        {
+            <div class="hk-room-meta inline-meta">
+                <div class="d-flex align-items-center gap-1">
+                    <span class="hk-label text-uppercase mb-0">Actual Start</span>
+                    <strong class="@actualStartClass">@actualStartText</strong>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <span class="hk-label text-uppercase mb-0">Actual Duration</span>
+                    <strong class="@actualDurationClass">@actualDurationText</strong>
+                </div>
+            </div>
+        }
+        <div class="hk-room-meta">
+            <span class="hk-label text-uppercase">Other Assignees</span>
+            <p class="mb-0 text-muted small">@(!string.IsNullOrWhiteSpace(Model.assignment.OtherAssignees) ? Model.assignment.OtherAssignees : "None")</p>
+        </div>
+    </div>
+    <div class="hk-room-card-footer d-flex flex-column flex-md-row gap-2">
+        <button type="button"
+                class="btn btn-outline-primary flex-fill"
+                data-action="start"
+                @(isStarted ? "disabled" : null)>
+            Mark as Start
+        </button>
+        <button type="button"
+                class="btn btn-success flex-fill"
+                data-action="complete"
+                @(Model.assignment.Status == GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentStatus.Pending ? "disabled" : null)>
+            Mark as Complete
+        </button>
+        <button type="button"
+                class="btn btn-outline-danger flex-fill"
+                data-action="issue"
+                @(isCompleted ? "disabled" : null)>
+            @(Model.assignment.IssueReported ? "Update Issue" : "Report Issue")
+        </button>
+    </div>
+</article>
+

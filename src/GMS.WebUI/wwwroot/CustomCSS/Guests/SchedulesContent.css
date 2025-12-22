@@ -227,6 +227,10 @@
 }
 
 /* Day Events Modal Styles */
+#dayEventsModal .modal-dialog {
+    max-width: 1100px;
+}
+
 #dayEventsModal .modal-header {
     background-color: #f8f9fa;
     border-bottom: 2px solid #dee2e6;
@@ -260,6 +264,7 @@
 #dayEventsModal .table tbody td {
     padding: 10px 12px;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 #dayEventsModal .table tbody tr:hover {

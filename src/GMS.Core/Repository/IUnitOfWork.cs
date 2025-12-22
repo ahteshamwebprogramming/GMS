@@ -53,6 +53,7 @@ public interface IUnitOfWork : IDisposable
     public IMenuListRepository MenuList { get; }
     public IRoleMenuMappingRepository RoleMenuMapping { get; }
     public IOperationsRepository Operations { get; }
+    public IEmployeeTaskExecutionRepository EmployeeTaskExecution { get; }
 
     void BeginTransaction();
     void Commit();

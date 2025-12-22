@@ -1549,7 +1549,6 @@ b {
     }
 
 #div_ViewGuestsListPartial {
-    overflow: scroll;
     height: 900px;
     overflow-x: inherit;
 }

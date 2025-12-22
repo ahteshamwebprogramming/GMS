@@ -9,6 +9,7 @@ using GMS.Infrastructure.Models.EHRMSLogin;
 using GMS.Infrastructure.ViewModels.Guests;
 using GMS.Infrastructure.ViewModels.EHRMSLogin;
 using GMS.Infrastructure.Models.RoleMenuMapping;
+using System.Linq;
 
 namespace GMS.WebUI.Controllers;
 
@@ -49,6 +50,19 @@ public class AccountController : Controller
 
                 HttpContext.Session.SetString("User", JsonConvert.SerializeObject(outputDTO));
 
+                // Determine first accessible menu link for this user
+                var firstAccessibleMenu = menuListDTOs?
+                    .Where(m =>
+                        (m.IsActive ?? true) &&
+                        !string.IsNullOrWhiteSpace(m.MenuLink) &&
+                        (m.SelfMenu == false) &&
+                        (m.MenuParentId.HasValue && m.MenuParentId > 0))
+                    .OrderBy(m => m.SNo ?? int.MaxValue)
+                    .ThenBy(m => m.Id)
+                    .FirstOrDefault();
+
+                var redirectUri = firstAccessibleMenu?.MenuLink ?? "/Home/AccessDenied";
+
                 var claims = new List<Claim>      {
                 new Claim(ClaimTypes.Name,outputDTO.WorkerName),
                 new Claim(ClaimTypes.Role,outputDTO.RoleName),
@@ -60,11 +74,10 @@ public class AccountController : Controller
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var authProperties = new AuthenticationProperties
                 {
-                    RedirectUri = "/Guests/GuestsList",
+                    RedirectUri = redirectUri,
                 };
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-                ModelState.AddModelError("LoginNotFound", "Some error has while authenticating your login. Try again after some time");
-                return View(dto);
+                return Redirect(redirectUri);
             }
             else
             {

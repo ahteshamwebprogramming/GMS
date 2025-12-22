@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Resource Allocation";
+    ViewData["Title"] = "Treatment Room Allocation";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -42,7 +42,7 @@
                                 </select>
                             </div>
                             <div class="col-4">
-                                <label>Resource</label>
+                                <label>Treatment Room</label>
                                 <select class="form-control" name="ResourceId" id="EditResourceId">
                                     <option value="0"></option>
                                 </select>
@@ -50,19 +50,19 @@
                         </div>
                         <div class="row">
                             <div class="col-4 mt-3">
-                                <label>Therapist 1</label>
+                                <label>Healer 1</label>
                                 <select class="form-control" name="EmployeeId1" id="EditEmployeeId1">
                                     <option value="0"></option>
                                 </select>
                             </div>
                             <div class="col-4 mt-3">
-                                <label>Therapist 2</label>
+                                <label>Healer 2</label>
                                 <select class="form-control" name="EmployeeId2" id="EditEmployeeId2">
                                     <option value="0"></option>
                                 </select>
                             </div>
                             <div class="col-4 mt-3">
-                                <label>Therapist 3</label>
+                                <label>Healer 3</label>
                                 <select class="form-control" name="EmployeeId3" id="EditEmployeeId3">
                                     <option value="0"></option>
                                 </select>
@@ -117,7 +117,7 @@
         <div class="filtered_rooms_container">
             <div class="therapiesList_table_list">
                 <div class="title_area">
-                    <h2>Resource Allocation </h2>
+                    <h2>Treatment Room Allocation </h2>
                     <div class="btn_add">
                         @* <a href="#" class="addNew_btn" onclick="AddPartialView(0)">Add Packages</a> *@
                     </div>

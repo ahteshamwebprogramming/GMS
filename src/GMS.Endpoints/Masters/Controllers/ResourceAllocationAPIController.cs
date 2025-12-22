@@ -54,7 +54,17 @@ public class ResourceAllocationAPIController : ControllerBase
         {
             string ehrmsDbName = GetEHRMSDatabaseName();
             string query = $@"Select
-                            gs.*,
+                            gs.Id,
+                            gs.GuestId,
+                            gs.StartDateTime,
+                            gs.EndDateTime,
+                            gs.Duration,
+                            gs.TaskId,
+                            gs.EmployeeId1,
+                            gs.EmployeeId2,
+                            gs.EmployeeId3,
+                            gs.SessionId,
+                            gs.ResourceId,
                             rm.ResourceName,
                             wm1.WorkerName Therapist1Name,
                             wm2.WorkerName Therapist2Name,
@@ -69,8 +79,10 @@ public class ResourceAllocationAPIController : ControllerBase
                             Left Join [{ehrmsDbName}].dbo.WorkerMaster wm3 on gs.EmployeeId3=wm3.WorkerID
                             Left Join MembersDetails md on gs.GuestId=md.Id
                             Left Join RoomAllocation ra on gs.GuestId=ra.GuestID
-                            where isnull(tm.Readonly,0)=0
-                            order by StartDateTime desc";
+                            where CAST(gs.StartDateTime AS DATE) >= CAST(GETDATE() AS DATE)
+                            AND (gs.IsCancelled IS NULL OR gs.IsCancelled = 0)
+                            AND (gs.IsDeleted IS NULL OR gs.IsDeleted = 0)
+                            order by gs.StartDateTime asc";
             var res = await _unitOfWork.GenOperations.GetTableData<GuestScheduleWithAttributes>(query);
             return Ok(res);
         }
@@ -102,7 +114,9 @@ public class ResourceAllocationAPIController : ControllerBase
                             Left Join [{ehrmsDbName}].dbo.WorkerMaster wm3 on gs.EmployeeId3=wm3.WorkerID
                             Left Join MembersDetails md on gs.GuestId=md.Id
                             Left Join RoomAllocation ra on gs.GuestId=ra.GuestID
-                            where gs.Id=@Id";
+                            where gs.Id=@Id
+                            AND (gs.IsCancelled IS NULL OR gs.IsCancelled = 0)
+                            AND (gs.IsDeleted IS NULL OR gs.IsDeleted = 0)";
             var param = new { @Id = Id };
             var res = await _unitOfWork.GenOperations.GetEntityData<GuestScheduleWithAttributes>(query, param);
             return Ok(res);

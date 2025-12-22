@@ -1,0 +1,799 @@
+@model GMS.Infrastructure.ViewModels.Home.TasksAssignedViewModel
+@using GMS.Infrastructure.ViewModels.Rooms
+@using System.Linq
+@{
+    var assignments = Model.Assignments ?? new List<HousekeepingAssignmentRow>();
+    var workerName = string.IsNullOrWhiteSpace(Model.WorkerName) ? "Employee" : Model.WorkerName;
+    Func<HousekeepingAssignmentStatus, string> statusLabel = status => status switch
+    {
+        HousekeepingAssignmentStatus.InProgress => "In Progress",
+        _ => status.ToString()
+    };
+    Func<HousekeepingAssignmentStatus, string> statusClass = status => status switch
+    {
+        HousekeepingAssignmentStatus.Completed => "success",
+        HousekeepingAssignmentStatus.InProgress => "room-status",
+        HousekeepingAssignmentStatus.Inspection => "warning",
+        _ => string.Empty
+    };
+}
+
+<div class="hk-header card mb-4">
+    <div class="card-body">
+        <div class="hk-header-top d-flex flex-column flex-lg-row justify-content-between gap-3">
+            <div>
+                <p class="hk-eyebrow mb-1 text-uppercase">Tasks Assigned</p>
+                <h1 class="hk-title mb-1" id="workerNameHeader"><i class="bi bi-person-fill me-2"></i>@Model.LoggedInWorkerName</h1>
+                <div class="text-muted small" id="workerInfoHeader">
+                    <span id="employeeCodeSpan">@(string.IsNullOrWhiteSpace(Model.EmployeeCode) ? "Employee code unavailable" : $"Emp ID · {Model.EmployeeCode}")</span>
+                    @if (!string.IsNullOrWhiteSpace(Model.Department))
+                    {
+                        <span class="mx-2" id="departmentSeparator">|</span>
+                        <span id="departmentSpan">@Model.Department</span>
+                    }
+                    else
+                    {
+                        <span class="mx-2 d-none" id="departmentSeparator">|</span>
+                        <span class="d-none" id="departmentSpan"></span>
+                    }
+                </div>
+                <div id="viewingOtherEmployeeInfo" class="@(Model.IsViewingOtherEmployee ? "" : "d-none") mt-2 p-2 bg-info bg-opacity-10 rounded border border-info" style="font-size: 0.875rem;">
+                    <span>📋 Viewing tasks for: <strong id="viewingWorkerName">@Model.WorkerName</strong></span>
+                </div>
+            </div>
+            <div class="hk-date-form d-flex flex-column align-items-lg-end align-items-start gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-clock-history"></i>
+                    <span id="tasksTimeHeader" class="fw-semibold">--:--:--</span>
+                </div>
+                <div class="d-flex flex-row align-items-center gap-3">
+                <div class="d-flex flex-row align-items-center gap-2">
+                    <label class="hk-label text-uppercase mb-0">Employee</label>
+                    <select class="form-select form-select-sm" id="employeeFilter" style="min-width: 180px;">
+                        @foreach (var emp in Model.TeamMembers)
+                        {
+                                @if (emp.Id == Model.WorkerId)
+                                {
+                                    <option value="@emp.Id" selected>@emp.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@emp.Id">@emp.Name</option>
+                                }
+                        }
+                    </select>
+                </div>
+                <div class="d-flex flex-row align-items-center gap-2">
+                    <label class="hk-label text-uppercase mb-0">Date</label>
+                        <div class="hk-date-display">
+                        <i class="bi bi-calendar3"></i>
+                            <input type="text"
+                               class="form-control form-control-sm"
+                               id="workDatePicker"
+                                   readonly
+                                   value="@Model.WorkDate.ToString("dd-MMM-yyyy")"
+                                   data-current-date="@Model.WorkDate.ToString("yyyy-MM-dd")" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hk-status-line mt-3" id="statusSummary">
+            <div class="hk-status-chip">
+                <span>Total Assigned</span>
+                <strong id="totalAssignedCount">@Model.TotalAssigned</strong>
+            </div>
+            <div class="hk-status-chip">
+                <span>Completed</span>
+                <strong id="completedCount">@Model.CompletedCount</strong>
+            </div>
+            <div class="hk-status-chip warning">
+                <span>Scheduled</span>
+                <strong id="scheduledCount">@(Model.PendingCount + Model.InProgressCount)</strong>
+            </div>
+            <div class="hk-status-chip">
+                <span>Issues / Inspection</span>
+                <strong id="inspectionCount">@Model.InspectionCount</strong>
+            </div>
+            <div class="hk-date-display ms-lg-auto">
+                <i class="bi bi-clock-history"></i>
+                <span>Showing tasks for:</span>
+                <span class="fw-semibold" id="selectedDateDisplay">@Model.WorkDate.ToString("dd MMM yyyy")</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href="~/customcss/TasksAssigned.css" rel="stylesheet" asp-append-version="true" />
+}
+
+
+<!-- Container for the tasks grid partial view -->
+<div id="tasksGridContainer">
+    @await Html.PartialAsync("_TasksAssignedGrid", Model)
+</div>
+
+    <script>
+    // AJAX-based Employee and Date filter
+    (function() {
+        let employeeFilter, workDatePicker, gridContainer;
+
+        function parseWorkDate(value) {
+            if (!value) {
+                return new Date();
+            }
+            const normalized = value.toString().slice(0, 10);
+            const isoMatch = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (isoMatch) {
+                const year = parseInt(isoMatch[1], 10);
+                const month = parseInt(isoMatch[2], 10) - 1;
+                const day = parseInt(isoMatch[3], 10);
+                return new Date(year, month, day);
+            }
+            const parsed = new Date(value);
+            if (!isNaN(parsed.getTime())) {
+                return parsed;
+            }
+            return new Date();
+        }
+
+        // Initialize flatpickr for date picker
+        function initFlatpickr() {
+            if (!window.flatpickr || !workDatePicker) {
+                console.log('Flatpickr not available or workDatePicker not found');
+                return;
+            }
+            if (workDatePicker._flatpickr) {
+                workDatePicker._flatpickr.destroy();
+            }
+            flatpickr(workDatePicker, {
+                defaultDate: parseWorkDate(workDatePicker.dataset.currentDate || workDatePicker.value),
+                dateFormat: 'd-M-Y',
+                allowInput: false,
+                onReady: (selectedDates, dateStr, instance) => {
+                    if (selectedDates && selectedDates[0]) {
+                        instance.input.value = instance.formatDate(selectedDates[0], 'd-M-Y');
+                    }
+                },
+                onChange: (selectedDates, dateStr, instance) => {
+                    if (!selectedDates || !selectedDates.length) {
+                        return;
+                    }
+                    const iso = instance.formatDate(selectedDates[0], 'Y-m-d');
+                    workDatePicker.dataset.currentDate = iso;
+                    workDatePicker.value = instance.formatDate(selectedDates[0], 'd-M-Y');
+                    loadTasksGrid();
+                }
+            });
+        }
+
+        async function loadTasksGrid() {
+            const employeeId = employeeFilter.value;
+            const workDate = workDatePicker.dataset.currentDate || workDatePicker.value;
+
+            // Show loading state
+            gridContainer.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading tasks...</p></div>';
+
+            try {
+                const response = await fetch(`/Home/GetTasksAssignedGrid?workDate=${workDate}&employeeId=${employeeId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load tasks');
+                }
+
+                const html = await response.text();
+                gridContainer.innerHTML = html;
+
+                // Re-initialize scripts for the new content
+                initializeTaskScripts();
+
+                // Update the date display in header
+                const dateObj = new Date(workDate);
+                const options = { day: '2-digit', month: 'short', year: 'numeric' };
+                document.getElementById('selectedDateDisplay').textContent = dateObj.toLocaleDateString('en-GB', options);
+
+                // Update header info from partial view data
+                const partialData = document.getElementById('partialViewData');
+                if (partialData) {
+                        // Don't update workerNameHeader, employee code, or department - they show logged-in user's info
+
+                    // Update viewing other employee info
+                    const viewingOtherInfo = document.getElementById('viewingOtherEmployeeInfo');
+                    const isViewingOther = partialData.dataset.isViewingOther === 'true';
+                    if (viewingOtherInfo) {
+                        viewingOtherInfo.classList.toggle('d-none', !isViewingOther);
+                        const viewingWorkerName = document.getElementById('viewingWorkerName');
+                        if (viewingWorkerName) {
+                            viewingWorkerName.textContent = partialData.dataset.workerName || '';
+            }
+                    }
+
+                    // Update status counts
+                    document.getElementById('totalAssignedCount').textContent = partialData.dataset.totalAssigned || '0';
+                    document.getElementById('completedCount').textContent = partialData.dataset.completedCount || '0';
+                    document.getElementById('scheduledCount').textContent = partialData.dataset.scheduledCount || '0';
+                    document.getElementById('inspectionCount').textContent = partialData.dataset.inspectionCount || '0';
+                }
+
+            } catch (err) {
+                console.error('Error loading tasks:', err);
+                gridContainer.innerHTML = '<div class="alert alert-danger m-3">Failed to load tasks. Please try again. Error: ' + err.message + '</div>';
+            }
+        }
+
+        // Initialize when DOM is ready
+        function init() {
+            employeeFilter = document.getElementById('employeeFilter');
+            workDatePicker = document.getElementById('workDatePicker');
+            gridContainer = document.getElementById('tasksGridContainer');
+
+            if (employeeFilter) {
+                employeeFilter.addEventListener('change', loadTasksGrid);
+            }
+
+            // Initialize flatpickr
+            initFlatpickr();
+        }
+
+        // Run init when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+
+    function initializeTaskScripts() {
+        // Starting soon badges and status updates
+        (() => {
+            const START_SOON_MINUTES = 10;
+            const MS_PER_MINUTE = 60_000;
+            const MS_PER_HOUR = 3_600_000;
+
+            function updateStartingSoonBadges() {
+                const now = new Date();
+                const cards = document.querySelectorAll('[data-task-card]');
+
+                cards.forEach(card => {
+                    const status = (card.dataset.status || '').toLowerCase();
+                    if (status === 'completed' || status === 'inspection') {
+                        card.classList.remove('starting-soon');
+                        card.querySelectorAll('[data-starting-soon-badge]').forEach(badge => badge.classList.add('d-none'));
+                        return;
+                    }
+
+                    const startRaw = card.dataset.start;
+                    if (!startRaw) {
+                        return;
+                    }
+
+                    const startTime = new Date(startRaw);
+                    if (isNaN(startTime)) {
+                        return;
+                    }
+
+                    const diff = startTime.getTime() - now.getTime();
+                    const isStartingSoon = diff > 0 && diff <= START_SOON_MINUTES * MS_PER_MINUTE;
+
+                    card.classList.toggle('starting-soon', isStartingSoon);
+                    card.querySelectorAll('[data-starting-soon-badge]').forEach(badge => {
+                        badge.classList.toggle('d-none', !isStartingSoon);
+                    });
+                });
+            }
+
+            function updateElapsedTimers() {
+                const now = Date.now();
+                document.querySelectorAll('[data-task-card]').forEach(card => {
+                    const status = (card.dataset.status || '').toLowerCase();
+                    const startedRaw = card.dataset.startedAt;
+                    const elapsedHeaderEl = card.querySelector('[data-elapsed-header]');
+                    const elapsedContainer = card.querySelector('[data-elapsed-container]');
+                    const effectiveStart = startedRaw || null;
+
+                    const displayNoTime = () => {
+                        if (elapsedHeaderEl) elapsedHeaderEl.textContent = '';
+                        if (elapsedContainer) elapsedContainer.classList.add('d-none');
+                    };
+
+                    if (status !== 'inprogress') {
+                        displayNoTime();
+                        return;
+                    }
+
+                    if (!effectiveStart) {
+                        displayNoTime();
+                        return;
+                    }
+
+                    const startedMs = Date.parse(effectiveStart);
+                    if (Number.isNaN(startedMs)) {
+                        displayNoTime();
+                        return;
+                    }
+                    const diff = Math.max(0, now - startedMs);
+                    const hours = Math.floor(diff / MS_PER_HOUR).toString().padStart(2, '0');
+                    const minutes = Math.floor((diff % MS_PER_HOUR) / MS_PER_MINUTE).toString().padStart(2, '0');
+                    const seconds = Math.floor((diff % MS_PER_MINUTE) / 1000).toString().padStart(2, '0');
+                    if (elapsedHeaderEl) elapsedHeaderEl.textContent = `${hours}:${minutes}:${seconds}`;
+                    if (elapsedContainer) elapsedContainer.classList.remove('d-none');
+                });
+            }
+
+            function updateStatusBadges() {
+                const now = new Date();
+                const cards = document.querySelectorAll('[data-task-card]');
+
+                cards.forEach(card => {
+                    const status = (card.dataset.status || '').toLowerCase();
+                    const pill = card.querySelector('.hk-room-card-header .hk-pill:not(.starting-soon-badge)');
+                    const startBtn = card.querySelector('[data-action="start"]');
+                    if (!pill) return;
+
+                    const startRaw = card.dataset.start;
+                    const startTime = startRaw ? new Date(startRaw) : null;
+
+                    let label = pill.textContent.trim();
+                    const isOverdue = status === 'pending' && startTime instanceof Date && !isNaN(startTime) && startTime.getTime() < now.getTime();
+
+                    card.classList.toggle('overdue', isOverdue);
+
+                    if (status === 'pending' && startTime instanceof Date && !isNaN(startTime)) {
+                        const diffMs = now.getTime() - startTime.getTime();
+                        if (diffMs > 0) {
+                            const mins = Math.max(1, Math.floor(diffMs / MS_PER_MINUTE));
+                            if (mins > 59) {
+                                const hrs = Math.floor(mins / 60);
+                                const remMins = mins % 60;
+                                label = remMins > 0
+                                    ? `Overdue - delayed by ${hrs}h ${remMins}m`
+                                    : `Overdue - delayed by ${hrs}h`;
+                            } else {
+                                label = `Overdue - delayed by ${mins} min`;
+                            }
+                        } else {
+                            const minsUntil = Math.max(0, Math.ceil(Math.abs(diffMs) / MS_PER_MINUTE));
+                            if (minsUntil > 0) {
+                                if (minsUntil > 59) {
+                                    const hrs = Math.floor(minsUntil / 60);
+                                    const remMins = minsUntil % 60;
+                                    label = remMins > 0
+                                        ? `Scheduled - starts in ${hrs}h ${remMins}m`
+                                        : `Scheduled - starts in ${hrs}h`;
+                                } else {
+                                    label = `Scheduled - starts in ${minsUntil}m`;
+                                }
+                            } else {
+                                label = 'Scheduled';
+                            }
+                        }
+                    } else if (status === 'inprogress') {
+                        label = 'In Progress';
+                        card.classList.add('started');
+                        if (!card.dataset.startedAt && card.dataset.start) {
+                            card.dataset.startedAt = card.dataset.start;
+                        }
+                        const completeBtn = card.querySelector('[data-action="complete"]');
+                        if (completeBtn) {
+                            completeBtn.disabled = false;
+                        }
+                        const startBtnInLoop = card.querySelector('[data-action="start"]');
+                        if (startBtnInLoop) startBtnInLoop.disabled = true;
+                    } else if (status === 'inspection') {
+                        label = 'Inspection';
+                    } else if (status === 'completed') {
+                        label = 'Completed';
+                        const startBtnInLoop = card.querySelector('[data-action="start"]');
+                        const completeBtn = card.querySelector('[data-action="complete"]');
+                        if (startBtnInLoop) startBtnInLoop.disabled = true;
+                        if (completeBtn) completeBtn.disabled = true;
+                    }
+
+                    pill.textContent = label;
+
+                    if (startBtn) {
+                        startBtn.classList.toggle('btn-primary', isOverdue);
+                        startBtn.classList.toggle('btn-outline-primary', !isOverdue);
+                    }
+                });
+            }
+
+            function tick() {
+                updateStartingSoonBadges();
+                updateStatusBadges();
+                updateElapsedTimers();
+            }
+
+            tick();
+            window._taskTickInterval = window._taskTickInterval || setInterval(tick, 30 * 1000);
+            window._taskElapsedInterval = window._taskElapsedInterval || setInterval(updateElapsedTimers, 1000);
+        })();
+
+        // Task actions (start, complete, report issue)
+        (() => {
+            const grid = document.getElementById('taskGrid');
+            if (!grid) return;
+
+            const setButtonState = (btn, isLoading, label) => {
+                if (!btn) return;
+                btn.disabled = isLoading;
+                btn.dataset.loading = isLoading ? '1' : '0';
+                if (label) {
+                    btn.innerText = isLoading ? `${label}...` : label;
+                }
+            };
+
+            const updateCardUiToStarted = (card) => {
+                if (!card) return;
+                card.dataset.status = 'inprogress';
+                card.classList.add('started');
+                card.classList.remove('starting-soon');
+                card.classList.remove('overdue');
+                card.querySelectorAll('[data-starting-soon-badge]').forEach(badge => badge.classList.add('d-none'));
+
+                const statusPill = card.querySelector('.hk-room-card-header .hk-pill:not(.starting-soon-badge)');
+                if (statusPill) {
+                    statusPill.textContent = 'In Progress';
+                    statusPill.classList.add('room-status');
+                }
+
+                const completeBtn = card.querySelector('[data-action="complete"]');
+                if (completeBtn) completeBtn.disabled = false;
+                const startBtn = card.querySelector('[data-action="start"]');
+                if (startBtn) startBtn.disabled = true;
+            };
+
+            const updateCardUiToCompleted = (card) => {
+                if (!card) return;
+                card.dataset.status = 'completed';
+                card.classList.remove('starting-soon');
+                card.classList.remove('overdue');
+                card.classList.remove('started');
+                card.querySelectorAll('[data-starting-soon-badge]').forEach(badge => badge.classList.add('d-none'));
+
+                const statusPill = card.querySelector('.hk-room-card-header .hk-pill:not(.starting-soon-badge)');
+                if (statusPill) {
+                    statusPill.textContent = 'Completed';
+                    statusPill.classList.remove('room-status');
+                }
+
+                const startBtn = card.querySelector('[data-action="start"]');
+                const completeBtn = card.querySelector('[data-action="complete"]');
+                if (startBtn) startBtn.disabled = true;
+                if (completeBtn) completeBtn.disabled = true;
+            };
+
+            // Remove existing listeners to avoid duplicates
+            grid.removeEventListener('click', window._taskGridClickHandler);
+            
+            window._taskGridClickHandler = async (e) => {
+                const btn = e.target.closest('[data-action="start"], [data-action="complete"]');
+                if (!btn) return;
+
+                const action = btn.getAttribute('data-action');
+                const card = btn.closest('[data-task-card]');
+                const scheduleId = card?.dataset.scheduleId;
+                if (!scheduleId) {
+                    alert('Missing schedule information.');
+                    return;
+                }
+
+                const isStart = action === 'start';
+                const url = isStart ? '/api/tasks-assigned/mark-start' : '/api/tasks-assigned/mark-complete';
+
+                const confirmMsg = isStart
+                    ? 'Are you sure you want to mark this task as started?'
+                    : 'Are you sure you want to mark this task as completed?';
+
+                if (window.Swal) {
+                    const result = await Swal.fire({
+                        title: isStart ? 'Start Task?' : 'Complete Task?',
+                        text: confirmMsg,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: isStart ? 'Yes, Start' : 'Yes, Complete',
+                        cancelButtonText: 'Cancel',
+                        customClass: { confirmButton: 'btn btn-primary me-2', cancelButton: 'btn btn-label-secondary' },
+                        buttonsStyling: false
+                    });
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+                } else {
+                    if (!window.confirm(confirmMsg)) {
+                        return;
+                    }
+                }
+
+                let success = false;
+                try {
+                    setButtonState(btn, true, isStart ? 'Starting' : 'Completing');
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ scheduleId: parseInt(scheduleId, 10) })
+                    });
+
+                    if (!response.ok) {
+                        const errPayload = await response.json().catch(() => ({}));
+                        const message = errPayload.message || (isStart ? 'Unable to start this task right now.' : 'Unable to complete this task right now.');
+                        throw new Error(message);
+                    }
+
+                    const payload = await response.json().catch(() => ({}));
+                    if (isStart) {
+                        if (payload && payload.startedAt) {
+                            card.dataset.startedAt = payload.startedAt;
+                        } else {
+                            card.dataset.startedAt = new Date().toISOString();
+                        }
+                        updateCardUiToStarted(card);
+                        if (btn) {
+                            btn.innerText = 'Mark as Start';
+                            btn.disabled = true;
+                            btn.dataset.loading = '0';
+                        }
+                    } else {
+                        if (payload && payload.startedAt) {
+                            card.dataset.startedAt = payload.startedAt;
+                        }
+                        updateCardUiToCompleted(card);
+                        if (btn) {
+                            btn.innerText = 'Mark as Complete';
+                            btn.disabled = true;
+                            btn.dataset.loading = '0';
+                        }
+                    }
+                    success = true;
+                } catch (err) {
+                    alert(err.message || (isStart ? 'Unable to start this task.' : 'Unable to complete this task.'));
+                } finally {
+                    if (!success) {
+                        setButtonState(btn, false, isStart ? 'Mark as Start' : 'Mark as Complete');
+                    }
+                }
+            };
+
+            grid.addEventListener('click', window._taskGridClickHandler);
+
+            // Report Issue button handler
+            grid.removeEventListener('click', window._taskIssueClickHandler);
+            
+            window._taskIssueClickHandler = (e) => {
+                const btn = e.target.closest('[data-action="issue"]');
+                if (!btn) return;
+
+                const card = btn.closest('[data-task-card]');
+                const scheduleId = card?.dataset.scheduleId;
+                if (!scheduleId) {
+                    alert('Missing schedule information.');
+                    return;
+                }
+
+                document.getElementById('reportIssueScheduleId').value = scheduleId;
+                const existingNotes = card.dataset.issueNotes || '';
+                document.getElementById('issueNotes').value = existingNotes;
+
+                const modalTitle = document.getElementById('reportIssueModalLabel');
+                if (card.classList.contains('issue-reported')) {
+                    modalTitle.innerHTML = '<i class="bi bi-pencil-fill"></i> Update Issue';
+                } else {
+                    modalTitle.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Report Issue';
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('reportIssueModal'));
+                modal.show();
+            };
+
+            grid.addEventListener('click', window._taskIssueClickHandler);
+        })();
+
+            // Submit Issue handler
+        (() => {
+            const submitBtn = document.getElementById('btnSubmitIssue');
+            if (!submitBtn) return;
+            
+            submitBtn.removeEventListener('click', window._submitIssueHandler);
+            
+            window._submitIssueHandler = async () => {
+                const scheduleId = document.getElementById('reportIssueScheduleId').value;
+                const notes = document.getElementById('issueNotes').value.trim();
+
+                if (!notes) {
+                    alert('Please enter issue notes.');
+                    return;
+                }
+
+                const btn = document.getElementById('btnSubmitIssue');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Submitting...';
+
+                try {
+                    const response = await fetch('/api/tasks-assigned/report-issue', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ scheduleId: parseInt(scheduleId, 10), notes: notes })
+                    });
+
+                    if (!response.ok) {
+                        const errPayload = await response.json().catch(() => ({}));
+                        throw new Error(errPayload.message || 'Unable to report issue right now.');
+                    }
+
+                    const card = document.querySelector(`[data-task-card][data-schedule-id="${scheduleId}"]`);
+                    if (card) {
+                        card.dataset.status = 'inspection';
+                        card.dataset.issueNotes = notes;
+                        card.classList.add('issue-reported');
+                        
+                        const pill = card.querySelector('.hk-room-card-header .hk-pill:not(.starting-soon-badge)');
+                        if (pill) {
+                            pill.textContent = 'Inspection';
+                            pill.classList.add('warning');
+                        }
+                        
+                        if (!card.querySelector('.issue-reported-badge')) {
+                            const headerRight = card.querySelector('.hk-room-card-header .d-flex.flex-column');
+                            if (headerRight) {
+                                const badge = document.createElement('span');
+                                badge.className = 'issue-reported-badge';
+                                badge.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> Issue Reported';
+                                badge.dataset.issueNotes = notes;
+                                headerRight.appendChild(badge);
+                            }
+                        } else {
+                            const badge = card.querySelector('.issue-reported-badge');
+                            badge.dataset.issueNotes = notes;
+                        }
+                        
+                        const issueBtn = card.querySelector('[data-action="issue"]');
+                        if (issueBtn) {
+                            issueBtn.innerHTML = 'Update Issue';
+                        }
+                    }
+
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('reportIssueModal'));
+                    modal.hide();
+
+                    if (window.Swal) {
+                        Swal.fire({
+                            title: 'Issue Reported',
+                            text: 'The issue has been reported successfully.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert('Issue reported successfully.');
+                    }
+                } catch (err) {
+                    alert(err.message || 'Unable to report issue.');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Submit Issue';
+                }
+            };
+
+            submitBtn.addEventListener('click', window._submitIssueHandler);
+        })();
+
+        // Search and Filter functionality
+        (() => {
+            const searchInput = document.getElementById('taskSearch');
+            const statusFilter = document.getElementById('statusFilter');
+            const emptyState = document.getElementById('tasksEmpty');
+
+            if (!searchInput || !statusFilter) return;
+
+            function filterCards() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const statusValue = statusFilter.value.toLowerCase();
+
+                const allCards = document.querySelectorAll('[data-task-card]');
+                let visibleCount = 0;
+
+                allCards.forEach(card => {
+                    const taskName = (card.dataset.roomType || '').toLowerCase();
+                    const roomNumber = (card.dataset.roomNumber || '').toLowerCase();
+                    const guestName = card.querySelector('.hk-room-meta strong')?.textContent?.toLowerCase() || '';
+                    const treatmentRoom = card.querySelector('.hk-eyebrow')?.textContent?.toLowerCase() || '';
+                    const status = (card.dataset.status || '').toLowerCase();
+
+                    const matchesSearch = !searchTerm || 
+                        taskName.includes(searchTerm) || 
+                        roomNumber.includes(searchTerm) ||
+                        guestName.includes(searchTerm) ||
+                        treatmentRoom.includes(searchTerm);
+
+                    const matchesStatus = !statusValue || status === statusValue;
+
+                    const isVisible = matchesSearch && matchesStatus;
+                    card.style.display = isVisible ? '' : 'none';
+                    
+                    if (isVisible) visibleCount++;
+                });
+
+                if (emptyState) {
+                    emptyState.classList.toggle('d-none', visibleCount > 0);
+                }
+            }
+
+            searchInput.removeEventListener('input', filterCards);
+            statusFilter.removeEventListener('change', filterCards);
+            
+            searchInput.addEventListener('input', filterCards);
+            statusFilter.addEventListener('change', filterCards);
+        })();
+
+    // Custom tooltip for issue notes
+    (() => {
+        let tooltip = null;
+
+        function createTooltip() {
+            if (tooltip) return tooltip;
+            tooltip = document.createElement('div');
+            tooltip.className = 'issue-tooltip';
+            tooltip.innerHTML = '<div class="issue-tooltip-title">Issue Notes</div><div class="issue-tooltip-content"></div>';
+            document.body.appendChild(tooltip);
+            return tooltip;
+        }
+
+        function showTooltip(badge, notes) {
+            const tip = createTooltip();
+            tip.querySelector('.issue-tooltip-content').textContent = notes || 'No notes available';
+            
+            const rect = badge.getBoundingClientRect();
+            tip.style.left = rect.left + 'px';
+            tip.style.top = (rect.bottom + 8) + 'px';
+            tip.classList.add('show');
+        }
+
+        function hideTooltip() {
+            if (tooltip) {
+                tooltip.classList.remove('show');
+            }
+        }
+
+            document.removeEventListener('click', window._tooltipClickHandler);
+            
+            window._tooltipClickHandler = (e) => {
+            const badge = e.target.closest('.issue-reported-badge');
+            if (badge) {
+                e.stopPropagation();
+                const notes = badge.dataset.issueNotes || badge.closest('[data-task-card]')?.dataset.issueNotes;
+                if (tooltip && tooltip.classList.contains('show')) {
+                    hideTooltip();
+                } else {
+                    showTooltip(badge, notes);
+                }
+            } else {
+                hideTooltip();
+            }
+            };
+
+            document.addEventListener('click', window._tooltipClickHandler);
+    })();
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', initializeTaskScripts);
+    // Also run immediately in case DOM is already loaded
+    if (document.readyState !== 'loading') {
+        initializeTaskScripts();
+    }
+</script>

@@ -13,6 +13,7 @@ using GMS.Infrastructure.ViewModels.Rooms;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
@@ -33,12 +34,36 @@ public class GuestsAPIController : ControllerBase
     private readonly ILogger<GuestsAPIController> _logger;
     private readonly IMapper _mapper;
     private Microsoft.AspNetCore.Hosting.IWebHostEnvironment _hostingEnv;
-    public GuestsAPIController(IUnitOfWork unitOfWork, ILogger<GuestsAPIController> logger, IMapper mapper, IWebHostEnvironment hostingEnv)
+    private readonly IConfiguration _configuration;
+    public GuestsAPIController(IUnitOfWork unitOfWork, ILogger<GuestsAPIController> logger, IMapper mapper, IWebHostEnvironment hostingEnv, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
         _mapper = mapper;
         _hostingEnv = hostingEnv;
+        _configuration = configuration;
+    }
+
+    private string GetEHRMSDatabaseName()
+    {
+        var connectionString = _configuration.GetConnectionString("EHRMSConnectionDB");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            return "EHRMS"; // Fallback to default
+        }
+
+        var parts = connectionString.Split(';');
+        foreach (var part in parts)
+        {
+            if (part.Trim().StartsWith("Initial Catalog", StringComparison.OrdinalIgnoreCase) ||
+                part.Trim().StartsWith("Database", StringComparison.OrdinalIgnoreCase))
+            {
+                var dbName = part.Split('=')[1]?.Trim();
+                return dbName ?? "EHRMS";
+            }
+        }
+
+        return "EHRMS"; // Fallback to default
     }
 
     public async Task<IActionResult> GetGuestsList()
@@ -236,25 +261,8 @@ public class GuestsAPIController : ControllerBase
     {
         try
         {
-            // IMPORTANT: Run the migration script first: Database/Migration_Add_EmployeeId3_To_GuestSchedule.sql
-            // After migration, this query will work with the actual EmployeeId3 column
-            // For now, using explicit column list to avoid "Invalid column name" error if EmployeeId3 doesn't exist
-            
-            // Check if EmployeeId3 column exists (simple check - if query fails, column doesn't exist)
-            // After migration, use this query:
-            /*
-            string query = @"Select gs.*,tm.TaskName,wm1.WorkerName EmployeeName1,wm2.WorkerName EmployeeName2,wm3.WorkerName EmployeeName3,rm.ResourceName 
-                            from GuestSchedule gs
-                                left Join TaskMaster tm on gs.TaskId=tm.Id
-                                left join EHRMS.dbo.WorkerMaster wm1 on gs.EmployeeId1=wm1.WorkerID
-								left join EHRMS.dbo.WorkerMaster wm2 on gs.EmployeeId2=wm2.WorkerID
-								left join EHRMS.dbo.WorkerMaster wm3 on gs.EmployeeId3=wm3.WorkerID
-                                left join ResourceMaster rm on gs.ResourceId=rm.Id
-                            where gs.guestid=@GuestId";
-            */
-            
-            // Temporary query (works before migration - sets EmployeeId3 to NULL):
-            string query = @"Select 
+            string ehrmsDbName = GetEHRMSDatabaseName();
+            string query = $@"Select 
                                 gs.Id,
                                 gs.GuestId,
                                 gs.StartDateTime,
@@ -263,20 +271,23 @@ public class GuestsAPIController : ControllerBase
                                 gs.TaskId,
                                 gs.EmployeeId1,
                                 gs.EmployeeId2,
-                                CAST(NULL as int) as EmployeeId3,
+                                gs.EmployeeId3,
                                 gs.SessionId,
                                 gs.ResourceId,
                                 tm.TaskName,
                                 wm1.WorkerName EmployeeName1,
                                 wm2.WorkerName EmployeeName2,
-                                CAST(NULL as nvarchar(max)) as EmployeeName3,
+                                wm3.WorkerName EmployeeName3,
                                 rm.ResourceName 
                             from GuestSchedule gs
                                 left Join TaskMaster tm on gs.TaskId=tm.Id
-                                left join EHRMS.dbo.WorkerMaster wm1 on gs.EmployeeId1=wm1.WorkerID
-								left join EHRMS.dbo.WorkerMaster wm2 on gs.EmployeeId2=wm2.WorkerID
+                                left join [{ehrmsDbName}].dbo.WorkerMaster wm1 on gs.EmployeeId1=wm1.WorkerID
+								left join [{ehrmsDbName}].dbo.WorkerMaster wm2 on gs.EmployeeId2=wm2.WorkerID
+								left join [{ehrmsDbName}].dbo.WorkerMaster wm3 on gs.EmployeeId3=wm3.WorkerID
                                 left join ResourceMaster rm on gs.ResourceId=rm.Id
-                            where gs.guestid=@GuestId";
+                            where gs.guestid=@GuestId
+                            AND (gs.IsCancelled IS NULL OR gs.IsCancelled = 0)
+                            AND (gs.IsDeleted IS NULL OR gs.IsDeleted = 0)";
             
             var parameter = new { @GuestId = GuestId };
             var res = await _unitOfWork.GuestSchedule.GetTableData<GuestScheduleWithChild>(query, parameter);
@@ -415,9 +426,15 @@ public class GuestsAPIController : ControllerBase
             {
                 if (dto.Id > 0)
                 {
+                    // ORIGINAL UPDATE BEHAVIOR PRESERVED - No validation checks, just update
                     string query = $"Select * from GuestSchedule where Id=@Id";
                     var parameter = new { @Id = dto.Id };
                     GuestSchedule gs = await _unitOfWork.GuestSchedule.GetEntityData<GuestSchedule>(query, parameter);
+                    if (gs == null)
+                    {
+                        return NotFound(new { message = "Schedule not found", status = "error" });
+                    }
+                    
                     gs.StartDateTime = dto.StartDateTime;
                     gs.EndDateTime = dto.EndDateTime;
                     gs.Duration = dto.Duration;
@@ -426,30 +443,44 @@ public class GuestsAPIController : ControllerBase
                     gs.EmployeeId2 = dto.EmployeeId2;
                     gs.EmployeeId3 = dto.EmployeeId3;
                     gs.ResourceId = dto.ResourceId;
+                    
                     var updated = await _unitOfWork.GuestSchedule.UpdateAsync(gs);
                     if (updated)
                     {
-                        return Ok(dto);
+                        return Ok(new { message = "Schedule updated successfully", status = "success", id = dto.Id });
                     }
                     else
                     {
-                        return BadRequest("Unable to Update right now");
+                        return BadRequest(new { message = "Unable to update schedule. Please try again.", status = "error" });
                     }
                 }
                 else
                 {
-                    DateTime? guestEndStayDate = DateTime.Now.AddDays(1);
-                    string memberDetailsQuery = "Select * from MembersDetails where Id=@Id";
-                    var memberDetailsParam = new { @Id = dto.GuestId };
-                    var memberDetails = await _unitOfWork.GenOperations.GetEntityData<MembersDetails>(memberDetailsQuery, memberDetailsParam);
-                    if (memberDetails != null)
+                    // Get guest checkout date - prioritize RoomAllocation.CheckOutDate, then MembersDetails.DateOfDepartment
+                    DateTime? guestEndStayDate = null;
+                    string checkoutDateQuery = @"SELECT 
+                                                (Case when ra.CheckOutDate is null then md.DateOfDepartment else ra.CheckOutDate end) as CheckoutDate
+                                                FROM MembersDetails md
+                                                LEFT JOIN RoomAllocation ra ON md.Id = ra.GuestID AND ra.IsActive = 1
+                                                WHERE md.Id = @GuestId";
+                    var checkoutDateParam = new { @GuestId = dto.GuestId };
+                    var checkoutDateResult = await _unitOfWork.GenOperations.GetEntityData<dynamic>(checkoutDateQuery, checkoutDateParam);
+                    if (checkoutDateResult != null && checkoutDateResult.CheckoutDate != null)
                     {
-                        guestEndStayDate = memberDetails.DateOfDepartment;
+                        guestEndStayDate = (DateTime)checkoutDateResult.CheckoutDate;
                     }
 
                     int iteration = 1;//dto.SessionId ?? 1;
                     int iterationLimit = dto.SessionId ?? 1;
-                    string query = @"Select * from GuestSchedule gs where gs.GuestId=@GuestId AND (
+                    int schedulesCreated = 0;
+                    int schedulesSkipped = 0;
+                    bool hasOverlap = false;
+                    string overlapMessage = "";
+                    
+                    string query = @"Select * from GuestSchedule gs where gs.GuestId=@GuestId 
+                                    AND (gs.IsCancelled IS NULL OR gs.IsCancelled = 0)
+                                    AND (gs.IsDeleted IS NULL OR gs.IsDeleted = 0)
+                                    AND (
                                     -- Case 1: StartDateTime falls within an existing schedule
                                     (@StartDateTime BETWEEN gs.StartDateTime AND gs.EndDateTime)
     
@@ -464,6 +495,7 @@ public class GuestsAPIController : ControllerBase
                                 ) order by EndDateTime desc;";
                     DateTime StartDateTime = dto.StartDateTime;
                     DateTime EndDateTime = dto.EndDateTime;
+                    DateTime originalStartDateTime = dto.StartDateTime;
 
                     do
                     {
@@ -471,18 +503,25 @@ public class GuestsAPIController : ControllerBase
                         bool scheduleExists = await _unitOfWork.GenOperations.IsExists(query, param);
                         if (scheduleExists)
                         {
+                            // Auto-shift overlapping schedule (ORIGINAL BEHAVIOR PRESERVED)
                             var res = await _unitOfWork.GenOperations.GetTableData<GuestSchedule>(query, param);
                             if (res != null && res.Count > 0 && res.FirstOrDefault() != null)
                             {
+                                hasOverlap = true;
                                 StartDateTime = res.FirstOrDefault().EndDateTime.AddMinutes(1);
                                 EndDateTime = StartDateTime.Add(dto.Duration).AddMinutes(-1);
-
                             }
                         }
                         else
                         {
-                            if (EndDateTime > guestEndStayDate?.AddMinutes(-60))
+                            // Check checkout conflict AFTER overlap resolution (ORIGINAL BEHAVIOR PRESERVED)
+                            if (guestEndStayDate.HasValue && EndDateTime > guestEndStayDate.Value.AddMinutes(-60))
                             {
+                                schedulesSkipped++;
+                                if (schedulesSkipped == 1)
+                                {
+                                    overlapMessage = $"Schedule cannot be added. It conflicts with checkout time (Checkout: {guestEndStayDate.Value:dd/MMM/yyyy hh:mm tt}). Schedules must end at least 60 minutes before checkout.";
+                                }
                                 break;
                             }
 
@@ -497,16 +536,17 @@ public class GuestsAPIController : ControllerBase
                             schedule.EmployeeId3 = dto.EmployeeId3;
                             schedule.ResourceId = dto.ResourceId;
                             schedule.SessionId = iteration;
+                            schedule.IsCancelled = false;
+                            schedule.IsDeleted = false;
 
-
-                            //dto.StartDateTime = StartDateTime;
-                            //dto.EndDateTime = EndDateTime;
-                            //dto.SessionId = iteration;
                             dto.Id = await _unitOfWork.GuestSchedule.AddAsync(schedule);
                             if (dto.Id == 0)
                             {
-                                return BadRequest("Unable to Add right now");
+                                return BadRequest(new { message = "Unable to add schedule. Please try again.", status = "error" });
                             }
+                            schedulesCreated++;
+                            
+                            // Move to next day for the next iteration
                             StartDateTime = dto.StartDateTime.AddDays(iteration);
                             EndDateTime = dto.EndDateTime.AddDays(iteration);
                             iteration += 1;
@@ -514,8 +554,32 @@ public class GuestsAPIController : ControllerBase
                     }
                     while (iteration <= iterationLimit);
 
-
-                    return Ok(dto);
+                    // Return appropriate response based on what happened
+                    if (schedulesCreated == 0 && schedulesSkipped > 0)
+                    {
+                        // All schedules were skipped due to checkout conflict
+                        return StatusCode(409, new { message = overlapMessage, status = "warning", schedulesCreated = 0 });
+                    }
+                    else if (schedulesCreated == 0 && iteration > iterationLimit)
+                    {
+                        // All schedules were skipped due to overlaps
+                        return StatusCode(409, new { message = "Schedule could not be added. All time slots conflict with existing schedules.", status = "warning", schedulesCreated = 0 });
+                    }
+                    else if (schedulesCreated > 0 && hasOverlap)
+                    {
+                        // Some schedules created but some had overlaps (auto-shifted)
+                        return StatusCode(200, new { message = $"Schedule saved successfully. {schedulesCreated} schedule(s) created. Some time slots were automatically adjusted due to conflicts.", status = "success", schedulesCreated = schedulesCreated, hasWarning = true });
+                    }
+                    else if (schedulesCreated < iterationLimit)
+                    {
+                        // Not all requested schedules were created
+                        return StatusCode(200, new { message = $"Schedule saved successfully. {schedulesCreated} out of {iterationLimit} schedule(s) created. Some schedules were skipped due to checkout time conflicts.", status = "success", schedulesCreated = schedulesCreated, hasWarning = true });
+                    }
+                    else
+                    {
+                        // All schedules created successfully
+                        return Ok(new { message = "Schedule saved successfully", status = "success", schedulesCreated = schedulesCreated });
+                    }
                 }
             }
             else
@@ -772,9 +836,9 @@ public class GuestsAPIController : ControllerBase
                     //selectData = $" (select count(*) from [dbo].[GuestsChkList] where GuestID=md.Id) InHouse,(Case when ra.RNumber is null then 1 when ra.CheckInDate is null then 2 when CheckOutDate is null then 3 else 4 end) CheckInStatus,md.PaxCompleted,md.GroupId,md.DOB, md.Id\r\n,UniqueNo\r\n,CustomerName\r\n,MobileNo\r\n,s.Service\r\n,mc.Category\r\n,md.Photo\r\n,IsApproved\r\n,md.CreationDate\r\n,md.Status\r\n,g.Gender GenderName\r\n,(select count(1) from [dbo].[GuestsChkList] gcl where gcl.GuestID=md.Id) IsChecked\r\n,md.Age\r\n,md.Nationality ,DateOfArrival ,DateOfDepartment,rt.RType\r\n,(SELECT STUFF((SELECT ', ' + convert(nvarchar(20),'Room No '+ra.RNumber) \r\n               FROM RoomAllocation ra \r\n               WHERE ra.GuestID = md.Id \r\n                 AND ra.FD = md.DateOfArrival \r\n                 AND ra.TD = md.DateOfDepartment \r\n                 AND ra.IsActive = 1 \r\n               FOR XML PATH('')), 1, 2, '')) AS RoomNumber   ";
                     selectData = $@" (select count(*) from [dbo].[GuestsChkList] where GuestID=md.Id) InHouse
                                     ,(Case when ra.RNumber is null then 1 when ra.CheckInDate is null then 2 when CheckOutDate is null then 3 else 4 end) CheckInStatus
-                                    ,(Select  top 1 tm.TaskName from GuestSchedule gs Left Join TaskMaster tm on gs.TaskId=tm.Id where GuestId=md.Id and EndDateTime >= getdate() order by EndDateTime asc) GuestTask
-                                    ,(Select  top 1 gs.StartDateTime from GuestSchedule gs Left Join TaskMaster tm on gs.TaskId=tm.Id where GuestId=md.Id and EndDateTime >= getdate() order by EndDateTime asc) ActivityStartTime
-									,(Select  top 1 gs.EndDateTime from GuestSchedule gs Left Join TaskMaster tm on gs.TaskId=tm.Id where GuestId=md.Id and EndDateTime >= getdate() order by EndDateTime asc) ActivityEndTime
+                                    ,(Select  top 1 tm.TaskName from GuestSchedule gs Left Join TaskMaster tm on gs.TaskId=tm.Id where GuestId=md.Id and EndDateTime >= getdate() and (gs.IsCancelled IS NULL OR gs.IsCancelled = 0) and (gs.IsDeleted IS NULL OR gs.IsDeleted = 0) order by EndDateTime asc) GuestTask
+                                    ,(Select  top 1 gs.StartDateTime from GuestSchedule gs Left Join TaskMaster tm on gs.TaskId=tm.Id where GuestId=md.Id and EndDateTime >= getdate() and (gs.IsCancelled IS NULL OR gs.IsCancelled = 0) and (gs.IsDeleted IS NULL OR gs.IsDeleted = 0) order by EndDateTime asc) ActivityStartTime
+									,(Select  top 1 gs.EndDateTime from GuestSchedule gs Left Join TaskMaster tm on gs.TaskId=tm.Id where GuestId=md.Id and EndDateTime >= getdate() and (gs.IsCancelled IS NULL OR gs.IsCancelled = 0) and (gs.IsDeleted IS NULL OR gs.IsDeleted = 0) order by EndDateTime asc) ActivityEndTime
                                     ,md.PaxCompleted
                                     ,md.GroupId
                                     ,md.DOB
@@ -1838,18 +1902,122 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
     {
         try
         {
-            string sQuery = "Select * from RoomAllocation where GuestID=@GuestId";
+            _logger.LogInformation($"UpdateRoomAllocation called for GuestId: {inputDTO.Id}, ArrivalDate: {inputDTO.DateOfArrival}, CheckoutDate: {inputDTO.DateOfDepartment}");
+            
+            // Get the active room allocation for this guest
+            string sQuery = "Select * from RoomAllocation where GuestID=@GuestId and IsActive=1";
             var sParam = new { @GuestId = inputDTO.Id };
 
             var ra = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>(sQuery, sParam);
+            
+            // If no active allocation found, try without IsActive filter (for backward compatibility)
+            if (ra == null)
+            {
+                sQuery = "Select * from RoomAllocation where GuestID=@GuestId";
+                ra = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>(sQuery, sParam);
+            }
             if (ra != null)
             {
+                // Store old dates for comparison
+                DateTime? oldArrivalDate = ra.Fd;
+                DateTime? oldCheckOutDate = ra.Td;
+                bool isGuestCheckedIn = ra.CheckInDate != null;
+                
+                _logger.LogInformation($"RoomAllocation found for GuestId: {inputDTO.Id}, OldArrivalDate: {oldArrivalDate}, OldCheckoutDate: {oldCheckOutDate}, IsCheckedIn: {isGuestCheckedIn}");
+                
+                // Check if dates have changed - compare both date and time
+                // Consider dates changed if they are different or if one is null and the other is not
+                bool arrivalDateChanged = false;
+                if (oldArrivalDate != null && inputDTO.DateOfArrival != null)
+                {
+                    arrivalDateChanged = oldArrivalDate.Value != inputDTO.DateOfArrival.Value;
+                }
+                else if (oldArrivalDate == null && inputDTO.DateOfArrival != null)
+                {
+                    arrivalDateChanged = true; // New date being set
+                }
+                else if (oldArrivalDate != null && inputDTO.DateOfArrival == null)
+                {
+                    arrivalDateChanged = true; // Date being cleared
+                }
+                
+                bool checkoutDateChanged = false;
+                if (oldCheckOutDate != null && inputDTO.DateOfDepartment != null)
+                {
+                    checkoutDateChanged = oldCheckOutDate.Value != inputDTO.DateOfDepartment.Value;
+                }
+                else if (oldCheckOutDate == null && inputDTO.DateOfDepartment != null)
+                {
+                    checkoutDateChanged = true; // New date being set
+                }
+                else if (oldCheckOutDate != null && inputDTO.DateOfDepartment == null)
+                {
+                    checkoutDateChanged = true; // Date being cleared
+                }
+
                 ra.Rtype = inputDTO.RoomType;
                 ra.Rtype = inputDTO.RoomType;
                 ra.Fd = inputDTO.DateOfArrival;
                 ra.Td = inputDTO.DateOfDepartment;
                 ra.ModifiedDate = DateTime.Now;
-                await _unitOfWork.RoomAllocation.UpdateAsync(ra);
+                bool updated = await _unitOfWork.RoomAllocation.UpdateAsync(ra);
+                
+                // Update GuestSchedule entries if guest is checked in and dates changed
+                _logger.LogInformation($"UpdateRoomAllocation - GuestId: {inputDTO.Id}, Updated: {updated}, IsCheckedIn: {isGuestCheckedIn}, ArrivalChanged: {arrivalDateChanged}, CheckoutChanged: {checkoutDateChanged}");
+                
+                if (updated && isGuestCheckedIn)
+                {
+                    _logger.LogInformation($"Updating GuestSchedule for GuestId {inputDTO.Id}. CheckedIn: {isGuestCheckedIn}, ArrivalChanged: {arrivalDateChanged}, CheckoutChanged: {checkoutDateChanged}");
+                    
+                    // Update check-in schedule if arrival date changed
+                    if (arrivalDateChanged && inputDTO.DateOfArrival != null)
+                    {
+                        _logger.LogInformation($"Calling UpdateGuestScheduleForCheckin for GuestId {inputDTO.Id} with arrival date {inputDTO.DateOfArrival.Value}");
+                        bool scheduleUpdated = await UpdateGuestScheduleForCheckin(inputDTO.Id, inputDTO.DateOfArrival.Value);
+                        if (!scheduleUpdated)
+                        {
+                            _logger.LogWarning($"Failed to update check-in schedule for GuestId {inputDTO.Id}");
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"Successfully updated check-in schedule for GuestId {inputDTO.Id}");
+                        }
+                    }
+                    else
+                    {
+                        if (!arrivalDateChanged)
+                        {
+                            _logger.LogInformation($"Skipping check-in schedule update for GuestId {inputDTO.Id} - arrival date did not change");
+                        }
+                        if (inputDTO.DateOfArrival == null)
+                        {
+                            _logger.LogInformation($"Skipping check-in schedule update for GuestId {inputDTO.Id} - arrival date is null");
+                        }
+                    }
+
+                    // Update checkout schedule if checkout date changed
+                    if (checkoutDateChanged && inputDTO.DateOfDepartment != null)
+                    {
+                        bool scheduleUpdated = await UpdateGuestScheduleForCheckout(inputDTO.Id, inputDTO.DateOfDepartment.Value);
+                        if (!scheduleUpdated)
+                        {
+                            _logger.LogWarning($"Failed to update checkout schedule for GuestId {inputDTO.Id}");
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"Successfully updated checkout schedule for GuestId {inputDTO.Id}");
+                        }
+                    }
+                }
+                else if (!isGuestCheckedIn)
+                {
+                    _logger.LogInformation($"Guest {inputDTO.Id} is not checked in, skipping schedule update");
+                }
+                else if (!updated)
+                {
+                    _logger.LogWarning($"RoomAllocation update failed for GuestId {inputDTO.Id}");
+                }
+                
                 return Ok("");
             }
 
@@ -1857,7 +2025,7 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error in retriving Attendance {nameof(FetchDepartmentDate)}");
+            _logger.LogError(ex, $"Error updating RoomAllocation for GuestId {inputDTO.Id} in {nameof(UpdateRoomAllocation)}");
             throw;
         }
     }
@@ -2742,7 +2910,7 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
     {
         try
         {
-            string sQuery = "Select WorkerID EmployeeId,WorkerName EmployeeName,EMPID EmployeeCode from EHRMS.dbo.WorkerMaster where roleid=(Select Department from TaskMaster where id=@TaskId) and isactive='Y'";
+            string sQuery = "Select WorkerID EmployeeId,WorkerName EmployeeName,EMPID EmployeeCode from EHRMS.dbo.WorkerMaster where roleid=(Select Department from TaskMaster where id=@TaskId) and isactive='Y' ORDER BY WorkerName";
             var sParam = new { @TaskId = TaskId };
             var res = await _unitOfWork.TaskMaster.GetTableData<EmployeeMasterKeyValue>(sQuery, sParam);
             return Ok(res);
@@ -2757,7 +2925,7 @@ from AvailableRooms ar where ar.RNumber not in (Select isnull(ral.RNumber,'') fr
     {
         try
         {
-            string sQuery = "Select * from ResourceMaster where DepartmentId=(Select Department from TaskMaster where id=@TaskId) and IsActive=1 and IsDeleted=0";
+            string sQuery = "Select * from ResourceMaster where DepartmentId=(Select Department from TaskMaster where id=@TaskId) and IsActive=1 and IsDeleted=0 ORDER BY ResourceName";
             var sParam = new { @TaskId = TaskId };
             var res = await _unitOfWork.ResourceMaster.GetTableData<ResourceMasterDTO>(sQuery, sParam);
             return Ok(res);
@@ -4753,6 +4921,20 @@ OPTION (MAXRECURSION 100);";
 
                 var memberDetail = await _unitOfWork.GenOperations.GetEntityData<MemberDetailsWithChild>(@"Select *,ra.RNumber RoomNo,ra.CheckInDate from MembersDetails md Left Join RoomAllocation ra on md.Id=ra.GuestID where md.id=@GuestId", new { @GuestId = dataVM.MemberDetail.Id });
 
+                // Get old arrival and checkout datetimes from RoomAllocation for comparison
+                RoomAllocation? oldRoomAllocation = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>(@"Select * from RoomAllocation where GuestId=@GuestId", new { @GuestId = dataVM.MemberDetail.Id });
+                DateTime? oldArrivalDateTime = oldRoomAllocation?.Fd;
+                DateTime? oldCheckOutDateTime = oldRoomAllocation?.Td;
+                bool isGuestCheckedIn = memberDetail.CheckInDate != null;
+                // Check if arrival date/time has changed
+                bool arrivalDateChanged = oldArrivalDateTime != null && 
+                    dataVM.MemberDetail.DateOfArrival != null && 
+                    oldArrivalDateTime.Value.Date != dataVM.MemberDetail.DateOfArrival.Value.Date;
+                // Check if checkout date/time has changed (comparing dates as user mentioned "checkout date")
+                bool checkoutDateChanged = oldCheckOutDateTime != null && 
+                    dataVM.MemberDetail.DateOfDepartment != null && 
+                    oldCheckOutDateTime.Value.Date != dataVM.MemberDetail.DateOfDepartment.Value.Date;
+
                 memberDetail.CatId = dataVM.MemberDetail.CatId;
                 memberDetail.ServiceId = dataVM.MemberDetail.ServiceId;
 
@@ -4812,6 +4994,96 @@ OPTION (MAXRECURSION 100);";
                 {
                     error = true;
                 }
+
+                // Update GuestSchedule entries for check-in and checkout-related tasks if guest is checked in and dates changed
+                // Only update if arrival date change is allowed (not blocked by restrictions)
+                if (!error && isGuestCheckedIn && !ArrivalDateChangeNotAllowedFlag)
+                {
+                    // Update schedule for all guests in the group
+                    if (memberDetailsList != null && memberDetailsList.Any())
+                    {
+                        foreach (var guest in memberDetailsList)
+                        {
+                            // Check if this guest is checked in
+                            RoomAllocation? guestRoomAllocation = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>(@"Select * from RoomAllocation where GuestId=@GuestId", new { @GuestId = guest.Id });
+                            if (guestRoomAllocation?.CheckInDate != null)
+                            {
+                                // Update check-in schedule if arrival date changed
+                                if (arrivalDateChanged && dataVM.MemberDetail.DateOfArrival != null)
+                                {
+                                    bool scheduleUpdated = await UpdateGuestScheduleForCheckin(guest.Id, dataVM.MemberDetail.DateOfArrival.Value);
+                                    if (!scheduleUpdated)
+                                    {
+                                        error = true;
+                                    }
+                                }
+
+                                // Update checkout schedule if checkout date changed
+                                if (checkoutDateChanged && dataVM.MemberDetail.DateOfDepartment != null)
+                                {
+                                    bool scheduleUpdated = await UpdateGuestScheduleForCheckout(guest.Id, dataVM.MemberDetail.DateOfDepartment.Value);
+                                    if (!scheduleUpdated)
+                                    {
+                                        error = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Update schedule for the primary guest if no group members found
+                        if (arrivalDateChanged && dataVM.MemberDetail.DateOfArrival != null)
+                        {
+                            bool scheduleUpdated = await UpdateGuestScheduleForCheckin(dataVM.MemberDetail.Id, dataVM.MemberDetail.DateOfArrival.Value);
+                            if (!scheduleUpdated)
+                            {
+                                error = true;
+                            }
+                        }
+
+                        if (checkoutDateChanged && dataVM.MemberDetail.DateOfDepartment != null)
+                        {
+                            bool scheduleUpdated = await UpdateGuestScheduleForCheckout(dataVM.MemberDetail.Id, dataVM.MemberDetail.DateOfDepartment.Value);
+                            if (!scheduleUpdated)
+                            {
+                                error = true;
+                            }
+                        }
+                    }
+                }
+                // If arrival date change is not allowed but checkout date changed, still update checkout schedule
+                else if (!error && isGuestCheckedIn && ArrivalDateChangeNotAllowedFlag && checkoutDateChanged && dataVM.MemberDetail.DateOfDepartment != null)
+                {
+                    // Update schedule for all guests in the group
+                    if (memberDetailsList != null && memberDetailsList.Any())
+                    {
+                        foreach (var guest in memberDetailsList)
+                        {
+                            // Check if this guest is checked in
+                            RoomAllocation? guestRoomAllocation = await _unitOfWork.GenOperations.GetEntityData<RoomAllocation>(@"Select * from RoomAllocation where GuestId=@GuestId", new { @GuestId = guest.Id });
+                            if (guestRoomAllocation?.CheckInDate != null)
+                            {
+                                // Update checkout schedule if checkout date changed
+                                bool scheduleUpdated = await UpdateGuestScheduleForCheckout(guest.Id, dataVM.MemberDetail.DateOfDepartment.Value);
+                                if (!scheduleUpdated)
+                                {
+                                    error = true;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Update schedule for the primary guest if no group members found
+                        bool scheduleUpdated = await UpdateGuestScheduleForCheckout(dataVM.MemberDetail.Id, dataVM.MemberDetail.DateOfDepartment.Value);
+                        if (!scheduleUpdated)
+                        {
+                            error = true;
+                        }
+                    }
+                }
+
                 //_unitOfWork.Rollback();
                 if (error == false)
                 {
@@ -4839,6 +5111,483 @@ OPTION (MAXRECURSION 100);";
         {
             _logger.LogError(ex, $"Error in retriving Attendance {nameof(SavePaymentData)}");
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Updates GuestSchedule entries for check-in-related tasks (TaskId 6 - CheckinProcess and TaskId 8 - SettleDown)
+    /// when arrival date changes after guest check-in
+    /// </summary>
+    /// <param name="guestId">The guest ID</param>
+    /// <param name="newArrivalDate">The new arrival date</param>
+    /// <returns>True if update was successful, false otherwise</returns>
+    private async Task<bool> UpdateGuestScheduleForCheckin(int guestId, DateTime newArrivalDate)
+    {
+        try
+        {
+            // Get current stay dates (arrival and checkout) from RoomAllocation
+            string dateQuery = @"SELECT 
+                                (Case when ra.CheckInDate is null then md.DateOfArrival else ra.CheckInDate end) as ArrivalDate,
+                                (Case when ra.CheckOutDate is null then md.DateOfDepartment else ra.CheckOutDate end) as CheckoutDate
+                                FROM MembersDetails md
+                                LEFT JOIN RoomAllocation ra ON md.Id = ra.GuestID AND ra.IsActive = 1
+                                WHERE md.Id = @GuestId";
+            var dateParam = new { @GuestId = guestId };
+            var stayDates = await _unitOfWork.GenOperations.GetEntityData<dynamic>(dateQuery, dateParam);
+            
+            DateTime? currentCheckoutDate = null;
+            if (stayDates != null && stayDates.CheckoutDate != null)
+            {
+                currentCheckoutDate = (DateTime)stayDates.CheckoutDate;
+            }
+
+            // TaskId 6 - CheckinProcess: Starts at check-in, lasts 15 minutes
+            // TaskId 8 - SettleDown: Starts after CheckinProcess ends (15 min after check-in), lasts 45 minutes
+            const int checkinProcessTaskId = 6;
+            const int settleDownTaskId = 8;
+            const int checkinProcessDurationMinutes = 15;
+            const int settleDownDurationMinutes = 45;
+
+            // Calculate the new schedule times
+            // CheckinProcess: Starts at arrival, ends 15 minutes after arrival
+            DateTime checkinProcessStartTime = newArrivalDate;
+            DateTime checkinProcessEndTime = newArrivalDate.AddMinutes(checkinProcessDurationMinutes);
+            TimeSpan checkinProcessDuration = TimeSpan.FromMinutes(checkinProcessDurationMinutes);
+
+            // SettleDown: Starts after CheckinProcess ends (15 minutes after arrival), lasts 45 minutes
+            DateTime settleDownStartTime = checkinProcessEndTime; // Starts right after CheckinProcess ends
+            DateTime settleDownEndTime = settleDownStartTime.AddMinutes(settleDownDurationMinutes);
+            TimeSpan settleDownDuration = TimeSpan.FromMinutes(settleDownDurationMinutes);
+
+            // Cancel tasks that:
+            // 1. Overlap with CheckinProcess or SettleDown windows
+            // 2. Occur before check-in (ending before or at arrival)
+            // 3. Occur after checkout (if checkout date is available)
+            await CancelTasksForCheckinUpdate(guestId, newArrivalDate, settleDownEndTime, currentCheckoutDate);
+
+            // Update or Create CheckinProcess schedule (TaskId 6)
+            string queryCheckinProcess = @"SELECT * FROM GuestSchedule 
+                                          WHERE GuestId = @GuestId 
+                                          AND TaskId = @TaskId
+                                          AND (IsCancelled IS NULL OR IsCancelled = 0)
+                                          AND (IsDeleted IS NULL OR IsDeleted = 0)";
+            var paramCheckinProcess = new { @GuestId = guestId, @TaskId = checkinProcessTaskId };
+            var checkinProcessSchedule = await _unitOfWork.GuestSchedule.GetEntityData<GuestSchedule>(queryCheckinProcess, paramCheckinProcess);
+
+            if (checkinProcessSchedule != null)
+            {
+                // Update existing active schedule
+                checkinProcessSchedule.StartDateTime = checkinProcessStartTime;
+                checkinProcessSchedule.EndDateTime = checkinProcessEndTime;
+                checkinProcessSchedule.Duration = checkinProcessDuration;
+                checkinProcessSchedule.IsCancelled = false; // Ensure it's not cancelled
+                checkinProcessSchedule.IsDeleted = false; // Ensure it's not deleted
+                bool updated = await _unitOfWork.GuestSchedule.UpdateAsync(checkinProcessSchedule);
+                if (!updated)
+                {
+                    _logger.LogWarning($"Failed to update GuestSchedule for TaskId {checkinProcessTaskId} for GuestId {guestId}");
+                    return false;
+                }
+                _logger.LogInformation($"Updated CheckinProcess schedule (TaskId {checkinProcessTaskId}) for GuestId {guestId}. New start time: {checkinProcessStartTime}");
+            }
+            else
+            {
+                // Create new schedule if it doesn't exist in active state
+                checkinProcessSchedule = new GuestSchedule
+                {
+                    GuestId = guestId,
+                    TaskId = checkinProcessTaskId,
+                    StartDateTime = checkinProcessStartTime,
+                    EndDateTime = checkinProcessEndTime,
+                    Duration = checkinProcessDuration,
+                    IsCancelled = false,
+                    IsDeleted = false
+                };
+                int newId = await _unitOfWork.GuestSchedule.AddAsync(checkinProcessSchedule);
+                if (newId > 0)
+                {
+                    _logger.LogInformation($"Created CheckinProcess schedule (TaskId {checkinProcessTaskId}) for GuestId {guestId}. Start time: {checkinProcessStartTime}");
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to create CheckinProcess schedule (TaskId {checkinProcessTaskId}) for GuestId {guestId}");
+                    return false;
+                }
+            }
+
+            // Update or Create SettleDown schedule (TaskId 8)
+            string querySettleDown = @"SELECT * FROM GuestSchedule 
+                                       WHERE GuestId = @GuestId 
+                                       AND TaskId = @TaskId
+                                       AND (IsCancelled IS NULL OR IsCancelled = 0)
+                                       AND (IsDeleted IS NULL OR IsDeleted = 0)";
+            var paramSettleDown = new { @GuestId = guestId, @TaskId = settleDownTaskId };
+            var settleDownSchedule = await _unitOfWork.GuestSchedule.GetEntityData<GuestSchedule>(querySettleDown, paramSettleDown);
+
+            if (settleDownSchedule != null)
+            {
+                // Update existing active schedule
+                settleDownSchedule.StartDateTime = settleDownStartTime;
+                settleDownSchedule.EndDateTime = settleDownEndTime;
+                settleDownSchedule.Duration = settleDownDuration;
+                settleDownSchedule.IsCancelled = false; // Ensure it's not cancelled
+                settleDownSchedule.IsDeleted = false; // Ensure it's not deleted
+                bool updated = await _unitOfWork.GuestSchedule.UpdateAsync(settleDownSchedule);
+                if (!updated)
+                {
+                    _logger.LogWarning($"Failed to update GuestSchedule for TaskId {settleDownTaskId} for GuestId {guestId}");
+                    return false;
+                }
+                _logger.LogInformation($"Updated SettleDown schedule (TaskId {settleDownTaskId}) for GuestId {guestId}. New start time: {settleDownStartTime}");
+            }
+            else
+            {
+                // Create new schedule if it doesn't exist in active state
+                settleDownSchedule = new GuestSchedule
+                {
+                    GuestId = guestId,
+                    TaskId = settleDownTaskId,
+                    StartDateTime = settleDownStartTime,
+                    EndDateTime = settleDownEndTime,
+                    Duration = settleDownDuration,
+                    IsCancelled = false,
+                    IsDeleted = false
+                };
+                int newId = await _unitOfWork.GuestSchedule.AddAsync(settleDownSchedule);
+                if (newId > 0)
+                {
+                    _logger.LogInformation($"Created SettleDown schedule (TaskId {settleDownTaskId}) for GuestId {guestId}. Start time: {settleDownStartTime}");
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to create SettleDown schedule (TaskId {settleDownTaskId}) for GuestId {guestId}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating GuestSchedule for check-in tasks for GuestId {guestId}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Updates GuestSchedule entries for checkout-related tasks (TaskId 7 - CheckoutProcess and TaskId 9 - Packing)
+    /// when checkout date changes after guest check-in
+    /// </summary>
+    /// <param name="guestId">The guest ID</param>
+    /// <param name="newCheckOutDate">The new checkout date</param>
+    /// <returns>True if update was successful, false otherwise</returns>
+    private async Task<bool> UpdateGuestScheduleForCheckout(int guestId, DateTime newCheckOutDate)
+    {
+        try
+        {
+            // Get current stay dates (arrival and checkout) from RoomAllocation
+            string dateQuery = @"SELECT 
+                                (Case when ra.CheckInDate is null then md.DateOfArrival else ra.CheckInDate end) as ArrivalDate,
+                                (Case when ra.CheckOutDate is null then md.DateOfDepartment else ra.CheckOutDate end) as CheckoutDate
+                                FROM MembersDetails md
+                                LEFT JOIN RoomAllocation ra ON md.Id = ra.GuestID AND ra.IsActive = 1
+                                WHERE md.Id = @GuestId";
+            var dateParam = new { @GuestId = guestId };
+            var stayDates = await _unitOfWork.GenOperations.GetEntityData<dynamic>(dateQuery, dateParam);
+            
+            DateTime? currentArrivalDate = null;
+            if (stayDates != null && stayDates.ArrivalDate != null)
+            {
+                currentArrivalDate = (DateTime)stayDates.ArrivalDate;
+            }
+
+            // TaskId 7 - CheckoutProcess: Starts 15 minutes before checkout, ends at checkout
+            // TaskId 9 - Packing: Starts 60 minutes before checkout, ends 1 minute before CheckoutProcess starts
+            const int checkoutProcessTaskId = 7;
+            const int packingTaskId = 9;
+            const int checkoutProcessMinutesBefore = 15;
+            const int packingMinutesBefore = 60; // Packing starts 60 minutes before checkout (11:00 if checkout is 12:00)
+
+            // Calculate the new schedule times
+            // Packing: Starts 60 minutes before checkout, ends 16 minutes before checkout
+            DateTime packingStartTime = newCheckOutDate.AddMinutes(-packingMinutesBefore);
+            DateTime packingEndTime = newCheckOutDate.AddMinutes(-16); // Ends 1 minute before CheckoutProcess starts
+            
+            // CheckoutProcess: Starts 15 minutes before checkout, ends at checkout
+            DateTime checkoutProcessStartTime = newCheckOutDate.AddMinutes(-checkoutProcessMinutesBefore);
+            DateTime checkoutProcessEndTime = newCheckOutDate;
+            
+            TimeSpan packingDuration = packingEndTime - packingStartTime;
+            TimeSpan checkoutProcessDuration = checkoutProcessEndTime - checkoutProcessStartTime;
+
+            // Cancel tasks that:
+            // 1. Overlap with Packing or CheckoutProcess windows
+            // 2. Occur before check-in (if arrival date is available)
+            // 3. Occur after checkout (starting after checkout)
+            await CancelTasksForCheckoutUpdate(guestId, packingStartTime, packingEndTime, checkoutProcessStartTime, checkoutProcessEndTime, currentArrivalDate, newCheckOutDate);
+
+            // Update or Create CheckoutProcess schedule (TaskId 7)
+            string queryCheckoutProcess = @"SELECT * FROM GuestSchedule 
+                                            WHERE GuestId = @GuestId 
+                                            AND TaskId = @TaskId
+                                            AND (IsCancelled IS NULL OR IsCancelled = 0)
+                                            AND (IsDeleted IS NULL OR IsDeleted = 0)";
+            var paramCheckoutProcess = new { @GuestId = guestId, @TaskId = checkoutProcessTaskId };
+            var checkoutProcessSchedule = await _unitOfWork.GuestSchedule.GetEntityData<GuestSchedule>(queryCheckoutProcess, paramCheckoutProcess);
+
+            if (checkoutProcessSchedule != null)
+            {
+                // Update existing active schedule
+                checkoutProcessSchedule.StartDateTime = checkoutProcessStartTime;
+                checkoutProcessSchedule.EndDateTime = checkoutProcessEndTime;
+                checkoutProcessSchedule.Duration = checkoutProcessDuration;
+                checkoutProcessSchedule.IsCancelled = false; // Ensure it's not cancelled
+                checkoutProcessSchedule.IsDeleted = false; // Ensure it's not deleted
+                bool updated = await _unitOfWork.GuestSchedule.UpdateAsync(checkoutProcessSchedule);
+                if (!updated)
+                {
+                    _logger.LogWarning($"Failed to update GuestSchedule for TaskId {checkoutProcessTaskId} for GuestId {guestId}");
+                    return false;
+                }
+                _logger.LogInformation($"Updated CheckoutProcess schedule (TaskId {checkoutProcessTaskId}) for GuestId {guestId}. New start time: {checkoutProcessStartTime}");
+            }
+            else
+            {
+                // Create new schedule if it doesn't exist in active state
+                checkoutProcessSchedule = new GuestSchedule
+                {
+                    GuestId = guestId,
+                    TaskId = checkoutProcessTaskId,
+                    StartDateTime = checkoutProcessStartTime,
+                    EndDateTime = checkoutProcessEndTime,
+                    Duration = checkoutProcessDuration,
+                    IsCancelled = false,
+                    IsDeleted = false
+                };
+                int newId = await _unitOfWork.GuestSchedule.AddAsync(checkoutProcessSchedule);
+                if (newId > 0)
+                {
+                    _logger.LogInformation($"Created CheckoutProcess schedule (TaskId {checkoutProcessTaskId}) for GuestId {guestId}. Start time: {checkoutProcessStartTime}");
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to create CheckoutProcess schedule (TaskId {checkoutProcessTaskId}) for GuestId {guestId}");
+                    return false;
+                }
+            }
+
+            // Update or Create Packing schedule (TaskId 9)
+            string queryPacking = @"SELECT * FROM GuestSchedule 
+                                    WHERE GuestId = @GuestId 
+                                    AND TaskId = @TaskId
+                                    AND (IsCancelled IS NULL OR IsCancelled = 0)
+                                    AND (IsDeleted IS NULL OR IsDeleted = 0)";
+            var paramPacking = new { @GuestId = guestId, @TaskId = packingTaskId };
+            var packingSchedule = await _unitOfWork.GuestSchedule.GetEntityData<GuestSchedule>(queryPacking, paramPacking);
+
+            if (packingSchedule != null)
+            {
+                // Update existing active schedule
+                packingSchedule.StartDateTime = packingStartTime;
+                packingSchedule.EndDateTime = packingEndTime;
+                packingSchedule.Duration = packingDuration;
+                packingSchedule.IsCancelled = false; // Ensure it's not cancelled
+                packingSchedule.IsDeleted = false; // Ensure it's not deleted
+                bool updated = await _unitOfWork.GuestSchedule.UpdateAsync(packingSchedule);
+                if (!updated)
+                {
+                    _logger.LogWarning($"Failed to update GuestSchedule for TaskId {packingTaskId} for GuestId {guestId}");
+                    return false;
+                }
+                _logger.LogInformation($"Updated Packing schedule (TaskId {packingTaskId}) for GuestId {guestId}. New start time: {packingStartTime}");
+            }
+            else
+            {
+                // Create new schedule if it doesn't exist in active state
+                packingSchedule = new GuestSchedule
+                {
+                    GuestId = guestId,
+                    TaskId = packingTaskId,
+                    StartDateTime = packingStartTime,
+                    EndDateTime = packingEndTime,
+                    Duration = packingDuration,
+                    IsCancelled = false,
+                    IsDeleted = false
+                };
+                int newId = await _unitOfWork.GuestSchedule.AddAsync(packingSchedule);
+                if (newId > 0)
+                {
+                    _logger.LogInformation($"Created Packing schedule (TaskId {packingTaskId}) for GuestId {guestId}. Start time: {packingStartTime}");
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to create Packing schedule (TaskId {packingTaskId}) for GuestId {guestId}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error updating GuestSchedule for checkout tasks for GuestId {guestId}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Cancels tasks for check-in update: tasks that overlap with CheckinProcess or SettleDown windows,
+    /// tasks before check-in, and tasks after checkout
+    /// </summary>
+    /// <param name="guestId">The guest ID</param>
+    /// <param name="checkinWindowStart">Start time of CheckinProcess (arrival time)</param>
+    /// <param name="settleDownWindowEnd">End time of SettleDown window</param>
+    /// <param name="checkoutDate">Checkout date (optional, for cancelling tasks after checkout)</param>
+    /// <returns>Number of tasks cancelled</returns>
+    private async Task<int> CancelTasksForCheckinUpdate(int guestId, DateTime checkinWindowStart, DateTime settleDownWindowEnd, DateTime? checkoutDate = null)
+    {
+        try
+        {
+            _logger.LogInformation($"CancelTasksForCheckinUpdate called for GuestId {guestId}, checkinWindowStart: {checkinWindowStart}, settleDownWindowEnd: {settleDownWindowEnd}, checkoutDate: {checkoutDate}");
+            
+            // Cancel tasks that:
+            // 1. Overlap with CheckinProcess or SettleDown windows
+            // 2. Occur BEFORE check-in (ending before or at arrival)
+            // 3. Occur AFTER checkout (starting after checkout, if checkout date provided)
+            // Exclude check-in/checkout tasks (TaskId 6, 7, 8, 9) as they will be updated separately
+            string query = @"SELECT * FROM GuestSchedule 
+                            WHERE GuestId = @GuestId 
+                            AND TaskId NOT IN (6, 7, 8, 9)  -- Exclude check-in/checkout tasks
+                            AND (
+                                -- Tasks that overlap with check-in window (CheckinProcess or SettleDown)
+                                -- Task starts before window ends AND ends after window starts
+                                (StartDateTime < @SettleDownWindowEnd AND EndDateTime > @CheckinWindowStart)
+                                OR
+                                -- Tasks scheduled BEFORE check-in (ending before or at arrival)
+                                (EndDateTime <= @CheckinWindowStart)
+                                OR
+                                -- Tasks scheduled AFTER checkout (starting after checkout, if provided)
+                                (@CheckoutDate IS NOT NULL AND StartDateTime > @CheckoutDate)
+                            )
+                            AND (
+                                -- Handle case where columns might not exist (NULL check)
+                                (IsCancelled IS NULL OR IsCancelled = 0 OR IsCancelled = CAST(0 AS BIT))
+                                AND (IsDeleted IS NULL OR IsDeleted = 0 OR IsDeleted = CAST(0 AS BIT))
+                            )";
+            var param = new { @GuestId = guestId, @CheckinWindowStart = checkinWindowStart, @SettleDownWindowEnd = settleDownWindowEnd, @CheckoutDate = checkoutDate };
+            var tasksToCancel = await _unitOfWork.GuestSchedule.GetTableData<GuestSchedule>(query, param);
+            
+            _logger.LogInformation($"Found {tasksToCancel?.Count ?? 0} task(s) to cancel for GuestId {guestId} during check-in update");
+
+            int cancelledCount = 0;
+            foreach (var task in tasksToCancel)
+            {
+                task.IsCancelled = true;
+                bool updated = await _unitOfWork.GuestSchedule.UpdateAsync(task);
+                if (updated)
+                {
+                    cancelledCount++;
+                    _logger.LogInformation($"Cancelled task (TaskId: {task.TaskId}, ScheduleId: {task.Id}) for GuestId {guestId}. Task time: {task.StartDateTime} - {task.EndDateTime}");
+                }
+            }
+
+            if (cancelledCount > 0)
+            {
+                _logger.LogInformation($"Cancelled {cancelledCount} task(s) for GuestId {guestId} during check-in update");
+            }
+
+            return cancelledCount;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error cancelling tasks for check-in update for GuestId {guestId}");
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Cancels tasks for checkout update: tasks that overlap with Packing or CheckoutProcess windows,
+    /// tasks before check-in, and tasks after checkout
+    /// </summary>
+    /// <param name="guestId">The guest ID</param>
+    /// <param name="packingStartTime">Start time of Packing window</param>
+    /// <param name="packingEndTime">End time of Packing window</param>
+    /// <param name="checkoutProcessStartTime">Start time of CheckoutProcess window</param>
+    /// <param name="checkoutProcessEndTime">End time of CheckoutProcess window (checkout time)</param>
+    /// <param name="arrivalDate">Arrival date (optional, for cancelling tasks before check-in)</param>
+    /// <param name="checkoutDate">Checkout date (for cancelling tasks after checkout)</param>
+    /// <returns>Number of tasks cancelled</returns>
+    private async Task<int> CancelTasksForCheckoutUpdate(int guestId, DateTime packingStartTime, DateTime packingEndTime, 
+        DateTime checkoutProcessStartTime, DateTime checkoutProcessEndTime, DateTime? arrivalDate = null, DateTime? checkoutDate = null)
+    {
+        try
+        {
+            _logger.LogInformation($"CancelTasksForCheckoutUpdate called for GuestId {guestId}, packingStart: {packingStartTime}, packingEnd: {packingEndTime}, checkoutProcessStart: {checkoutProcessStartTime}, checkoutProcessEnd: {checkoutProcessEndTime}, arrivalDate: {arrivalDate}, checkoutDate: {checkoutDate}");
+            
+            // Cancel tasks that:
+            // 1. Overlap with Packing window
+            // 2. Overlap with CheckoutProcess window
+            // 3. Occur BEFORE check-in (ending before or at arrival, if arrival date provided)
+            // 4. Occur AFTER checkout (starting after checkout)
+            // Exclude check-in/checkout tasks (TaskId 6, 7, 8, 9) as they will be updated separately
+            string query = @"SELECT * FROM GuestSchedule 
+                            WHERE GuestId = @GuestId 
+                            AND TaskId NOT IN (6, 7, 8, 9)  -- Exclude check-in/checkout tasks
+                            AND (
+                                -- Tasks that overlap with Packing window
+                                (StartDateTime < @PackingEndTime AND EndDateTime > @PackingStartTime)
+                                OR
+                                -- Tasks that overlap with CheckoutProcess window
+                                (StartDateTime < @CheckoutProcessEndTime AND EndDateTime > @CheckoutProcessStartTime)
+                                OR
+                                -- Tasks scheduled BEFORE check-in (ending before or at arrival, if provided)
+                                (@ArrivalDate IS NOT NULL AND EndDateTime <= @ArrivalDate)
+                                OR
+                                -- Tasks scheduled AFTER checkout (starting after checkout)
+                                (@CheckoutDate IS NOT NULL AND StartDateTime > @CheckoutDate)
+                            )
+                            AND (
+                                -- Handle case where columns might not exist (NULL check)
+                                (IsCancelled IS NULL OR IsCancelled = 0 OR IsCancelled = CAST(0 AS BIT))
+                                AND (IsDeleted IS NULL OR IsDeleted = 0 OR IsDeleted = CAST(0 AS BIT))
+                            )";
+            var param = new 
+            { 
+                @GuestId = guestId, 
+                @PackingStartTime = packingStartTime,
+                @PackingEndTime = packingEndTime,
+                @CheckoutProcessStartTime = checkoutProcessStartTime,
+                @CheckoutProcessEndTime = checkoutProcessEndTime,
+                @ArrivalDate = arrivalDate,
+                @CheckoutDate = checkoutDate
+            };
+            var tasksToCancel = await _unitOfWork.GuestSchedule.GetTableData<GuestSchedule>(query, param);
+            
+            _logger.LogInformation($"Found {tasksToCancel?.Count ?? 0} task(s) to cancel for GuestId {guestId} during checkout update");
+
+            int cancelledCount = 0;
+            foreach (var task in tasksToCancel)
+            {
+                task.IsCancelled = true;
+                bool updated = await _unitOfWork.GuestSchedule.UpdateAsync(task);
+                if (updated)
+                {
+                    cancelledCount++;
+                    _logger.LogInformation($"Cancelled task (TaskId: {task.TaskId}, ScheduleId: {task.Id}) for GuestId {guestId}. Task time: {task.StartDateTime} - {task.EndDateTime}");
+                }
+            }
+
+            if (cancelledCount > 0)
+            {
+                _logger.LogInformation($"Cancelled {cancelledCount} task(s) for GuestId {guestId} during checkout update");
+            }
+
+            return cancelledCount;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error cancelling tasks for checkout update for GuestId {guestId}");
+            return 0;
         }
     }
 

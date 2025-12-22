@@ -497,6 +497,22 @@ function CreateEvent() {
     //    count = 1;
     //}
 
+    // Hide error message on each attempt
+    $("#modalFooterErrorMessage").hide();
+    
+    // Validate healers before saving
+    let validationResult = null;
+    if (typeof validateTherapistDropdownsOnSave === 'function') {
+        validationResult = validateTherapistDropdownsOnSave();
+        if (!validationResult.isValid) {
+            // Show error message in footer
+            let errorMessage = validationResult.messages.join('. ');
+            $("#modalFooterErrorText").text(errorMessage);
+            $("#modalFooterErrorMessage").show();
+            return;
+        }
+    }
+
     //if (isValidate()) {
     if (true) {
         //let inputDTO = setproperty_New();
@@ -537,11 +553,40 @@ function CreateEvent() {
             contentType: 'application/json',
             data: JSON.stringify(inputDTO),
             success: function (response) {
-                // Show success notification
+                // Hide error message on success
+                $("#modalFooterErrorMessage").hide();
+                
+                // Determine message and type from response
+                var message = 'Schedule saved successfully';
+                var messageType = 'success';
+                
+                if (response && response.message) {
+                    message = response.message;
+                }
+                if (response && response.status) {
+                    messageType = response.status; // Can be 'success', 'warning', 'error'
+                }
+                
+                // Show appropriate notification
                 if (typeof showNotification === 'function') {
-                    showNotification('Schedule saved successfully', 'success');
+                    showNotification(message, messageType);
+                } else if (typeof toastr !== 'undefined') {
+                    if (messageType === 'warning') {
+                        toastr.warning(message);
+                    } else if (messageType === 'error') {
+                        toastr.error(message);
+                    } else {
+                        toastr.success(message);
+                    }
                 } else {
-                    alert('Schedule saved successfully');
+                    alert(message);
+                }
+                
+                // Only close modal and refresh if schedules were actually created
+                // If status is 409 (Conflict) or no schedules were created, keep modal open
+                if (response && response.status === 'warning' && response.schedulesCreated === 0) {
+                    // Don't close modal or refresh - let user adjust the schedule
+                    return;
                 }
                 
                 // Close the modal
@@ -583,12 +628,74 @@ function CreateEvent() {
                 //    }, 30);
                 //}
             },
-            error: function (error) {
-                console.error('Failed to save schedule:', error);
-                var errorMessage = 'Failed to save schedule. Please try again.';
-                if (error.responseJSON && error.responseJSON.message) {
-                    errorMessage = error.responseJSON.message;
+            error: function (xhr, status, error) {
+                console.error('Failed to save schedule:', error, xhr);
+                
+                // Handle 409 Conflict (warning) separately
+                if (xhr.status === 409) {
+                    var warningMessage = 'Failed to save schedule. Please try again.';
+                    var messageType = 'warning';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        warningMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        try {
+                            var errorObj = JSON.parse(xhr.responseText);
+                            if (errorObj.message) {
+                                warningMessage = errorObj.message;
+                            }
+                            if (errorObj.status) {
+                                messageType = errorObj.status;
+                            }
+                        } catch (e) {
+                            warningMessage = xhr.responseText.substring(0, 100);
+                        }
+                    }
+                    
+                    // Show warning toast
+                    if (typeof showNotification === 'function') {
+                        showNotification(warningMessage, messageType);
+                    } else if (typeof toastr !== 'undefined') {
+                        toastr.warning(warningMessage);
+                    } else {
+                        alert(warningMessage);
+                    }
+                    
+                    // Show error message in footer as well
+                    $("#modalFooterErrorText").text(warningMessage);
+                    $("#modalFooterErrorMessage").show();
+                    
+                    // Don't close modal for warnings - let user fix the issue
+                    return;
                 }
+                
+                // Handle actual errors (400, 500, etc.)
+                var errorMessage = 'Failed to save schedule. Please try again.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    try {
+                        var errorObj = JSON.parse(xhr.responseText);
+                        if (errorObj.message) {
+                            errorMessage = errorObj.message;
+                        }
+                    } catch (e) {
+                        errorMessage = xhr.responseText.substring(0, 100);
+                    }
+                }
+                
+                // Show error toast
+                if (typeof showNotification === 'function') {
+                    showNotification(errorMessage, 'error');
+                } else if (typeof toastr !== 'undefined') {
+                    toastr.error(errorMessage);
+                } else {
+                    alert(errorMessage);
+                }
+                
+                // Show error message in footer
+                $("#modalFooterErrorText").text(errorMessage);
+                $("#modalFooterErrorMessage").show();
                 
                 // Show error notification
                 if (typeof showNotification === 'function') {
@@ -811,6 +918,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     $("#AddSchedule").find("[name='EndTime']").val(endTime);
                     $("#AddSchedule").find("[name='ScheduleId']").val(eventid);
 
+                    // Show delete button when editing
+                    $('#btnDelete').show();
+                    
+                    // Hide X field when editing
+                    $("#noOfDaysContainer").hide();
 
                     $taskId.change();
                     //des = data.description;

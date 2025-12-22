@@ -1,0 +1,69 @@
+@model GMS.Infrastructure.ViewModels.Home.TasksAssignedViewModel
+@using Newtonsoft.Json
+@using System.Linq
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Tasks Assigned";
+}
+
+<div class="admin_wrapper hk-dashboard hk-worker-dashboard">
+    @Html.Partial("_home/_leftNavigationHome")
+
+    <div id="tasksAssignedRoot" class="right_container">
+        @Html.Partial("_TasksAssigned", Model)
+    </div>
+
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/rooms/roomHousekeepingDashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/customcss/TasksAssigned.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.tasksAssigned = {
+            workDate: '@Model.WorkDate.ToString("yyyy-MM-dd")',
+            events: @Html.Raw(JsonConvert.SerializeObject(
+                (Model.Assignments ?? Enumerable.Empty<GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentRow>())
+                    .Select(a => new {
+                        id = a.RoomId,
+                        title = string.IsNullOrWhiteSpace(a.RoomType) ? "Task" : a.RoomType,
+                        start = a.StartDateTime?.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        end = a.EndDateTime?.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        notes = a.Notes,
+                        status = a.Status.ToString()
+                    })))
+        };
+
+        // Handle work-date picker change
+        document.addEventListener('DOMContentLoaded', function () {
+            const picker = document.getElementById('workDatePicker');
+            if (!picker) return;
+            picker.addEventListener('change', function () {
+                if (this.value) {
+                    window.location.href = `/Home/TasksAssigned?workDate=${this.value}`;
+                }
+            });
+        });
+
+        // Simple live timer (12-hour format)
+        document.addEventListener('DOMContentLoaded', function () {
+            const timerEl = document.getElementById('tasksTimer');
+            const headerTimerEl = document.getElementById('tasksTimeHeader');
+            if (!timerEl && !headerTimerEl) return;
+            const updateTime = () => {
+                const now = new Date();
+                const text = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+                if (timerEl) timerEl.textContent = text;
+                if (headerTimerEl) headerTimerEl.textContent = text;
+            };
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+    </script>
+}
+

@@ -7,6 +7,7 @@ using GMS.Infrastructure.Models.Guests;
 using GMS.Infrastructure.Models.Rooms;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -60,8 +61,9 @@ public class GuestsAPIControllerTests
 
         var logger = Mock.Of<ILogger<GuestsAPIController>>();
         var hostingEnv = Mock.Of<IWebHostEnvironment>();
+        var configuration = Mock.Of<IConfiguration>();
 
-        _controller = new GuestsAPIController(_unitOfWorkMock.Object, logger, _mapper, hostingEnv);
+        _controller = new GuestsAPIController(_unitOfWorkMock.Object, logger, _mapper, hostingEnv, configuration);
     }
 
     [Fact]

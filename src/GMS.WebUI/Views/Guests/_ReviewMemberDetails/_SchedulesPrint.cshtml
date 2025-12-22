@@ -143,9 +143,10 @@
                     <th>Time</th>
                     <th>Task</th>
                     <th>Duration</th>
-                    <th>Resource</th>
-                    <th>Therapist 1</th>
-                    <th>Therapist 2</th>
+                    <th>Treatment Room</th>
+                    <th>Healer 1</th>
+                    <th>Healer 2</th>
+                    <th>Healer 3</th>
                 </tr>
             </thead>
             <tbody>
@@ -190,6 +191,7 @@
                             var resourceName = schedule.ResourceName ?? "-";
                             var therapist1 = schedule.EmployeeName1 ?? "-";
                             var therapist2 = schedule.EmployeeName2 ?? "-";
+                            var therapist3 = schedule.EmployeeName3 ?? "-";
                             
                             <tr>
                                 <td>@(schedule == dateGroup.First() ? dateStr : "")</td>
@@ -199,6 +201,7 @@
                                 <td>@resourceName</td>
                                 <td>@therapist1</td>
                                 <td>@therapist2</td>
+                                <td>@therapist3</td>
                             </tr>
                         }
                     }

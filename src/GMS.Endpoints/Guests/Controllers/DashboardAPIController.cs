@@ -30,13 +30,37 @@ public class DashboardAPIController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DashboardAPIController> _logger;
     private readonly IMapper _mapper;
+    private readonly IConfiguration _configuration;
     private Microsoft.AspNetCore.Hosting.IWebHostEnvironment _hostingEnv;
-    public DashboardAPIController(IUnitOfWork unitOfWork, ILogger<DashboardAPIController> logger, IMapper mapper, IWebHostEnvironment hostingEnv)
+    public DashboardAPIController(IUnitOfWork unitOfWork, ILogger<DashboardAPIController> logger, IMapper mapper, IWebHostEnvironment hostingEnv, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
         _mapper = mapper;
         _hostingEnv = hostingEnv;
+        _configuration = configuration;
+    }
+
+    private string GetEHRMSDatabaseName()
+    {
+        var connectionString = _configuration.GetConnectionString("EHRMSConnectionDB");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            return "EHRMS";
+        }
+
+        var parts = connectionString.Split(';');
+        foreach (var part in parts)
+        {
+            if (part.Trim().StartsWith("Initial Catalog", StringComparison.OrdinalIgnoreCase) ||
+                part.Trim().StartsWith("Database", StringComparison.OrdinalIgnoreCase))
+            {
+                var dbName = part.Split('=')[1]?.Trim();
+                return dbName ?? "EHRMS";
+            }
+        }
+
+        return "EHRMS";
     }
 
 
@@ -968,6 +992,67 @@ FROM Combined;
         {
             _logger.LogError(ex, $"Error in retriving Attendance {nameof(GetRoomRevenueData)}");
             throw;
+        }
+    }
+
+    [HttpGet("GetWellnessStatusBoardData")]
+    public async Task<IActionResult> GetWellnessStatusBoardData(DateTime boardDate)
+    {
+        try
+        {
+            string ehrmsDbName = GetEHRMSDatabaseName();
+
+            string query = $@"
+                SELECT 
+                    gs.Id AS ScheduleId,
+                    ete.Id AS ExecutionId,
+                    wm1.WorkerName AS TherapistName,
+                    gs.EmployeeId1 AS TherapistId,
+                    tm.TaskName AS TreatmentName,
+                    gs.TaskId,
+                    gs.StartDateTime AS ScheduledDateTime,
+                    gs.EndDateTime AS ScheduledEndDateTime,
+                    gs.Duration,
+                    rm.ResourceName AS TreatmentRoom,
+                    gs.ResourceId,
+                    md.CustomerName AS GuestName,
+                    gs.GuestId,
+                    ra.Rnumber AS RoomNo,
+                    CASE 
+                        WHEN ete.ExecutionStatus = 'Completed' THEN 4
+                        WHEN ete.ExecutionStatus = 'Started' OR ete.ExecutionStatus = 'InProgress' THEN 3
+                        WHEN ete.ExecutionStatus = 'Pending' THEN 2
+                        WHEN ete.ExecutionStatus = 'Cancelled' OR ete.ExecutionStatus = 'Missed' THEN 5
+                        WHEN gs.EmployeeId1 IS NOT NULL THEN 1
+                        ELSE 0
+                    END AS Status,
+                    ete.ActualStartTime,
+                    ete.ActualEndTime,
+                    ete.DelayMinutes,
+                    ete.IssueNotes AS Remarks,
+                    ete.IssueReportedBit AS IssueReported,
+                    ete.IssueNotes
+                FROM GuestSchedule gs
+                LEFT JOIN TaskMaster tm ON gs.TaskId = tm.Id
+                LEFT JOIN ResourceMaster rm ON gs.ResourceId = rm.Id
+                LEFT JOIN [{ehrmsDbName}].dbo.WorkerMaster wm1 ON gs.EmployeeId1 = wm1.WorkerID
+                LEFT JOIN MembersDetails md ON gs.GuestId = md.Id
+                LEFT JOIN RoomAllocation ra ON gs.GuestId = ra.GuestID AND ra.CheckOutDate IS NULL
+                LEFT JOIN EmployeeTaskExecution ete ON gs.Id = ete.GuestScheduledTaskId
+                WHERE CAST(gs.StartDateTime AS DATE) = @BoardDate
+                AND (gs.IsCancelled IS NULL OR gs.IsCancelled = 0)
+                AND (gs.IsDeleted IS NULL OR gs.IsDeleted = 0)
+                ORDER BY gs.StartDateTime ASC";
+
+            var parameters = new { BoardDate = boardDate };
+            var schedules = await _unitOfWork.GenOperations.GetTableData<GMS.Infrastructure.ViewModels.Wellness.WellnessScheduleRow>(query, parameters);
+
+            return Ok(schedules?.ToList() ?? new List<GMS.Infrastructure.ViewModels.Wellness.WellnessScheduleRow>());
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching wellness status board data");
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Unable to fetch wellness status board data." });
         }
     }
 

@@ -1,10 +1,10 @@
 @model GMS.Infrastructure.ViewModels.Guests.MemberDetailsWithChild
 
-<link href="~/assets/calender/calendar.css" rel="stylesheet" />
+<link href="~/assets/calender/calendar.css" rel="stylesheet" asp-append-version="true" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/main.min.css" rel="stylesheet">
-<link href="~/CustomCSS/Guests/SchedulesContent.css" rel="stylesheet" />
+<link href="~/CustomCSS/Guests/SchedulesContent.css" rel="stylesheet" asp-append-version="true" />
 
 <div class="schedules-container">
     <div class="guest-info-header mb-4">
@@ -12,17 +12,28 @@
             <div class="guest-name-section">
                 <h2 class="guest-uhid">@(Model?.UHID ?? "N/A")</h2>
                 <h3 class="guest-name">@Model?.CustomerName</h3>
+                @* 
+                    Check-in/Check-out logic:
+                    - DateOfArrival: Uses RoomAllocation.CheckInDate if available, otherwise MembersDetails.DateOfArrival
+                    - DateOfDepartment: Uses RoomAllocation.CheckOutDate if available, otherwise MembersDetails.DateOfDepartment
+                *@
                 <div class="guest-dates">
                     @if (Model?.DateOfArrival != null && Model?.DateOfDepartment != null)
                     {
                         <span class="date-badge">
-                            <i class="bi bi-calendar-check"></i> @Model.DateOfArrival.Value.ToString("dd/MMM/yyyy") - @Model.DateOfDepartment.Value.ToString("dd/MMM/yyyy")
+                            <i class="bi bi-clock"></i> 
+                            <strong>Check-in:</strong> @Model.DateOfArrival.Value.ToString("dd/MMM/yyyy hh:mm tt")
+                        </span>
+                        <span class="date-badge ms-2">
+                            <i class="bi bi-clock-history"></i> 
+                            <strong>Check-out:</strong> @Model.DateOfDepartment.Value.ToString("dd/MMM/yyyy hh:mm tt")
                         </span>
                     }
                     else if (Model?.DateOfArrival != null)
                     {
                         <span class="date-badge">
-                            <i class="bi bi-calendar-check"></i> @Model.DateOfArrival.Value.ToString("dd/MMM/yyyy")
+                            <i class="bi bi-clock"></i> 
+                            <strong>Check-in:</strong> @Model.DateOfArrival.Value.ToString("dd/MMM/yyyy hh:mm tt")
                         </span>
                     }
                 </div>
@@ -76,15 +87,15 @@
                 </select>
             </div>
             <div class="filter-item">
-                <label class="form-label small">Therapist</label>
+                <label class="form-label small">Healer</label>
                 <select class="form-control form-control-sm" id="filterEmployeeId">
-                    <option value="0">All Therapists</option>
+                    <option value="0">All Healers</option>
                 </select>
             </div>
             <div class="filter-item">
-                <label class="form-label small">Resource</label>
+                <label class="form-label small">Treatment Room</label>
                 <select class="form-control form-control-sm" id="filterResourceId">
-                    <option value="0">All Resources</option>
+                    <option value="0">All Treatment Rooms</option>
                 </select>
             </div>
             <div class="ms-auto">
@@ -121,10 +132,10 @@
                         <th>Time</th>
                         <th>Task</th>
                         <th>Duration</th>
-                        <th>Resource</th>
-                        <th>Therapist 1</th>
-                        <th>Therapist 2</th>
-                        <th>Therapist 3</th>
+                        <th>Treatment Room</th>
+                        <th>Healer 1</th>
+                        <th>Healer 2</th>
+                        <th>Healer 3</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -156,10 +167,10 @@
                                 <th>Time</th>
                                 <th>Task</th>
                                 <th>Duration</th>
-                                <th>Resource</th>
-                                <th>Therapist 1</th>
-                                <th>Therapist 2</th>
-                                <th>Therapist 3</th>
+                                <th>Treatment Room</th>
+                                <th>Healer 1</th>
+                                <th>Healer 2</th>
+                                <th>Healer 3</th>
                                 <th class="text-center">Action</th>
                             </tr>
                         </thead>
@@ -196,7 +207,7 @@
                             </select>
                         </div>
                         <div class="col-4">
-                            <label>Resource</label>
+                            <label>Treatment Room</label>
                             <select class="form-control" name="ResourceId">
                                 <option value="0"></option>
                             </select>
@@ -204,19 +215,19 @@
                     </div>
                     <div class="row">
                         <div class="col-4 mt-3">
-                            <label>Therapist 1</label>
+                            <label>Healer 1</label>
                             <select class="form-control" name="EmployeeId1">
                                 <option value="0"></option>
                             </select>
                         </div>
                         <div class="col-4 mt-3">
-                            <label>Therapist 2</label>
+                            <label>Healer 2</label>
                             <select class="form-control" name="EmployeeId2">
                                 <option value="0"></option>
                             </select>
                         </div>
                         <div class="col-4 mt-3">
-                            <label>Therapist 3</label>
+                            <label>Healer 3</label>
                             <select class="form-control" name="EmployeeId3">
                                 <option value="0"></option>
                             </select>
@@ -252,7 +263,7 @@
                                 <input type="time" class="form-control time" id="endtime" name="EndTime" placeholder="End Time" readonly />
                             </div>
                         </div>
-                        <div class="col-sm-6 col-lg-4 mt-3">
+                        <div class="col-sm-6 col-lg-4 mt-3" id="noOfDaysContainer">
                             <label>X</label>
                             <div class="form-group">
                                 <input type="number" class="form-control" id="NoOfDays" name="NoOfDays" placeholder="" value="1" min="1" max="1" />
@@ -263,6 +274,9 @@
                 </form>
             </div>
             <div class="modal-footer">
+                <div id="modalFooterErrorMessage" class="text-danger me-auto" style="display: none;">
+                    <i class="bi bi-exclamation-circle"></i> <span id="modalFooterErrorText"></span>
+                </div>
                 <button type="button" class="btn btn-danger me-auto" id="btnDelete" onclick="DeleteSchedule()" style="display: none;">
                     <i class="bi bi-trash"></i> Delete
                 </button>
@@ -298,6 +312,13 @@
 </div>
 
 @* daterangepicker, flatpickr, and FullCalendar are already loaded in _Layout.cshtml *@
+@* Create script tags with asp-append-version to generate versioned URLs, then read their src *@
+<script src="~/assets/calender/calendar.js" asp-append-version="true" type="text/template" id="calendarJsTemplate"></script>
+<script src="~/CustomJS/Guests/GuestSchedule.js" asp-append-version="true" type="text/template" id="guestScheduleJsTemplate"></script>
+<script src="~/CustomJS/Guests/SchedulesFilters.js" asp-append-version="true" type="text/template" id="schedulesFiltersJsTemplate"></script>
+<script src="~/CustomJS/Guests/SchedulesListView.js" asp-append-version="true" type="text/template" id="schedulesListViewJsTemplate"></script>
+<script src="~/CustomJS/Guests/SchedulesContent.js" asp-append-version="true" type="text/template" id="schedulesContentJsTemplate"></script>
+
 <script>
     // Wait for jQuery and all dependencies to be ready before loading scripts
     (function() {
@@ -344,8 +365,9 @@
 
         function loadScript(src, callback) {
             // Check if script is already loaded
-            var existingScript = document.querySelector('script[src="' + src + '"]');
-            if (existingScript) {
+            var scriptFileName = src.split('/').pop().split('?')[0];
+            var existingScript = document.querySelector('script[src*="' + scriptFileName + '"]:not([type="text/template"])');
+            if (existingScript && existingScript.src) {
                 if (callback) callback();
                 return;
             }
@@ -365,12 +387,26 @@
             if (scriptsLoaded) return;
             scriptsLoaded = true;
 
+            // Get versioned URLs from template script tags (these won't execute due to type="text/template")
+            var calendarJs = document.getElementById('calendarJsTemplate').src;
+            var guestScheduleJs = document.getElementById('guestScheduleJsTemplate').src;
+            var schedulesFiltersJs = document.getElementById('schedulesFiltersJsTemplate').src;
+            var schedulesListViewJs = document.getElementById('schedulesListViewJsTemplate').src;
+            var schedulesContentJs = document.getElementById('schedulesContentJsTemplate').src;
+
+            // Remove template script tags after reading URLs
+            document.getElementById('calendarJsTemplate').remove();
+            document.getElementById('guestScheduleJsTemplate').remove();
+            document.getElementById('schedulesFiltersJsTemplate').remove();
+            document.getElementById('schedulesListViewJsTemplate').remove();
+            document.getElementById('schedulesContentJsTemplate').remove();
+
             // Load scripts sequentially after dependencies are confirmed
-            loadScript('@Url.Content("~/assets/calender/calendar.js")', function() {
-                loadScript('@Url.Content("~/CustomJS/Guests/GuestSchedule.js")', function() {
-                    loadScript('@Url.Content("~/CustomJS/Guests/SchedulesFilters.js")', function() {
-                        loadScript('@Url.Content("~/CustomJS/Guests/SchedulesListView.js")', function() {
-                            loadScript('@Url.Content("~/CustomJS/Guests/SchedulesContent.js")', function() {
+            loadScript(calendarJs, function() {
+                loadScript(guestScheduleJs, function() {
+                    loadScript(schedulesFiltersJs, function() {
+                        loadScript(schedulesListViewJs, function() {
+                            loadScript(schedulesContentJs, function() {
                                 // All scripts loaded successfully
                                 // Ensure calendar initializes even if DOMContentLoaded already fired
                                 initializeCalendarIfNeeded();

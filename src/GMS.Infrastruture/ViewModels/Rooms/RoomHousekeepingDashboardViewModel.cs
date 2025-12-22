@@ -38,6 +38,7 @@ namespace GMS.Infrastructure.ViewModels.Rooms
 
     public class HousekeepingAssignmentRow
     {
+        public int ScheduleId { get; set; }
         public int RoomId { get; set; }
         public string? RoomNumber { get; set; }
         public string? RoomType { get; set; }
@@ -46,6 +47,16 @@ namespace GMS.Infrastructure.ViewModels.Rooms
         public string? AssignedTo { get; set; }
         public HousekeepingAssignmentStatus Status { get; set; }
         public string? Notes { get; set; }
+        public DateTime? StartDateTime { get; set; }
+        public DateTime? EndDateTime { get; set; }
+        public TimeSpan? Duration { get; set; }
+        public DateTime? ActualStartTime { get; set; }
+        public DateTime? ActualEndTime { get; set; }
+        public bool IssueReported { get; set; }
+        public string? IssueNotes { get; set; }
+        public string? GuestName { get; set; }
+        public string? TreatmentRoom { get; set; }
+        public string? OtherAssignees { get; set; }
     }
 
     public enum HousekeepingAssignmentStatus

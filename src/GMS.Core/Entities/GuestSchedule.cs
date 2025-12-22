@@ -18,4 +18,6 @@ public class GuestSchedule
     public int? EmployeeId3 { get; set; }
     public int? SessionId { get; set; }
     public int? ResourceId { get; set; }
+    public bool? IsDeleted { get; set; }
+    public bool? IsCancelled { get; set; }
 }

@@ -3,10 +3,13 @@ using GMS.Endpoints.Guests;
 using GMS.Infrastructure.Models.EHRMSLogin;
 using GMS.Infrastructure.Models.Guests;
 using GMS.Infrastructure.ViewModels.Dashboard;
+using GMS.Infrastructure.ViewModels.Home;
 using GMS.Infrastructure.ViewModels.Reports;
+using GMS.Infrastructure.ViewModels.Wellness;
 using GMS.WebUI.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace GMS.WebUI.Controllers
 {
@@ -16,18 +19,47 @@ namespace GMS.WebUI.Controllers
         private readonly GuestsAPIController _guestsAPIController;
         private readonly AccountsAPIController _accountsAPIController;
         private readonly DashboardAPIController _dashboardAPIController;
+        private readonly GMS.Endpoints.Guests.TasksAssignedAPIController _tasksAssignedAPIController;
 
-        public HomeController(ILogger<HomeController> logger, GuestsAPIController guestsAPIController, AccountsAPIController accountsAPIController, DashboardAPIController dashboardAPIController)
+        public HomeController(ILogger<HomeController> logger, GuestsAPIController guestsAPIController, AccountsAPIController accountsAPIController, DashboardAPIController dashboardAPIController, GMS.Endpoints.Guests.TasksAssignedAPIController tasksAssignedAPIController)
         {
             _logger = logger;
             _guestsAPIController = guestsAPIController;
             _accountsAPIController = accountsAPIController;
             _dashboardAPIController = dashboardAPIController;
+            _tasksAssignedAPIController = tasksAssignedAPIController;
         }
         public IActionResult Index()
         {
             return View();
         }
+
+        public async Task<IActionResult> WellnessStatusBoard(DateTime? boardDate)
+        {
+            var targetDate = boardDate ?? DateTime.Today;
+            var viewModel = new WellnessStatusBoardViewModel { BoardDate = targetDate };
+
+            var res = await _dashboardAPIController.GetWellnessStatusBoardData(targetDate);
+            if (res != null && res is OkObjectResult okResult)
+            {
+                viewModel.Schedules = (List<WellnessScheduleRow>?)okResult.Value ?? new List<WellnessScheduleRow>();
+            }
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetWellnessStatusBoardData(DateTime? boardDate)
+        {
+            var targetDate = boardDate ?? DateTime.Today;
+            var res = await _dashboardAPIController.GetWellnessStatusBoardData(targetDate);
+            if (res != null && res is OkObjectResult okResult)
+            {
+                return Json(okResult.Value);
+            }
+            return Json(new List<WellnessScheduleRow>());
+        }
+
         public async Task<IActionResult> Default()
         {
             DashboardViewModel dto = new DashboardViewModel();
@@ -264,6 +296,83 @@ namespace GMS.WebUI.Controllers
         public IActionResult Contact()
         {
             return View();
+        }
+
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> TasksAssigned(DateTime? workDate, int? employeeId)
+        {
+            // Get worker ID from claims
+            var workerIdClaim = User.FindFirstValue("WorkerId");
+            if (string.IsNullOrWhiteSpace(workerIdClaim) || !int.TryParse(workerIdClaim, out var loggedInWorkerId) || loggedInWorkerId <= 0)
+            {
+                _logger.LogWarning("TasksAssigned requested without a valid WorkerId claim.");
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Use selected employee or default to logged-in worker
+            var workerId = employeeId ?? loggedInWorkerId;
+
+            // Default to today if no date provided
+            var targetDate = workDate?.Date ?? DateTime.Today;
+
+            // Fetch tasks assigned view model from API
+            var res = await _tasksAssignedAPIController.GetTasksAssignedViewModel(targetDate, workerId, loggedInWorkerId);
+            if (res != null && res is OkObjectResult okResult)
+            {
+                var viewModel = (TasksAssignedViewModel?)okResult.Value;
+                if (viewModel != null)
+                {
+                    return View(viewModel);
+                }
+            }
+
+            // Return empty view model on error
+            return View(new TasksAssignedViewModel
+            {
+                WorkDate = targetDate,
+                WorkerName = "Employee",
+                Assignments = new List<GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentRow>()
+            });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTasksAssignedGrid(DateTime? workDate, int? employeeId)
+        {
+            // Get worker ID from claims
+            var workerIdClaim = User.FindFirstValue("WorkerId");
+            if (string.IsNullOrWhiteSpace(workerIdClaim) || !int.TryParse(workerIdClaim, out var loggedInWorkerId) || loggedInWorkerId <= 0)
+            {
+                return Unauthorized();
+            }
+
+            // Use selected employee or default to logged-in worker
+            var workerId = employeeId ?? loggedInWorkerId;
+
+            // Default to today if no date provided
+            var targetDate = workDate?.Date ?? DateTime.Today;
+
+            // Fetch tasks assigned view model from API
+            var res = await _tasksAssignedAPIController.GetTasksAssignedViewModel(targetDate, workerId, loggedInWorkerId);
+            if (res != null && res is OkObjectResult okResult)
+            {
+                var viewModel = (TasksAssignedViewModel?)okResult.Value;
+                if (viewModel != null)
+                {
+                    return PartialView("_TasksAssignedGrid", viewModel);
+                }
+            }
+
+            // Return empty view model on error
+            return PartialView("_TasksAssignedGrid", new TasksAssignedViewModel
+            {
+                WorkDate = targetDate,
+                WorkerName = "Employee",
+                Assignments = new List<GMS.Infrastructure.ViewModels.Rooms.HousekeepingAssignmentRow>()
+            });
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

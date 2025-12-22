@@ -1,0 +1,109 @@
+@model GMS.Infrastructure.ViewModels.Home.TasksAssignedViewModel
+@using GMS.Infrastructure.ViewModels.Rooms
+@using System.Linq
+@{
+    var assignments = Model.Assignments ?? new List<HousekeepingAssignmentRow>();
+    var workerName = string.IsNullOrWhiteSpace(Model.WorkerName) ? "Employee" : Model.WorkerName;
+}
+
+<!-- Hidden data for JavaScript to update header -->
+<div id="partialViewData" 
+     data-worker-name="@Model.WorkerName"
+     data-employee-code="@Model.EmployeeCode"
+     data-department="@Model.Department"
+     data-logged-in-worker-id="@Model.LoggedInWorkerId"
+     data-logged-in-worker-name="@Model.LoggedInWorkerName"
+     data-worker-id="@Model.WorkerId"
+     data-is-viewing-other="@Model.IsViewingOtherEmployee.ToString().ToLower()"
+     data-total-assigned="@Model.TotalAssigned"
+     data-completed-count="@Model.CompletedCount"
+     data-scheduled-count="@(Model.PendingCount + Model.InProgressCount)"
+     data-inspection-count="@Model.InspectionCount"
+     style="display: none;"></div>
+
+<section class="hk-section card" style="margin-bottom: 10rem;" id="assignedTasksSection">
+    <div class="hk-section-header d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+            <p class="hk-eyebrow mb-1 text-uppercase">Assigned Tasks</p>
+            <h2 class="hk-section-title m-0">Today's task checklist</h2>
+            <p class="text-muted small mb-0">Review assigned tasks and their current status.</p>
+        </div>
+        <div class="hk-worker-filters d-flex flex-column flex-xl-row align-items-xl-end gap-2">
+            <div class="w-100">
+                <label class="hk-label text-uppercase">Search</label>
+                <input type="text" class="form-control form-control-sm" id="taskSearch" placeholder="Search by task, guest, room...">
+            </div>
+            <div class="w-100">
+                <label class="hk-label text-uppercase">Status</label>
+                <select class="form-select form-select-sm" id="statusFilter">
+                    <option value="">All</option>
+                    <option value="pending">Scheduled</option>
+                    <option value="inprogress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="inspection">Inspection</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @{
+        var completedAssignments = assignments.Where(a => a.Status == HousekeepingAssignmentStatus.Completed)
+            .OrderBy(a => a.RoomNumber)
+            .ToList();
+        var activeAssignments = assignments.Where(a => a.Status != HousekeepingAssignmentStatus.Completed)
+            .OrderBy(a => a.RoomNumber)
+            .ToList();
+    }
+
+    <div class="hk-room-grid tasks-compact mt-3" id="taskGrid">
+        @foreach (var assignment in activeAssignments)
+        {
+            await Html.RenderPartialAsync("_TasksAssignedCard", (assignment, workerName));
+        }
+    </div>
+
+    @if (completedAssignments.Any())
+    {
+        <hr class="my-4">
+
+        <div class="hk-room-grid tasks-compact" id="completedTaskGrid">
+            @foreach (var assignment in completedAssignments)
+            {
+                await Html.RenderPartialAsync("_TasksAssignedCard", (assignment, workerName));
+            }
+        </div>
+    }
+
+    <div class="hk-empty-state text-center @(Model.HasAssignments ? "d-none" : string.Empty)" id="tasksEmpty">
+        <i class="bi bi-door-open fs-3 d-block mb-2"></i>
+        No tasks assigned for the selected date.
+    </div>
+</section>
+
+<!-- Report Issue Modal -->
+<div class="modal fade" id="reportIssueModal" tabindex="-1" aria-labelledby="reportIssueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="reportIssueModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Report Issue
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reportIssueScheduleId" />
+                <div class="mb-3">
+                    <label for="issueNotes" class="form-label">Issue Notes <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="issueNotes" rows="4" placeholder="Please describe the issue..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="btnSubmitIssue">
+                    <i class="bi bi-exclamation-triangle"></i> Submit Issue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+

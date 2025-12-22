@@ -11,19 +11,25 @@
                 {
                     <a href="/Review/RegistrationInfo/@item.Id" style="text-decoration: none; display: block;">
                         <div class="engagement">
-                            <h3>@(string.IsNullOrWhiteSpace(item.CustomerName) ? "Guest" : item.CustomerName)</h3>
+                            <h3>
+                                @(string.IsNullOrWhiteSpace(item.CustomerName) ? "Guest" : item.CustomerName)
+                                @if (!string.IsNullOrWhiteSpace(item.UHID))
+                                {
+                                    <span style="font-size: 0.75em; font-style: italic; font-weight: normal;">(@item.UHID)</span>
+                                }
+                            </h3>
                             <div class="data-row">
+                                <div class="data-item">
+                                    <i class="bi bi-calendar-check"></i> <span>@(item.DateOfArrival?.ToString("dd-MMM-yyyy") ?? "-") to @(item.DateOfDepartment?.ToString("dd-MMM-yyyy") ?? "-")</span>
+                                </div>
                                 <div class="data-item">
                                     <i class="bi bi-door-open"></i> <span>@(string.IsNullOrWhiteSpace(item.RoomNumber) ? "-" : item.RoomNumber)</span>
                                 </div>
                                 <div class="data-item">
-                                    <i class="bi bi-person-vcard"></i> <span>@(string.IsNullOrWhiteSpace(item.UHID) ? "-" : item.UHID)</span>
+                                    <i class="bi bi-box-seam"></i> <span>@(string.IsNullOrWhiteSpace(item.Service) ? "-" : item.Service)</span>
                                 </div>
                                 <div class="data-item">
-                                    <i class="bi bi-calendar-check"></i> <span>@(item.DateOfArrival?.ToString("dd-MMM-yyyy") ?? "-")</span>
-                                </div>
-                                <div class="data-item">
-                                    <i class="bi bi-calendar-x"></i> <span>@(item.DateOfDepartment?.ToString("dd-MMM-yyyy") ?? "-")</span>
+                                    <i class="bi bi-building"></i> <span>@(string.IsNullOrWhiteSpace(item.RoomTypeName) ? "-" : item.RoomTypeName)</span>
                                 </div>
                             </div>
                         </div>

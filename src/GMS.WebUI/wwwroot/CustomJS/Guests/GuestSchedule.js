@@ -1,5 +1,6 @@
 ﻿let durationPicker;
 function initCreateEventModal() {
+    resetAddScheduleForm();
     getTaskName();
     initTherapistDropdowns();
 }
@@ -17,28 +18,163 @@ function validateTherapistDropdowns(currentDropdown) {
     let dropdown2Value = $("#AddSchedule").find("[name='EmployeeId2']").val();
     let dropdown3Value = $("#AddSchedule").find("[name='EmployeeId3']").val();
 
+    // Clear all previous error messages
+    clearTherapistErrors();
+
     // Check for duplicates - no two therapists can be the same
+    let currentDropdownName = currentDropdown.attr('name');
+    let currentDropdownValue = currentDropdown.val();
+    
+    // If current dropdown value is 0 or empty, no error
+    if (currentDropdownValue === "" || currentDropdownValue === "0") {
+        return;
+    }
+    
+    // Check if current dropdown matches any other dropdown
+    if (currentDropdownName === "EmployeeId1") {
+        if (currentDropdownValue === dropdown2Value && dropdown2Value !== "0") {
+            currentDropdown.val(0);
+            showTherapistError(currentDropdown, "Cannot select same healer");
+        } else if (currentDropdownValue === dropdown3Value && dropdown3Value !== "0") {
+            currentDropdown.val(0);
+            showTherapistError(currentDropdown, "Cannot select same healer");
+        }
+    } else if (currentDropdownName === "EmployeeId2") {
+        if (currentDropdownValue === dropdown1Value && dropdown1Value !== "0") {
+            currentDropdown.val(0);
+            showTherapistError(currentDropdown, "Cannot select same healer");
+        } else if (currentDropdownValue === dropdown3Value && dropdown3Value !== "0") {
+            currentDropdown.val(0);
+            showTherapistError(currentDropdown, "Cannot select same healer");
+        }
+    } else if (currentDropdownName === "EmployeeId3") {
+        if (currentDropdownValue === dropdown1Value && dropdown1Value !== "0") {
+            currentDropdown.val(0);
+            showTherapistError(currentDropdown, "Cannot select same healer");
+        } else if (currentDropdownValue === dropdown2Value && dropdown2Value !== "0") {
+            currentDropdown.val(0);
+            showTherapistError(currentDropdown, "Cannot select same healer");
+        }
+    }
+}
+
+function clearTherapistErrors() {
+    // Remove all error messages
+    $("[name='EmployeeId1'], [name='EmployeeId2'], [name='EmployeeId3']").each(function() {
+        $(this).removeClass('is-invalid');
+        $(this).closest('.col-4').find('.healer-error-message').remove();
+    });
+}
+
+function showTherapistError(field, message) {
+    // Add error class to the field
+    field.addClass('is-invalid');
+    
+    // Remove existing error message if any
+    field.closest('.col-4').find('.healer-error-message').remove();
+    
+    // Add error message below the field
+    field.closest('.col-4').append('<div class="healer-error-message text-danger small mt-1">' + message + '</div>');
+}
+
+function validateTherapistDropdownsOnSave() {
+    clearTherapistErrors();
+    let dropdown1Value = $("#AddSchedule").find("[name='EmployeeId1']").val();
+    let dropdown2Value = $("#AddSchedule").find("[name='EmployeeId2']").val();
+    let dropdown3Value = $("#AddSchedule").find("[name='EmployeeId3']").val();
+
+    let hasError = false;
+    let errorMessages = [];
+
+    // Check for duplicates
     if (dropdown1Value !== "" && dropdown1Value !== "0") {
-        if (dropdown1Value === dropdown2Value || dropdown1Value === dropdown3Value) {
-            $erroralert("Duplicate Therapist Error!", 'We cannot have same therapist selected multiple times!');
-            currentDropdown.val(0);
-            return;
+        if (dropdown1Value === dropdown2Value && dropdown2Value !== "0") {
+            hasError = true;
+            showTherapistError($("[name='EmployeeId2']"), "Cannot select same healer");
+            errorMessages.push("Healer 1 and Healer 2 cannot be the same");
+        }
+        if (dropdown1Value === dropdown3Value && dropdown3Value !== "0") {
+            hasError = true;
+            showTherapistError($("[name='EmployeeId3']"), "Cannot select same healer");
+            if (!errorMessages.includes("Healer 1 and Healer 3 cannot be the same")) {
+                errorMessages.push("Healer 1 and Healer 3 cannot be the same");
+            }
         }
     }
+    
     if (dropdown2Value !== "" && dropdown2Value !== "0") {
-        if (dropdown2Value === dropdown1Value || dropdown2Value === dropdown3Value) {
-            $erroralert("Duplicate Therapist Error!", 'We cannot have same therapist selected multiple times!');
-            currentDropdown.val(0);
-            return;
+        if (dropdown2Value === dropdown1Value && dropdown1Value !== "0") {
+            hasError = true;
+            showTherapistError($("[name='EmployeeId1']"), "Cannot select same healer");
+            if (!errorMessages.includes("Healer 1 and Healer 2 cannot be the same")) {
+                errorMessages.push("Healer 1 and Healer 2 cannot be the same");
+            }
+        }
+        if (dropdown2Value === dropdown3Value && dropdown3Value !== "0") {
+            hasError = true;
+            showTherapistError($("[name='EmployeeId3']"), "Cannot select same healer");
+            if (!errorMessages.includes("Healer 2 and Healer 3 cannot be the same")) {
+                errorMessages.push("Healer 2 and Healer 3 cannot be the same");
+            }
         }
     }
+    
     if (dropdown3Value !== "" && dropdown3Value !== "0") {
-        if (dropdown3Value === dropdown1Value || dropdown3Value === dropdown2Value) {
-            $erroralert("Duplicate Therapist Error!", 'We cannot have same therapist selected multiple times!');
-            currentDropdown.val(0);
-            return;
+        if (dropdown3Value === dropdown1Value && dropdown1Value !== "0") {
+            hasError = true;
+            showTherapistError($("[name='EmployeeId1']"), "Cannot select same healer");
+            if (!errorMessages.includes("Healer 1 and Healer 3 cannot be the same")) {
+                errorMessages.push("Healer 1 and Healer 3 cannot be the same");
+            }
+        }
+        if (dropdown3Value === dropdown2Value && dropdown2Value !== "0") {
+            hasError = true;
+            showTherapistError($("[name='EmployeeId2']"), "Cannot select same healer");
+            if (!errorMessages.includes("Healer 2 and Healer 3 cannot be the same")) {
+                errorMessages.push("Healer 2 and Healer 3 cannot be the same");
+            }
         }
     }
+
+    return {
+        isValid: !hasError,
+        messages: errorMessages
+    };
+}
+
+// Clear create-event form to avoid leaking values from previous edits
+function resetAddScheduleForm() {
+    const $form = $("#AddSchedule");
+    if (!$form.length) return;
+
+    // Reset basic inputs
+    $form[0].reset();
+    $form.find("[name='ScheduleId']").val('');
+    $form.find("[name='TaskId']").val('0').removeAttr("employeeid1 employeeid2 employeeid3 resourceid duration");
+    $form.find("[name='ResourceId']").val('0');
+    $form.find("[name='EmployeeId1']").val('0');
+    $form.find("[name='EmployeeId2']").val('0');
+    $form.find("[name='EmployeeId3']").val('0');
+
+    // Clear dates/times and duration helpers
+    $form.find("[name='StartDate']").val('');
+    $form.find("[name='StartTime']").val('');
+    $form.find("[name='EndDate']").val('');
+    $form.find("[name='EndTime']").val('');
+    $form.find("[name='NoOfDays']").val('1');
+    $("#selectedDuration").val('');
+
+    if (durationPicker) {
+        durationPicker.clear();
+        durationPicker.setDate("00:00", false);
+    }
+    
+    // Clear error messages
+    clearTherapistErrors();
+    $("#modalFooterErrorMessage").hide();
+    
+    // Show X field for new schedules (ScheduleId is empty)
+    $("#noOfDaysContainer").show();
 }
 
 function getTaskName() {

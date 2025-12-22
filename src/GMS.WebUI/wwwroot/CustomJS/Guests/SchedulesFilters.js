@@ -68,8 +68,8 @@
                     self.loadEmployeesByTask(taskId);
                     self.loadResourcesByTask(taskId);
                 } else {
-                    $('#filterEmployeeId').html('<option value="0">All Therapists</option>');
-                    $('#filterResourceId').html('<option value="0">All Resources</option>');
+                    $('#filterEmployeeId').html('<option value="0">All Healers</option>');
+                    $('#filterResourceId').html('<option value="0">All Treatment Rooms</option>');
                 }
             });
         },
@@ -85,7 +85,7 @@
                 success: function(data) {
                     var $employeeSelect = $('#filterEmployeeId');
                     $employeeSelect.empty();
-                    $employeeSelect.append('<option value="0">All Therapists</option>');
+                    $employeeSelect.append('<option value="0">All Healers</option>');
                     if (data != null && data.length > 0) {
                         $.each(data, function(i, emp) {
                             $employeeSelect.append('<option value="' + emp.employeeId + '">' + emp.employeeName + '</option>');
@@ -109,7 +109,7 @@
                 success: function(data) {
                     var $resourceSelect = $('#filterResourceId');
                     $resourceSelect.empty();
-                    $resourceSelect.append('<option value="0">All Resources</option>');
+                    $resourceSelect.append('<option value="0">All Treatment Rooms</option>');
                     if (data != null && data.length > 0) {
                         $.each(data, function(i, resource) {
                             $resourceSelect.append('<option value="' + resource.id + '">' + resource.resourceName + '</option>');
