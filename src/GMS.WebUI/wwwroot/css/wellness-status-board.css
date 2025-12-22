@@ -276,6 +276,11 @@
     transition: transform 0.25s ease-out;
 }
 
+.status-container .char-text {
+    border-radius: 0;
+    padding: 0;
+}
+
 .char-text.show {
     transform: translateY(0);
 }
