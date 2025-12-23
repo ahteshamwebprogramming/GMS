@@ -2,6 +2,6 @@
 
 namespace GMS.Core.Repository;
 
-public interface IServicesRepository : IDapperRepository<Services>
+public interface IServicesRepository : IDapperRepository<GMS.Core.Entities.Services>
 {
 }
