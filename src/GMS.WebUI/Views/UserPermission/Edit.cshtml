@@ -218,14 +218,23 @@
 
 @section Scripts {
     <script>
+        // Global variables accessible to all functions
+        let rolePermissions = {};
+        let pagesWithChildren = {};
+        let pageData = [];
+        
         $(document).ready(function() {
             const roleId = parseInt($('#roleId').val());
-            const pageData = @Html.Raw(Json.Serialize(Model.Pages));
+            pageData = @Html.Raw(Json.Serialize(Model.Pages));
             
-            // Store original role permissions
-            const rolePermissions = {};
+            // Store original role permissions and parent-child relationships
             pageData.forEach(function(page) {
                 rolePermissions[page.pageId] = page.roleCanView;
+                
+                // Track pages that have children
+                if (page.parentPageId && page.parentPageId !== 0) {
+                    pagesWithChildren[page.parentPageId] = true;
+                }
             });
             
             // Handle parent checkbox click - toggle all child checkboxes
@@ -306,44 +315,72 @@
         
         function savePermissions() {
             const userId = parseInt($('#userId').val());
-            const roleId = parseInt($('#roleId').val());
-            const pageData = @Html.Raw(Json.Serialize(Model.Pages));
-            const rolePermissions = {};
-            pageData.forEach(function(page) {
-                rolePermissions[page.pageId] = page.roleCanView;
+            const allPageData = @Html.Raw(Json.Serialize(Model.Pages));
+            const rolePerms = {};
+            const pagesWithKids = {}; // Track which pages have children
+            
+            // Rebuild rolePermissions and pagesWithChildren for save function
+            allPageData.forEach(function(page) {
+                rolePerms[page.pageId] = page.roleCanView;
+                
+                // Track pages that have children
+                if (page.parentPageId && page.parentPageId !== 0) {
+                    pagesWithKids[page.parentPageId] = true;
+                }
             });
             
             const overrides = [];
+            const childPageResults = {}; // Track which child pages will be allowed after save
             
+            // First pass: Process all checkboxes (children and standalone parents)
             $('.page-checkbox').each(function() {
                 const pageId = parseInt($(this).data('page-id'));
+                const parentId = parseInt($(this).data('parent-id')) || 0;
                 const isChecked = $(this).is(':checked');
-                const roleCanView = rolePermissions[pageId] || false;
+                const roleCanView = rolePerms[pageId] || false;
                 const originalOverride = $(this).data('original-override') || '';
+                
+                // Skip parent pages with children for now - will process them after children
+                if (parentId === 0 && pagesWithKids[pageId]) {
+                    return;
+                }
                 
                 // Determine if override is needed
                 let needsOverride = false;
                 let overrideType = '';
                 
                 if (isChecked && !roleCanView) {
-                    // User wants to allow, but role doesn't allow - need Allow override
                     needsOverride = true;
                     overrideType = 'Allow';
                 } else if (!isChecked && roleCanView) {
-                    // User wants to deny, but role allows - need Deny override
                     needsOverride = true;
                     overrideType = 'Deny';
                 } else if (originalOverride === 'Deny' && isChecked) {
-                    // Previously denied, now checked - need Allow override to replace Deny
                     needsOverride = true;
                     overrideType = 'Allow';
                 } else if (originalOverride === 'Allow' && !isChecked && roleCanView) {
-                    // Previously allowed, now unchecked and role allows - need Deny override
                     needsOverride = true;
                     overrideType = 'Deny';
                 }
                 
-                // Add override if needed (this will replace/delete existing override)
+                // Calculate final permission state for this page
+                let finalCanView = false;
+                if (needsOverride) {
+                    finalCanView = (overrideType === 'Allow');
+                } else {
+                    // No override, use role permission
+                    finalCanView = roleCanView;
+                }
+                
+                // Track child page results for parent logic
+                if (parentId !== 0) {
+                    if (!childPageResults[parentId]) {
+                        childPageResults[parentId] = [];
+                    }
+                    childPageResults[parentId].push(finalCanView);
+                }
+                
+                // Add override if needed
                 if (needsOverride) {
                     overrides.push({
                         userId: userId,
@@ -351,7 +388,93 @@
                         permissionType: overrideType
                     });
                 }
-                // If matches role and no original override, no override entry means it will be deleted
+            });
+            
+            // Second pass: Process parent pages with children
+            // Rule: If ANY child is allowed, parent must be allowed (for menu navigation)
+            $('.page-checkbox[data-parent-id="0"]').each(function() {
+                const parentPageId = parseInt($(this).data('page-id'));
+                
+                // Skip if this parent doesn't have children
+                if (!pagesWithKids[parentPageId]) {
+                    // Standalone parent - process normally
+                    const isChecked = $(this).is(':checked');
+                    const roleCanView = rolePerms[parentPageId] || false;
+                    const originalOverride = $(this).data('original-override') || '';
+                    
+                    let needsOverride = false;
+                    let overrideType = '';
+                    
+                    if (isChecked && !roleCanView) {
+                        needsOverride = true;
+                        overrideType = 'Allow';
+                    } else if (!isChecked && roleCanView) {
+                        needsOverride = true;
+                        overrideType = 'Deny';
+                    } else if (originalOverride === 'Deny' && isChecked) {
+                        needsOverride = true;
+                        overrideType = 'Allow';
+                    } else if (originalOverride === 'Allow' && !isChecked && roleCanView) {
+                        needsOverride = true;
+                        overrideType = 'Deny';
+                    }
+                    
+                    if (needsOverride) {
+                        overrides.push({
+                            userId: userId,
+                            pageId: parentPageId,
+                            permissionType: overrideType
+                        });
+                    }
+                    return;
+                }
+                
+                // Parent with children - check if any child is allowed
+                const childResults = childPageResults[parentPageId] || [];
+                const hasAnyChildAllowed = childResults.some(result => result === true);
+                
+                const parentRoleCanView = rolePerms[parentPageId] || false;
+                const parentOriginalOverride = $(this).data('original-override') || '';
+                const isParentChecked = $(this).is(':checked');
+                
+                if (hasAnyChildAllowed) {
+                    // At least one child is allowed - parent MUST be allowed (for menu navigation)
+                    if (!parentRoleCanView || parentOriginalOverride === 'Deny') {
+                        // Need to save Allow override to ensure parent menu is visible
+                        overrides.push({
+                            userId: userId,
+                            pageId: parentPageId,
+                            permissionType: 'Allow'
+                        });
+                    }
+                    // If role already allows and no Deny override, parent uses role permission (no override needed)
+                } else {
+                    // No children are allowed - parent follows normal override logic
+                    let needsOverride = false;
+                    let overrideType = '';
+                    
+                    if (isParentChecked && !parentRoleCanView) {
+                        needsOverride = true;
+                        overrideType = 'Allow';
+                    } else if (!isParentChecked && parentRoleCanView) {
+                        needsOverride = true;
+                        overrideType = 'Deny';
+                    } else if (parentOriginalOverride === 'Deny' && isParentChecked) {
+                        needsOverride = true;
+                        overrideType = 'Allow';
+                    } else if (parentOriginalOverride === 'Allow' && !isParentChecked && parentRoleCanView) {
+                        needsOverride = true;
+                        overrideType = 'Deny';
+                    }
+                    
+                    if (needsOverride) {
+                        overrides.push({
+                            userId: userId,
+                            pageId: parentPageId,
+                            permissionType: overrideType
+                        });
+                    }
+                }
             });
             
             BlockUI();
