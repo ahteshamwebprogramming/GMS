@@ -52,6 +52,7 @@ public interface IUnitOfWork : IDisposable
     public IGuestLedgerRepository GuestLedger { get; }
     public IMenuListRepository MenuList { get; }
     public IRoleMenuMappingRepository RoleMenuMapping { get; }
+    public IUserPagePermissionRepository UserPagePermission { get; }
     public IOperationsRepository Operations { get; }
     public IEmployeeTaskExecutionRepository EmployeeTaskExecution { get; }
 

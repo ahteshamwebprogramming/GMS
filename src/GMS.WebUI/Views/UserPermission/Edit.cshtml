@@ -1,0 +1,387 @@
+@model GMS.Infrastructure.ViewModels.UserPagePermission.UserPermissionViewModel
+@{
+    ViewData["Title"] = "Edit User Page Permissions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .permission-container {
+        padding: 20px;
+    }
+    .user-info {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+    .user-info label {
+        font-weight: 600;
+        margin-right: 10px;
+    }
+    .user-info span {
+        margin-right: 30px;
+    }
+    .page-list {
+        margin-top: 20px;
+    }
+    .page-group {
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        padding: 15px;
+        background-color: #fff;
+    }
+    .page-header {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+    .page-header label {
+        font-weight: bold;
+        margin-left: 10px;
+        margin-bottom: 0;
+        flex: 1;
+    }
+    .page-header .permission-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: normal;
+        margin-left: 10px;
+    }
+    .badge-role {
+        background-color: #28a745;
+        color: white;
+    }
+    .badge-allow {
+        background-color: #007bff;
+        color: white;
+    }
+    .badge-deny {
+        background-color: #dc3545;
+        color: white;
+    }
+    .sub-page {
+        margin-left: 30px;
+        margin-top: 10px;
+        padding-left: 15px;
+        border-left: 2px solid #e0e0e0;
+    }
+    .sub-page label {
+        font-weight: normal;
+    }
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .checkbox-wrapper input[type="checkbox"] {
+        margin-right: 8px;
+        cursor: pointer;
+    }
+    .checkbox-wrapper label {
+        cursor: pointer;
+        user-select: none;
+    }
+    .btn-save {
+        padding: 10px 30px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+    }
+    .btn-save:hover {
+        background-color: #218838;
+    }
+    .btn-cancel {
+        padding: 10px 30px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+        margin-left: 10px;
+    }
+    .btn-cancel:hover {
+        background-color: #5a6268;
+    }
+</style>
+
+<div class="admin_wrapper">
+    @Html.Partial("_userManagement/_leftNavigationUserManagement")
+
+    <div class="right_container">
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="title_area">
+                    <h2>Edit User Page Permissions</h2>
+                </div>
+                
+                <div class="permission-container">
+                    <div class="user-info">
+                        <label>User:</label>
+                        <span>@Model.UserName</span>
+                        <label>Role:</label>
+                        <span>@Model.RoleName</span>
+                    </div>
+                    
+                    <form id="permissionForm">
+                        <input type="hidden" id="userId" value="@Model.UserId" />
+                        <input type="hidden" id="roleId" value="@Model.RoleId" />
+                        
+                        <div class="page-list">
+                            @{
+                                var parentPages = Model.Pages.Where(p => p.ParentPageId == null || p.ParentPageId == 0).OrderBy(p => p.PageId).ToList();
+                                foreach (var parentPage in parentPages)
+                                {
+                                    var childPages = Model.Pages.Where(p => p.ParentPageId == parentPage.PageId).OrderBy(p => p.PageId).ToList();
+                                    var hasChildren = childPages.Any();
+                                    
+                                    <div class="page-group">
+                                        <div class="page-header">
+                                            <input type="checkbox" 
+                                                   id="page_@parentPage.PageId" 
+                                                   data-page-id="@parentPage.PageId"
+                                                   data-parent-id="0"
+                                                   data-original-override="@(parentPage.UserOverride ?? "")"
+                                                   class="page-checkbox"
+                                                   @(parentPage.RoleCanView && parentPage.UserOverride != "Deny" ? "checked" : "")
+                                                   @* Allow editing even if previously denied - no disabled attribute *@ />
+                                            <label for="page_@parentPage.PageId">@parentPage.PageName</label>
+                                            @if (parentPage.UserOverride == "Allow")
+                                            {
+                                                <span class="permission-badge badge-allow">User Override: Allow</span>
+                                            }
+                                            else if (parentPage.UserOverride == "Deny")
+                                            {
+                                                <span class="permission-badge badge-deny">User Override: Deny</span>
+                                            }
+                                            else if (parentPage.RoleCanView)
+                                            {
+                                                <span class="permission-badge badge-role">From Role</span>
+                                            }
+                                        </div>
+                                        
+                                        @if (hasChildren)
+                                        {
+                                            <div class="sub-page">
+                                                @foreach (var childPage in childPages)
+                                                {
+                                                    <div class="checkbox-wrapper">
+                                                        <input type="checkbox" 
+                                                               id="page_@childPage.PageId" 
+                                                               data-page-id="@childPage.PageId"
+                                                               data-parent-id="@parentPage.PageId"
+                                                               data-original-override="@(childPage.UserOverride ?? "")"
+                                                               class="page-checkbox"
+                                                               @(childPage.RoleCanView && childPage.UserOverride != "Deny" ? "checked" : "")
+                                                               @* Allow editing even if previously denied - no disabled attribute *@ />
+                                                        <label for="page_@childPage.PageId">@childPage.PageName</label>
+                                                        @if (childPage.UserOverride == "Allow")
+                                                        {
+                                                            <span class="permission-badge badge-allow">User Override: Allow</span>
+                                                        }
+                                                        else if (childPage.UserOverride == "Deny")
+                                                        {
+                                                            <span class="permission-badge badge-deny">User Override: Deny</span>
+                                                        }
+                                                        else if (childPage.RoleCanView)
+                                                        {
+                                                            <span class="permission-badge badge-role">From Role</span>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                        
+                        <div>
+                            <button type="button" id="btnSave" class="btn-save">Save Permissions</button>
+                            <button type="button" id="btnCancel" class="btn-cancel">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const roleId = parseInt($('#roleId').val());
+            const pageData = @Html.Raw(Json.Serialize(Model.Pages));
+            
+            // Store original role permissions
+            const rolePermissions = {};
+            pageData.forEach(function(page) {
+                rolePermissions[page.pageId] = page.roleCanView;
+            });
+            
+            // Handle parent checkbox click - toggle all child checkboxes
+            $('.page-checkbox[data-parent-id="0"]').change(function() {
+                const parentPageId = parseInt($(this).data('page-id'));
+                const isChecked = $(this).is(':checked');
+                
+                // Find all child checkboxes for this parent
+                const childCheckboxes = $(`.page-checkbox[data-parent-id="${parentPageId}"]`);
+                
+                // Toggle all child checkboxes (now that disabled is removed)
+                childCheckboxes.each(function() {
+                    $(this).prop('checked', isChecked);
+                    // Trigger change event to update override logic
+                    $(this).trigger('change');
+                });
+            });
+            
+            // Handle child checkbox click - update parent checkbox state
+            $('.page-checkbox[data-parent-id!="0"]').change(function() {
+                const parentPageId = parseInt($(this).data('parent-id'));
+                const parentCheckbox = $(`#page_${parentPageId}`);
+                
+                // Skip if parent doesn't exist
+                if (parentCheckbox.length === 0) {
+                    return;
+                }
+                
+                // Find all child checkboxes for this parent
+                const childCheckboxes = $(`.page-checkbox[data-parent-id="${parentPageId}"]`);
+                const totalChildren = childCheckboxes.length;
+                const checkedChildren = childCheckboxes.filter(':checked').length;
+                
+                // Update parent checkbox state
+                if (checkedChildren === 0) {
+                    parentCheckbox.prop('checked', false);
+                    parentCheckbox.prop('indeterminate', false);
+                } else if (checkedChildren === totalChildren) {
+                    parentCheckbox.prop('checked', true);
+                    parentCheckbox.prop('indeterminate', false);
+                } else {
+                    // Some children checked - set indeterminate state
+                    parentCheckbox.prop('checked', false);
+                    parentCheckbox.prop('indeterminate', true);
+                }
+            });
+            
+            // Initialize parent checkbox states based on children
+            $('.page-checkbox[data-parent-id="0"]').each(function() {
+                const parentPageId = parseInt($(this).data('page-id'));
+                const childCheckboxes = $(`.page-checkbox[data-parent-id="${parentPageId}"]`);
+                
+                if (childCheckboxes.length > 0) {
+                    const totalChildren = childCheckboxes.length;
+                    const checkedChildren = childCheckboxes.filter(':checked').length;
+                    
+                    if (checkedChildren === 0) {
+                        $(this).prop('checked', false);
+                        $(this).prop('indeterminate', false);
+                    } else if (checkedChildren === totalChildren) {
+                        $(this).prop('checked', true);
+                        $(this).prop('indeterminate', false);
+                    } else {
+                        $(this).prop('checked', false);
+                        $(this).prop('indeterminate', true);
+                    }
+                }
+            });
+            
+            $('#btnSave').click(function() {
+                savePermissions();
+            });
+            
+            $('#btnCancel').click(function() {
+                window.location.href = '/UserPermission/Index';
+            });
+        });
+        
+        function savePermissions() {
+            const userId = parseInt($('#userId').val());
+            const roleId = parseInt($('#roleId').val());
+            const pageData = @Html.Raw(Json.Serialize(Model.Pages));
+            const rolePermissions = {};
+            pageData.forEach(function(page) {
+                rolePermissions[page.pageId] = page.roleCanView;
+            });
+            
+            const overrides = [];
+            
+            $('.page-checkbox').each(function() {
+                const pageId = parseInt($(this).data('page-id'));
+                const isChecked = $(this).is(':checked');
+                const roleCanView = rolePermissions[pageId] || false;
+                const originalOverride = $(this).data('original-override') || '';
+                
+                // Determine if override is needed
+                let needsOverride = false;
+                let overrideType = '';
+                
+                if (isChecked && !roleCanView) {
+                    // User wants to allow, but role doesn't allow - need Allow override
+                    needsOverride = true;
+                    overrideType = 'Allow';
+                } else if (!isChecked && roleCanView) {
+                    // User wants to deny, but role allows - need Deny override
+                    needsOverride = true;
+                    overrideType = 'Deny';
+                } else if (originalOverride === 'Deny' && isChecked) {
+                    // Previously denied, now checked - need Allow override to replace Deny
+                    needsOverride = true;
+                    overrideType = 'Allow';
+                } else if (originalOverride === 'Allow' && !isChecked && roleCanView) {
+                    // Previously allowed, now unchecked and role allows - need Deny override
+                    needsOverride = true;
+                    overrideType = 'Deny';
+                }
+                
+                // Add override if needed (this will replace/delete existing override)
+                if (needsOverride) {
+                    overrides.push({
+                        userId: userId,
+                        pageId: pageId,
+                        permissionType: overrideType
+                    });
+                }
+                // If matches role and no original override, no override entry means it will be deleted
+            });
+            
+            BlockUI();
+            $.ajax({
+                url: '/UserPermission/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    userId: userId,
+                    overrides: overrides
+                }),
+                success: function(response) {
+                    UnblockUI();
+                    if (response.success) {
+                        alert('Permissions saved successfully!');
+                        window.location.href = '/UserPermission/Index';
+                    } else {
+                        alert('Error saving permissions: ' + (response.message || 'Unknown error'));
+                    }
+                },
+                error: function(xhr) {
+                    UnblockUI();
+                    let errorMsg = 'Error saving permissions';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    alert(errorMsg);
+                }
+            });
+        }
+    </script>
+}
+

@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "User Page Permissions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/CustomCSS/UserPermission.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="admin_wrapper">
+    @Html.Partial("_userManagement/_leftNavigationUserManagement")
+
+    <div class="right_container">
+        <div class="filtered_rooms_container">
+            <div class="therapiesList_table_list">
+                <div class="user-permission-page">
+                    <div class="user-permission-card">
+                        <!-- Page Header -->
+                        <div class="page-header">
+                            <h2>User Page Permissions</h2>
+                            <p class="page-subtitle">Manage user-specific page access that overrides role-based permissions.</p>
+                        </div>
+
+                        <!-- User Selection Section -->
+                        <div class="user-selection-section">
+                            <div class="form-group">
+                                <label for="userDropdown" class="form-label">Select User</label>
+                                <select id="userDropdown" class="form-select">
+                                    <option value="0">-- Select User --</option>
+                                </select>
+                            </div>
+
+                            <!-- Empty State Helper -->
+                            <div id="emptyStateHelper" class="empty-state-helper">
+                                <i class="bi bi-info-circle"></i>
+                                <span>Select a user to view inherited permissions and apply overrides.</span>
+                            </div>
+
+                            <!-- User Info Panel (Hidden by default) -->
+                            <div id="userInfoPanel" class="user-info-panel">
+                                <div class="user-info-item">
+                                    <i class="bi bi-person-badge"></i>
+                                    <span class="user-info-label">Role Name:</span>
+                                    <span class="user-info-value" id="infoRoleName">-</span>
+                                </div>
+                                <div class="user-info-item">
+                                    <i class="bi bi-shield-check"></i>
+                                    <span class="user-info-label">Permission Inheritance:</span>
+                                    <span class="user-info-value">Enabled</span>
+                                </div>
+                                <div class="user-info-item">
+                                    <i class="bi bi-gear"></i>
+                                    <span class="user-info-label">Overrides:</span>
+                                    <span class="user-info-value">Allowed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Button Container -->
+                        <div class="button-container">
+                            <button type="button" id="btnEditPermissions" class="btn-customize" disabled title="Changes here override role-based permissions">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <span>Customize User Permissions</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial("_bottomNavigation1")
+</div>
+
+@section Scripts {
+    @if (TempData["Error"] != null)
+    {
+        <script>
+            alert('@Html.Raw(TempData["Error"])');
+        </script>
+    }
+    <script src="~/CustomJS/UserManagement/UserPermission.js" asp-append-version="true"></script>
+}

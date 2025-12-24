@@ -44,7 +44,9 @@ public class AccountController : Controller
             outputDTO = (EHRMSLoginWithChild?)((Microsoft.AspNetCore.Mvc.ObjectResult)res).Value;
             if (outputDTO != null)
             {
-                List<MenuListDTO> menuListDTOs = await _accountsAPIController.GetMenuDetails(outputDTO.RoleId ?? 0);
+                // Pass UserId to get effective permissions (role + user overrides)
+                int userId = (int)(outputDTO.WorkerId ?? 0);
+                List<MenuListDTO> menuListDTOs = await _accountsAPIController.GetMenuDetails(outputDTO.RoleId ?? 0, userId);
 
                 HttpContext.Session.SetString("MenuList", JsonConvert.SerializeObject(menuListDTOs));
 

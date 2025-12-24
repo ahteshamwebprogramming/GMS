@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GMS.Core.Repository;
+using GMS.Core.Services;
 using GMS.Infrastructure.Helper;
 using GMS.Infrastructure.Models.EHRMSLogin;
 using GMS.Infrastructure.Models.RoleMenuMapping;
@@ -18,11 +19,14 @@ public class AccountsAPIController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AccountsAPIController> _logger;
     private readonly IMapper _mapper;
-    public AccountsAPIController(IUnitOfWork unitOfWork, ILogger<AccountsAPIController> logger, IMapper mapper)
+    private readonly IUserPermissionService? _userPermissionService;
+    
+    public AccountsAPIController(IUnitOfWork unitOfWork, ILogger<AccountsAPIController> logger, IMapper mapper, IUserPermissionService? userPermissionService = null)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
         _mapper = mapper;
+        _userPermissionService = userPermissionService;
     }
 
     public async Task<IActionResult> GetLoginList()
@@ -56,18 +60,47 @@ public class AccountsAPIController : ControllerBase
         }
     }
     [HttpPost]
-    public async Task<List<MenuListDTO>> GetMenuDetails(int RoleId)
+    public async Task<List<MenuListDTO>> GetMenuDetails(int RoleId, int? UserId = null)
     {
         try
         {
-            string query = "Select ml.* from RoleMenuMapping rmm Left Join MenuList ml on rmm.MenuId = ml.Id where RoleId=@RoleId and DefaultMenu=0 order by SNo";
-            var parameters = new { @RoleId = RoleId };
-            var res = await _unitOfWork.MenuList.GetTableData<MenuListDTO>(query, parameters);
-            return res;
+            // If UserPermissionService is available and UserId is provided, use effective permissions
+            if (_userPermissionService != null && UserId.HasValue && UserId.Value > 0)
+            {
+                var effectivePermissions = await _userPermissionService.GetEffectivePermissionsAsync(UserId.Value);
+                var allowedPageIds = effectivePermissions
+                    .Where(p => (p.UserOverride == "Allow") || (p.UserOverride == null && p.RoleCanView))
+                    .Select(p => p.PageId)
+                    .ToHashSet();
+                
+                if (allowedPageIds.Any())
+                {
+                    string query = @"
+                        SELECT ml.* 
+                        FROM MenuList ml 
+                        WHERE ml.Id IN @PageIds 
+                            AND ml.DefaultMenu = 0 
+                            AND ml.IsActive = 1
+                        ORDER BY ml.SNo";
+                    var parameters = new { PageIds = allowedPageIds.ToList() };
+                    var res = await _unitOfWork.MenuList.GetTableData<MenuListDTO>(query, parameters);
+                    return res ?? new List<MenuListDTO>();
+                }
+                else
+                {
+                    return new List<MenuListDTO>();
+                }
+            }
+            
+            // Fallback to role-based permissions (original behavior)
+            string roleQuery = "Select ml.* from RoleMenuMapping rmm Left Join MenuList ml on rmm.MenuId = ml.Id where RoleId=@RoleId and DefaultMenu=0 and ml.IsActive=1 order by SNo";
+            var roleParameters = new { @RoleId = RoleId };
+            var roleRes = await _unitOfWork.MenuList.GetTableData<MenuListDTO>(roleQuery, roleParameters);
+            return roleRes ?? new List<MenuListDTO>();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error in retriving Login Detail {nameof(GetLoginDetail)}");
+            _logger.LogError(ex, $"Error in retrieving Menu Details {nameof(GetMenuDetails)}");
             throw;
         }
     }

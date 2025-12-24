@@ -63,6 +63,7 @@ public class UnitOfWork : IUnitOfWork
         GuestLedger = new GuestLedgerRepository(_dapperDBContext);
         MenuList = new MenuListRepository(_dapperDBContext);
         RoleMenuMapping = new RoleMenuMappingRepository(_dapperDBContext);
+        UserPagePermission = new UserPagePermissionRepository(_dapperDBContext);
         Operations = new OperationsRepository(_dapperDBContext);
         EmployeeTaskExecution = new EmployeeTaskExecutionRepository(_dapperDBContext);
     }
@@ -117,6 +118,7 @@ public class UnitOfWork : IUnitOfWork
     public IGuestLedgerRepository GuestLedger { get; private set; }
     public IMenuListRepository MenuList { get; private set; }
     public IRoleMenuMappingRepository RoleMenuMapping { get; private set; }
+    public IUserPagePermissionRepository UserPagePermission { get; private set; }
     public IOperationsRepository Operations { get; private set; }
     public IEmployeeTaskExecutionRepository EmployeeTaskExecution { get; private set; }
 

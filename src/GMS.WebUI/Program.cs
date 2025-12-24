@@ -17,6 +17,8 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<DapperDBContext>();
 builder.Services.AddScoped<DapperEHRMSDBContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<GMS.Core.Repository.IUserPagePermissionRepository, GMS.Services.UserPagePermissionRepository>();
+builder.Services.AddScoped<GMS.Core.Services.IUserPermissionService, GMS.Services.UserPermissionService>();
 
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
 builder.Services.AddHttpContextAccessor();
